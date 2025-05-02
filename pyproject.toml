@@ -12,6 +12,10 @@ license = {file = "LICENSE"}
 Homepage = "https://github.com/lightspeed-core/lightspeed-stack"
 Issues = "https://github.com/lightspeed-core/lightspeed-stack/issues"
 
-
 [tool.pdm]
 distribution = true
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0"
+    ]
