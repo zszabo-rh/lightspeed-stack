@@ -1,0 +1,17 @@
+[project]
+name = "lightspeed-stack"
+version = "0.1.0"
+description = "LLM tooling stack"
+authors = []
+dependencies = []
+requires-python = ">=3.11.1,<=3.12.10"
+readme = "README.md"
+license = {file = "LICENSE"}
+
+[project.urls]
+Homepage = "https://github.com/lightspeed-core/lightspeed-stack"
+Issues = "https://github.com/lightspeed-core/lightspeed-stack/issues"
+
+
+[tool.pdm]
+distribution = true
