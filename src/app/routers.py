@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 
-from app.endpoints import info, models
+from app.endpoints import info, models, root
 
 
 def include_routers(app: FastAPI) -> None:
@@ -11,5 +11,6 @@ def include_routers(app: FastAPI) -> None:
     Args:
         app: The `FastAPI` app instance.
     """
+    app.include_router(root.router)
     app.include_router(info.router, prefix="/v1")
     app.include_router(models.router, prefix="/v1")
