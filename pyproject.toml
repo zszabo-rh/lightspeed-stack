@@ -9,6 +9,7 @@ license = {file = "LICENSE"}
 dependencies = [
     "fastapi>=0.115.6",
     "uvicorn>=0.32.1",
+    "llama-stack>=0.2.5",
 ]
 
 [project.urls]
