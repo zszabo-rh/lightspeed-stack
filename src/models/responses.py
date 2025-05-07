@@ -1,6 +1,19 @@
 from pydantic import BaseModel
 
 
+class ModelsResponse(BaseModel):
+    """Model representing a response to models request."""
+
+    models: list[dict] 
+
+
+class QueryResponse(BaseModel):
+    """Model representing LLM response to a query."""
+
+    query: str
+    response: str
+
+
 class InfoResponse(BaseModel):
     """Model representing a response to a info request.
 
