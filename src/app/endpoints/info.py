@@ -1,8 +1,7 @@
 """Handler for REST API call to provide info."""
 
-import asyncio
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import APIRouter, Request
 
