@@ -10,6 +10,7 @@ def load_configuration(filename: str) -> Configuration:
     """Load configuration from YAML file."""
     with open(filename, encoding="utf-8") as fin:
         config_dict = yaml.safe_load(fin)
+        print(config_dict)
         return Configuration(**config_dict)
 
 
