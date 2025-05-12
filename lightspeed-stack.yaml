@@ -1,1 +1,4 @@
 name: foo bar baz
+llama_stack:
+  url: http://localhost:8321
+  api_key: xyzzy
