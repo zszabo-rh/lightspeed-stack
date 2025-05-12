@@ -1,11 +1,10 @@
 """Handler for REST API call to provide info."""
 
-import asyncio
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import APIRouter, Request
-from llama_stack_client import Agent, AgentEventLogger, RAGDocument, LlamaStackClient
+from llama_stack_client import LlamaStackClient
 
 from models.responses import ModelsResponse
 

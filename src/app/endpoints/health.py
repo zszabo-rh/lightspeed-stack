@@ -13,8 +13,8 @@ from fastapi import APIRouter
 from models.responses import ReadinessResponse, LivenessResponse, NotAvailableResponse
 
 
-router = APIRouter(tags=["health"])
 logger = logging.getLogger(__name__)
+router = APIRouter(tags=["health"])
 
 
 get_readiness_responses: dict[int | str, dict[str, Any]] = {

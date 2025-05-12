@@ -22,6 +22,7 @@ index_page = """
 </html>
 """
 
+
 @router.get("/", response_class=HTMLResponse)
 def root_endpoint_handler(request: Request) -> HTMLResponse:
     return HTMLResponse(index_page)
