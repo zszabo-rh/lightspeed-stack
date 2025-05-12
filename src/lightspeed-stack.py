@@ -1,21 +1,13 @@
 """Lightspeed stack."""
 
-import yaml
-
 from runners.uvicorn import start_uvicorn
 from models.config import Configuration
-
-
-def load_configuration(filename: str) -> Configuration:
-    """Load configuration from YAML file."""
-    with open(filename, encoding="utf-8") as fin:
-        config_dict = yaml.safe_load(fin)
-        print(config_dict)
-        return Configuration(**config_dict)
+from configuration import configuration
 
 
 if __name__ == "__main__":
     print("Lightspeed stack")
-    configuration = load_configuration("lightspeed-stack.yaml")
+    configuration.load_configuration("lightspeed-stack.yaml")
     print(configuration)
+    print(configuration.llama_stack_configuration)
     start_uvicorn()
