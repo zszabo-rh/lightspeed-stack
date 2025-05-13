@@ -1,7 +1,10 @@
 import yaml
 
+import logging
 from typing import Any, Optional
 from models.config import Configuration, LLamaStackConfiguration
+
+logger = logging.getLogger(__name__)
 
 
 class AppConfig:
@@ -21,7 +24,7 @@ class AppConfig:
         """Load configuration from YAML file."""
         with open(filename, encoding="utf-8") as fin:
             config_dict = yaml.safe_load(fin)
-            print(config_dict)
+            logger.info("Loaded configuration: %s", config_dict)
             self._configuration = Configuration(**config_dict)
 
     @property

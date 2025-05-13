@@ -14,10 +14,12 @@ def start_uvicorn() -> None:
     host = "localhost"
     port = 8080
     workers = 1
+    log_level = logging.INFO
 
     uvicorn.run(
         "app.main:app",
         host=host,
         port=port,
         workers=workers,
+        log_level=log_level,
     )
