@@ -43,4 +43,3 @@ class AppConfig:
 
 
 configuration: AppConfig = AppConfig()
-xyz: str = "XYZ"
