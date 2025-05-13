@@ -3,8 +3,8 @@ from app import routers
 import version
 
 app = FastAPI(
-    title="Swagger service - OpenAPI",
-    description=f" service API specification.",
+    title="Lightspeed-core service - OpenAPI",
+    description="Lightspeed-core service API specification.",
     version=version.__version__,
     license_info={
         "name": "Apache 2.0",
