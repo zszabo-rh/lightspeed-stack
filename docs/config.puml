@@ -1,0 +1,14 @@
+@startuml classes
+set namespaceSeparator none
+class "Configuration" as src.models.config.Configuration {
+  llama_stack
+  name : str
+}
+class "LLamaStackConfiguration" as src.models.config.LLamaStackConfiguration {
+  api_key : Optional[str]
+  url : Optional[str]
+  use_as_library_client : Optional[bool]
+  check_llama_stack_model() -> Self
+}
+src.models.config.LLamaStackConfiguration --* src.models.config.Configuration : llama_stack
+@enduml
