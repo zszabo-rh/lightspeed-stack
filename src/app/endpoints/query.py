@@ -3,11 +3,13 @@
 import logging
 from typing import Any
 
+from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
 from llama_stack_client import LlamaStackClient
 
 from fastapi import APIRouter, Request
 
 from configuration import configuration
+from models.config import LLamaStackConfiguration
 from models.responses import QueryResponse
 
 logger = logging.getLogger(__name__)
@@ -26,6 +28,7 @@ query_response: dict[int | str, dict[str, Any]] = {
 def info_endpoint_handler(request: Request, query: str) -> QueryResponse:
     llama_stack_config = configuration.llama_stack_configuration
     logger.info("LLama stack config: %s", llama_stack_config)
+    client = getLLamaStackClient(llama_stack_config)
     client = LlamaStackClient(
         base_url=llama_stack_config.url, api_key=llama_stack_config.api_key
     )
@@ -47,3 +50,16 @@ def info_endpoint_handler(request: Request, query: str) -> QueryResponse:
         ],
     )
     return QueryResponse(query=query, response=str(response.completion_message.content))
+
+
+def getLLamaStackClient(
+    llama_stack_config: LLamaStackConfiguration,
+) -> LlamaStackClient:
+    if llama_stack_config.use_as_library_client is True:
+        client = LlamaStackAsLibraryClient("ollama")
+        client.initialize()
+        return client
+    else:
+        return LlamaStackClient(
+            base_url=llama_stack_config.url, api_key=llama_stack_config.api_key
+        )
