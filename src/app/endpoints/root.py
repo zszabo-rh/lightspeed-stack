@@ -5,8 +5,10 @@ import logging
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("app.endpoints.handlers")
+
 router = APIRouter(tags=["root"])
+
 
 index_page = """
 <html>
@@ -25,4 +27,5 @@ index_page = """
 
 @router.get("/", response_class=HTMLResponse)
 def root_endpoint_handler(request: Request) -> HTMLResponse:
+    logger.info("Serving index page")
     return HTMLResponse(index_page)

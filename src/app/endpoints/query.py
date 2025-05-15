@@ -4,6 +4,7 @@ import logging
 from typing import Any
 
 from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
+from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client import LlamaStackClient
 
 from fastapi import APIRouter, Request
@@ -12,7 +13,7 @@ from configuration import configuration
 from models.config import LLamaStackConfiguration
 from models.responses import QueryResponse
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("app.endpoints.handlers")
 router = APIRouter(tags=["models"])
 
 
@@ -28,10 +29,8 @@ query_response: dict[int | str, dict[str, Any]] = {
 def info_endpoint_handler(request: Request, query: str) -> QueryResponse:
     llama_stack_config = configuration.llama_stack_configuration
     logger.info("LLama stack config: %s", llama_stack_config)
-    client = getLLamaStackClient(llama_stack_config)
-    client = LlamaStackClient(
-        base_url=llama_stack_config.url, api_key=llama_stack_config.api_key
-    )
+
+    client = get_llama_stack_client(llama_stack_config)
 
     # retrieve list of available models
     models = client.models.list()
@@ -42,24 +41,55 @@ def info_endpoint_handler(request: Request, query: str) -> QueryResponse:
 
     logger.info("Model: %s", model_id)
 
-    response = client.inference.chat_completion(
-        model_id=model_id,
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": query},
-        ],
+    response = retrieve_response(
+        client, model_id, llama_stack_config.chat_completion_mode, query
     )
-    return QueryResponse(query=query, response=str(response.completion_message.content))
+
+    return QueryResponse(query=query, response=response)
 
 
-def getLLamaStackClient(
+def retrieve_response(
+    client: LlamaStackClient, model_id: str, chat_completion_mode: bool, query: str
+) -> str:
+    if chat_completion_mode:
+        logger.info("Chat completion mode enabled")
+        response = client.inference.chat_completion(
+            model_id=model_id,
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": query},
+            ],
+        )
+        return str(response.completion_message.content)
+    else:
+        logger.info("Chat completion mode disabled")
+        agent = Agent(
+            client,
+            model=model_id,
+            instructions="You are a helpful assistant",
+            tools=[],
+        )
+
+        prompt = "How do you do great work?"
+
+        response = agent.create_turn(
+            messages=[{"role": "user", "content": prompt}],
+            session_id=agent.create_session("rag_session"),
+            stream=False,
+        )
+        return str(response.output_message.content)
+
+
+def get_llama_stack_client(
     llama_stack_config: LLamaStackConfiguration,
 ) -> LlamaStackClient:
     if llama_stack_config.use_as_library_client is True:
+        logger.info("Using Llama stack as library client")
         client = LlamaStackAsLibraryClient("ollama")
         client.initialize()
         return client
     else:
+        logger.info("Using Llama stack running as a service")
         return LlamaStackClient(
             base_url=llama_stack_config.url, api_key=llama_stack_config.api_key
         )
