@@ -22,4 +22,6 @@ def start_uvicorn() -> None:
         port=port,
         workers=workers,
         log_level=log_level,
+        use_colors=True,
+        access_log=True,
     )

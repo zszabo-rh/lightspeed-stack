@@ -1,6 +1,14 @@
 from fastapi import FastAPI
 from app import routers
 import version
+import logging
+from log import get_logger
+
+
+logger = get_logger(__name__)
+
+
+logger.info("Initializing app")
 
 app = FastAPI(
     title="Lightspeed-core service - OpenAPI",
@@ -12,4 +20,10 @@ app = FastAPI(
     },
 )
 
+logger.info("Including routers")
 routers.include_routers(app)
+
+
+@app.on_event("startup")
+async def startup_event():
+    get_logger("app.endpoints.handlers")
