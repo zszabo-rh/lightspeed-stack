@@ -85,7 +85,9 @@ def get_llama_stack_client(
 ) -> LlamaStackClient:
     if llama_stack_config.use_as_library_client is True:
         logger.info("Using Llama stack as library client")
-        client = LlamaStackAsLibraryClient("ollama")
+        client = LlamaStackAsLibraryClient(
+            llama_stack_config.library_client_config_path
+        )
         client.initialize()
         return client
     else:
