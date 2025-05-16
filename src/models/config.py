@@ -10,6 +10,7 @@ class LLamaStackConfiguration(BaseModel):
     url: Optional[str] = None
     api_key: Optional[str] = None
     use_as_library_client: Optional[bool] = None
+    library_client_config_path: Optional[str] = None
     chat_completion_mode: bool = False
 
     @model_validator(mode="after")
@@ -25,6 +26,11 @@ class LLamaStackConfiguration(BaseModel):
                 )
         if self.use_as_library_client is None:
             self.use_as_library_client = False
+        if self.use_as_library_client:
+            if self.library_client_config_path is None:
+                raise ValueError(
+                    "LLama stack library client mode is enabled but a configuration file path is not specified"
+                )
         return self
 
 
