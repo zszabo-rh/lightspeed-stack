@@ -1,6 +1,5 @@
 """Unit tests for functions defined in src/log.py."""
 
-
 from src.log import get_logger
 
 
