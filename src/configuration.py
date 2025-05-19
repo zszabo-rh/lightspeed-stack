@@ -25,6 +25,9 @@ class AppConfig:
         with open(filename, encoding="utf-8") as fin:
             config_dict = yaml.safe_load(fin)
             logger.info("Loaded configuration: %s", config_dict)
+            self.init_from_dict(config_dict)
+
+    def init_from_dict(self, config_dict: dict[Any, Any]):
             self._configuration = Configuration(**config_dict)
 
     @property
