@@ -51,9 +51,9 @@ def retrieve_response(client: LlamaStackClient, model_id: str, prompt: str) -> s
 
     available_shields = [shield.identifier for shield in client.shields.list()]
     if not available_shields:
-        print(colored("No available shields. Disabling safety.", "yellow"))
+        logger.info("No available shields. Disabling safety")
     else:
-        print(f"Available shields found: {available_shields}")
+        logger.info(f"Available shields found: {available_shields}")
 
     agent = Agent(
         client,
