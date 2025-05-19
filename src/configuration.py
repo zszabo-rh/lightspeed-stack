@@ -28,7 +28,7 @@ class AppConfig:
             self.init_from_dict(config_dict)
 
     def init_from_dict(self, config_dict: dict[Any, Any]):
-            self._configuration = Configuration(**config_dict)
+        self._configuration = Configuration(**config_dict)
 
     @property
     def configuration(self) -> Configuration:
