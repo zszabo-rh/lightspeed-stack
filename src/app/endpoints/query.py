@@ -3,15 +3,14 @@
 import logging
 from typing import Any
 
-from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
 from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client import LlamaStackClient
 from llama_stack_client.types import UserMessage
 
 from fastapi import APIRouter, Request
 
+from client import get_llama_stack_client
 from configuration import configuration
-from models.config import LLamaStackConfiguration
 from models.responses import QueryResponse
 
 logger = logging.getLogger("app.endpoints.handlers")
@@ -27,7 +26,7 @@ query_response: dict[int | str, dict[str, Any]] = {
 
 
 @router.post("/query", responses=query_response)
-def info_endpoint_handler(request: Request, query: str) -> QueryResponse:
+def query_endpoint_handler(request: Request, query: str) -> QueryResponse:
     llama_stack_config = configuration.llama_stack_configuration
     logger.info("LLama stack config: %s", llama_stack_config)
 
@@ -70,20 +69,3 @@ def retrieve_response(client: LlamaStackClient, model_id: str, prompt: str) -> s
     )
 
     return str(response.output_message.content)
-
-
-def get_llama_stack_client(
-    llama_stack_config: LLamaStackConfiguration,
-) -> LlamaStackClient:
-    if llama_stack_config.use_as_library_client is True:
-        logger.info("Using Llama stack as library client")
-        client = LlamaStackAsLibraryClient(
-            llama_stack_config.library_client_config_path
-        )
-        client.initialize()
-        return client
-    else:
-        logger.info("Using Llama stack running as a service")
-        return LlamaStackClient(
-            base_url=llama_stack_config.url, api_key=llama_stack_config.api_key
-        )

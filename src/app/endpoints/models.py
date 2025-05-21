@@ -6,6 +6,8 @@ from typing import Any
 from fastapi import APIRouter, Request
 from llama_stack_client import LlamaStackClient
 
+from client import get_llama_stack_client
+from configuration import configuration
 from models.responses import ModelsResponse
 
 logger = logging.getLogger(__name__)
@@ -40,7 +42,10 @@ models_responses: dict[int | str, dict[str, Any]] = {
 
 @router.get("/models", responses=models_responses)
 def models_endpoint_handler(request: Request) -> ModelsResponse:
-    client = LlamaStackClient(base_url="http://localhost:8321")
+    llama_stack_config = configuration.llama_stack_configuration
+    logger.info("LLama stack config: %s", llama_stack_config)
+
+    client = get_llama_stack_client(llama_stack_config)
     models = client.models.list()
     m = [dict(m) for m in models]
     return ModelsResponse(models=m)
