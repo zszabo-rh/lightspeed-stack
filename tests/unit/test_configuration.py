@@ -1,7 +1,7 @@
 """Unit tests for functions defined in src/configuration.py."""
 
 import pytest
-from src.configuration import AppConfig
+from configuration import AppConfig
 
 
 def test_default_configuration():
