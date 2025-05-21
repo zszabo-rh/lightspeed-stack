@@ -34,5 +34,8 @@ test-integration = "pdm run make test-integration"
 
 [tool.pytest.ini_options]
 pythonpath = [
-  "src"
+    "src"
+]
+addopts = [
+    "--import-mode=importlib",
 ]
