@@ -27,7 +27,7 @@ class AppConfig:
             logger.info("Loaded configuration: %s", config_dict)
             self.init_from_dict(config_dict)
 
-    def init_from_dict(self, config_dict: dict[Any, Any]):
+    def init_from_dict(self, config_dict: dict[Any, Any]) -> None:
         self._configuration = Configuration(**config_dict)
 
     @property

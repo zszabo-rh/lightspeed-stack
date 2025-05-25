@@ -25,5 +25,5 @@ routers.include_routers(app)
 
 
 @app.on_event("startup")
-async def startup_event():
+async def startup_event() -> None:
     get_logger("app.endpoints.handlers")
