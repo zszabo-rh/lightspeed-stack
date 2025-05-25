@@ -3,7 +3,7 @@ PATH_TO_PLANTUML := ~/bin
 
 
 run: ## Run the service locally
-	python src/lightspeed-stack.py
+	python src/lightspeed-stack.py "$@"
 
 test-unit: ## Run the unit tests
 	@echo "Running unit tests..."
@@ -16,7 +16,7 @@ test-integration: ## Run integration tests tests
 	COVERAGE_FILE="${ARTIFACT_DIR}/.coverage.integration" pdm run pytest tests/integration --cov=src --cov-report term-missing --cov-report "json:${ARTIFACT_DIR}/coverage_integration.json" --junit-xml="${ARTIFACT_DIR}/junit_integration.xml" --cov-fail-under=60
 
 check-types: ## Checks type hints in sources
-	MYPYPATH=src pdm run mypy --namespace-packages --explicit-package-bases --strict --disallow-untyped-calls --disallow-untyped-defs --disallow-incomplete-defs .
+	MYPYPATH=src pdm run mypy --namespace-packages --explicit-package-bases --strict --disallow-untyped-calls --disallow-untyped-defs --disallow-incomplete-defs src
 
 security-check: ## Check the project for security issues
 	bandit -c pyproject.toml -r src tests
