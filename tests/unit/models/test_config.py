@@ -5,7 +5,7 @@ import pytest
 from models.config import Configuration, LLamaStackConfiguration
 
 
-def test_llama_stack_configuration_constructor():
+def test_llama_stack_configuration_constructor() -> None:
     """Test the LLamaStackConfiguration constructor."""
     l = LLamaStackConfiguration(
         use_as_library_client=True, library_client_config_path="foo"
@@ -24,7 +24,7 @@ def test_llama_stack_configuration_constructor():
     assert l is not None
 
 
-def test_llama_stack_wrong_configuration_constructor_no_url():
+def test_llama_stack_wrong_configuration_constructor_no_url() -> None:
     """Test the LLamaStackConfiguration constructor."""
     with pytest.raises(
         ValueError,
@@ -33,7 +33,7 @@ def test_llama_stack_wrong_configuration_constructor_no_url():
         LLamaStackConfiguration()
 
 
-def test_llama_stack_wrong_configuration_constructor_library_mode_off():
+def test_llama_stack_wrong_configuration_constructor_library_mode_off() -> None:
     """Test the LLamaStackConfiguration constructor."""
     with pytest.raises(
         ValueError,
@@ -42,7 +42,7 @@ def test_llama_stack_wrong_configuration_constructor_library_mode_off():
         LLamaStackConfiguration(use_as_library_client=False)
 
 
-def test_llama_stack_wrong_configuration_no_config_file():
+def test_llama_stack_wrong_configuration_no_config_file() -> None:
     """Test the LLamaStackConfiguration constructor."""
     with pytest.raises(
         ValueError,

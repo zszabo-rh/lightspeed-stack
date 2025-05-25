@@ -3,7 +3,7 @@
 from log import get_logger
 
 
-def test_get_logger():
+def test_get_logger() -> None:
     """Check the function to retrieve logger."""
     logger_name = "foo"
     logger = get_logger(logger_name)

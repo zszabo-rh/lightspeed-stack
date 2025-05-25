@@ -1,5 +1,7 @@
 """Unit tests for routers.py."""
 
+from typing import Any, Optional
+
 from app.routers import include_routers  # noqa:E402
 
 from app.endpoints import root, info, models, query, health, config  # noqa:E402
@@ -8,16 +10,16 @@ from app.endpoints import root, info, models, query, health, config  # noqa:E402
 class MockFastAPI:
     """Mock class for FastAPI."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize mock class."""
-        self.routers = []
+        self.routers: list[Any] = []
 
-    def include_router(self, router, prefix=None):
+    def include_router(self, router: Any, prefix: Optional[str] = None) -> None:
         """Register new router."""
         self.routers.append(router)
 
 
-def test_include_routers():
+def test_include_routers() -> None:
     """Test the function include_routers."""
     app = MockFastAPI()
     include_routers(app)
