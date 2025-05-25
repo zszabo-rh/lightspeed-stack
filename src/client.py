@@ -2,8 +2,8 @@
 
 import logging
 
-from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
-from llama_stack_client import LlamaStackClient
+from llama_stack.distribution.library_client import LlamaStackAsLibraryClient  # type: ignore
+from llama_stack_client import LlamaStackClient  # type: ignore
 from models.config import LLamaStackConfiguration
 
 logger = logging.getLogger(__name__)
