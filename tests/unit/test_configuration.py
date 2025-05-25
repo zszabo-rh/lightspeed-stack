@@ -4,7 +4,7 @@ import pytest
 from configuration import AppConfig
 
 
-def test_default_configuration():
+def test_default_configuration() -> None:
     cfg = AppConfig()
     assert cfg is not None
 
@@ -18,13 +18,13 @@ def test_default_configuration():
         cfg.llama_stack_configuration
 
 
-def test_configuration_is_singleton():
+def test_configuration_is_singleton() -> None:
     cfg1 = AppConfig()
     cfg2 = AppConfig()
     assert cfg1 == cfg2
 
 
-def test_init_from_dict():
+def test_init_from_dict() -> None:
     config_dict = {
         "name": "foo",
         "llama_stack": {
@@ -39,7 +39,7 @@ def test_init_from_dict():
     assert cfg.llama_stack_configuration is not None
 
 
-def test_load_proper_configuration(tmpdir):
+def test_load_proper_configuration(tmpdir) -> None:
     cfg_filename = tmpdir / "config.yaml"
     with open(cfg_filename, "w") as fout:
         fout.write(

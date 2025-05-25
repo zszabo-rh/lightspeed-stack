@@ -5,18 +5,18 @@ from src.configuration import configuration
 
 
 @pytest.fixture
-def configuration_filename():
+def configuration_filename() -> str:
     return "tests/configuration/lightspeed-stack.yaml"
 
 
-def test_default_configuration():
+def test_default_configuration() -> None:
     cfg = configuration
     assert cfg is not None
     with pytest.raises(Exception, match="logic error: configuration is not loaded"):
         configuration.configuration
 
 
-def test_loading_proper_configuration(configuration_filename):
+def test_loading_proper_configuration(configuration_filename: str) -> None:
     cfg = configuration
     cfg.load_configuration(configuration_filename)
     assert cfg is not None

@@ -4,7 +4,7 @@ import logging
 from typing import Any
 
 from fastapi import APIRouter, Request
-from llama_stack_client import LlamaStackClient
+from llama_stack_client import LlamaStackClient  # type: ignore
 
 from client import get_llama_stack_client
 from configuration import configuration

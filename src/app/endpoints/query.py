@@ -3,9 +3,9 @@
 import logging
 from typing import Any
 
-from llama_stack_client.lib.agents.agent import Agent
-from llama_stack_client import LlamaStackClient
-from llama_stack_client.types import UserMessage
+from llama_stack_client.lib.agents.agent import Agent  # type: ignore
+from llama_stack_client import LlamaStackClient  # type: ignore
+from llama_stack_client.types import UserMessage  # type: ignore
 
 from fastapi import APIRouter, Request
 
