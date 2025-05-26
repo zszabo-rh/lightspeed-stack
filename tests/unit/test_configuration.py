@@ -4,7 +4,7 @@ import pytest
 from configuration import AppConfig
 
 
-def test_default_configuration():
+def test_default_configuration() -> None:
     cfg = AppConfig()
     assert cfg is not None
 
@@ -18,15 +18,23 @@ def test_default_configuration():
         cfg.llama_stack_configuration
 
 
-def test_configuration_is_singleton():
+def test_configuration_is_singleton() -> None:
     cfg1 = AppConfig()
     cfg2 = AppConfig()
     assert cfg1 == cfg2
 
 
-def test_init_from_dict():
+def test_init_from_dict() -> None:
     config_dict = {
         "name": "foo",
+        "service": {
+            "host": "localhost",
+            "port": 8080,
+            "auth_enabled": False,
+            "workers": 1,
+            "color_log": True,
+            "access_log": True,
+        },
         "llama_stack": {
             "api_key": "xyzzy",
             "url": "http://x.y.com:1234",
@@ -39,12 +47,19 @@ def test_init_from_dict():
     assert cfg.llama_stack_configuration is not None
 
 
-def test_load_proper_configuration(tmpdir):
+def test_load_proper_configuration(tmpdir) -> None:
     cfg_filename = tmpdir / "config.yaml"
     with open(cfg_filename, "w") as fout:
         fout.write(
             """
 name: foo bar baz
+service:
+  host: localhost
+  port: 8080
+  auth_enabled: false
+  workers: 1
+  color_log: true
+  access_log: true
 llama_stack:
   use_as_library_client: false
   url: http://localhost:8321
