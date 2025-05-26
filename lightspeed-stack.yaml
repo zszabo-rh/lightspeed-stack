@@ -1,4 +1,11 @@
 name: foo bar baz
+service:
+  host: localhost
+  port: 8080
+  auth_enabled: false
+  workers: 1
+  color_log: true
+  access_log: true
 llama_stack:
   # Uses a remote llama-stack service
   # The instance would have already been started with a llama-stack-run.yaml file
