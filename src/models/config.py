@@ -4,6 +4,27 @@ from typing import Optional
 from typing_extensions import Self
 
 
+class ServiceConfiguration(BaseModel):
+    """Service configuration."""
+
+    host: str = "localhost"
+    port: int = 8080
+    auth_enabled: bool = False
+    workers: int = 1
+    color_log: bool = True
+    access_log: bool = True
+
+    @model_validator(mode="after")
+    def check_service_configuration(self) -> Self:
+        if self.port <= 0:
+            raise ValueError("Port value should not be negative")
+        if self.port > 65535:
+            raise ValueError("Port value should be less than 65536")
+        if self.workers < 1:
+            raise ValueError("Workers must be set to at least 1")
+        return self
+
+
 class LLamaStackConfiguration(BaseModel):
     """Llama stack configuration."""
 
@@ -37,4 +58,5 @@ class Configuration(BaseModel):
     """Global service configuration."""
 
     name: str
+    service: ServiceConfiguration
     llama_stack: LLamaStackConfiguration
