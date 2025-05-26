@@ -27,6 +27,14 @@ def test_configuration_is_singleton() -> None:
 def test_init_from_dict() -> None:
     config_dict = {
         "name": "foo",
+        "service": {
+            "host": "localhost",
+            "port": 8080,
+            "auth_enabled": False,
+            "workers": 1,
+            "color_log": True,
+            "access_log": True,
+        },
         "llama_stack": {
             "api_key": "xyzzy",
             "url": "http://x.y.com:1234",
@@ -45,6 +53,13 @@ def test_load_proper_configuration(tmpdir) -> None:
         fout.write(
             """
 name: foo bar baz
+service:
+  host: localhost
+  port: 8080
+  auth_enabled: false
+  workers: 1
+  color_log: true
+  access_log: true
 llama_stack:
   use_as_library_client: false
   url: http://localhost:8321
