@@ -26,4 +26,8 @@ LLM tooling stack
 
 # Contributing
 
+* See [contributors](CONTRIBUTING.md) guide.
+
 # License
+
+Published under the Apache 2.0 License
