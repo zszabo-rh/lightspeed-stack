@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Any
+from typing import Any, Optional
 
 
 class ModelsResponse(BaseModel):
@@ -8,11 +8,39 @@ class ModelsResponse(BaseModel):
     models: list[dict[str, Any]]
 
 
+# TODO(lucasagomes): a lot of fields to add to QueryResponse. For now
+# we are keeping it simple. The missing fields are:
+# - referenced_documents: The optional URLs and titles for the documents used
+#   to generate the response.
+# - truncated: Set to True if conversation history was truncated to be within context window.
+# - input_tokens: Number of tokens sent to LLM
+# - output_tokens: Number of tokens received from LLM
+# - available_quotas: Quota available as measured by all configured quota limiters
+# - tool_calls: List of tool requests.
+# - tool_results: List of tool results.
+# See LLMResponse in ols-service for more details.
 class QueryResponse(BaseModel):
-    """Model representing LLM response to a query."""
+    """Model representing LLM response to a query.
 
-    query: str
+    Attributes:
+        conversation_id: The optional conversation ID (UUID).
+        response: The response.
+    """
+
+    conversation_id: Optional[str] = None
     response: str
+
+    # provides examples for /docs endpoint
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
+                    "response": "Operator Lifecycle Manager (OLM) helps users install...",
+                }
+            ]
+        }
+    }
 
 
 class InfoResponse(BaseModel):
