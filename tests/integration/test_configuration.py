@@ -1,7 +1,7 @@
 """Integration tests for configuration loading and handling."""
 
 import pytest
-from src.configuration import configuration
+from configuration import configuration
 
 
 @pytest.fixture

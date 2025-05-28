@@ -28,4 +28,4 @@ jobs:
       - name: Install devel dependencies
         run: pdm install --dev
       - name: Run integration tests
-        run: pdm run python -m pytest -m 'not redis' tests/integration --cov=ols --cov=runner --cov-report term-missing
+        run: make test-integration
