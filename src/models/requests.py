@@ -60,6 +60,7 @@ class QueryRequest(BaseModel):
         conversation_id: The optional conversation ID (UUID).
         provider: The optional provider.
         model: The optional model.
+        system_prompt: The optional system prompt.
         attachments: The optional attachments.
 
     Example:
