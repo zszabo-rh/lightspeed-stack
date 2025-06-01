@@ -6,6 +6,7 @@ from typing import Any
 from llama_stack_client.lib.agents.agent import Agent  # type: ignore
 from llama_stack_client import LlamaStackClient  # type: ignore
 from llama_stack_client.types import UserMessage  # type: ignore
+from llama_stack_client.types.model_list_response import ModelListResponse
 
 from fastapi import APIRouter, Request, HTTPException, status
 
@@ -43,7 +44,7 @@ def query_endpoint_handler(
 
 def select_model_id(client: LlamaStackClient, query_request: QueryRequest) -> str:
     """Select the model ID based on the request or available models."""
-    models = client.models.list()
+    models: ModelListResponse = client.models.list()
     model_id = query_request.model
     provider_id = query_request.provider
 
