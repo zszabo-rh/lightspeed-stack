@@ -5,7 +5,6 @@ from typing import Any
 
 from fastapi import APIRouter, Request
 
-from version import __version__
 from models.config import Configuration
 from configuration import configuration
 

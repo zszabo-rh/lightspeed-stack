@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from app import routers
 import version
-import logging
 from log import get_logger
 
 

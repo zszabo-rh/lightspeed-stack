@@ -1,10 +1,6 @@
-from fastapi import HTTPException, status
-from fastapi import Request
 import pytest
 
 from app.endpoints.config import config_endpoint_handler
-from models.config import Configuration
-from configuration import configuration
 from configuration import AppConfig
 
 

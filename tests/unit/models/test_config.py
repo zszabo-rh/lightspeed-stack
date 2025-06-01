@@ -2,7 +2,7 @@
 
 import pytest
 
-from models.config import Configuration, LLamaStackConfiguration, ServiceConfiguration
+from models.config import LLamaStackConfiguration, ServiceConfiguration
 
 
 def test_service_configuration_constructor() -> None:
