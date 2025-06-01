@@ -35,21 +35,23 @@ def test_service_configuration_workers_value() -> None:
 
 def test_llama_stack_configuration_constructor() -> None:
     """Test the LLamaStackConfiguration constructor."""
-    l = LLamaStackConfiguration(
+    llama_stack_configuration = LLamaStackConfiguration(
         use_as_library_client=True, library_client_config_path="foo"
     )
-    assert l is not None
+    assert llama_stack_configuration is not None
 
-    l = LLamaStackConfiguration(use_as_library_client=False, url="http://localhost")
-    assert l is not None
+    llama_stack_configuration = LLamaStackConfiguration(
+        use_as_library_client=False, url="http://localhost"
+    )
+    assert llama_stack_configuration is not None
 
-    l = LLamaStackConfiguration(url="http://localhost")
-    assert l is not None
+    llama_stack_configuration = LLamaStackConfiguration(url="http://localhost")
+    assert llama_stack_configuration is not None
 
-    l = LLamaStackConfiguration(
+    llama_stack_configuration = LLamaStackConfiguration(
         use_as_library_client=False, url="http://localhost", api_key="foo"
     )
-    assert l is not None
+    assert llama_stack_configuration is not None
 
 
 def test_llama_stack_wrong_configuration_constructor_no_url() -> None:
