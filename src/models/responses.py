@@ -1,3 +1,5 @@
+"""Models for service responses."""
+
 from pydantic import BaseModel
 from typing import Any, Optional
 

@@ -1,3 +1,5 @@
+"""Configuration loader."""
+
 import yaml
 
 import logging
@@ -8,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 class AppConfig:
+    """Singleton class to load and store the configuration."""
+
     _instance = None
 
     def __new__(cls, *args: Any, **kwargs: Any) -> "AppConfig":
@@ -28,10 +32,12 @@ class AppConfig:
             self.init_from_dict(config_dict)
 
     def init_from_dict(self, config_dict: dict[Any, Any]) -> None:
+        """Initialize configuration from a dictionary."""
         self._configuration = Configuration(**config_dict)
 
     @property
     def configuration(self) -> Configuration:
+        """Return the whole configuration."""
         assert (
             self._configuration is not None
         ), "logic error: configuration is not loaded"
@@ -39,6 +45,7 @@ class AppConfig:
 
     @property
     def llama_stack_configuration(self) -> LLamaStackConfiguration:
+        """Return Llama stack configuration."""
         assert (
             self._configuration is not None
         ), "logic error: configuration is not loaded"

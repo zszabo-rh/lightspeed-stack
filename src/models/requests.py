@@ -1,3 +1,5 @@
+"""Model for service requests."""
+
 from pydantic import BaseModel, model_validator
 from llama_stack_client.types.agents.turn_create_params import Document
 from typing import Optional, Self
@@ -110,7 +112,7 @@ class QueryRequest(BaseModel):
     }
 
     def get_documents(self) -> list[Document]:
-        """Returns the list of documents from the attachments."""
+        """Return the list of documents from the attachments."""
         if not self.attachments:
             return []
         return [

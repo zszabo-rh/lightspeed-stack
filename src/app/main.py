@@ -1,3 +1,5 @@
+"""Definition of FastAPI based web service."""
+
 from fastapi import FastAPI
 from app import routers
 import version
@@ -25,4 +27,5 @@ routers.include_routers(app)
 
 @app.on_event("startup")
 async def startup_event() -> None:
+    """Perform logger setup on service startup."""
     get_logger("app.endpoints.handlers")
