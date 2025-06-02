@@ -32,6 +32,7 @@ query_response: dict[int | str, dict[str, Any]] = {
 def query_endpoint_handler(
     request: Request, query_request: QueryRequest
 ) -> QueryResponse:
+    """Handle request to the /query endpoint."""
     llama_stack_config = configuration.llama_stack_configuration
     logger.info("LLama stack config: %s", llama_stack_config)
     client = get_llama_stack_client(llama_stack_config)
@@ -84,7 +85,7 @@ def select_model_id(client: LlamaStackClient, query_request: QueryRequest) -> st
 def retrieve_response(
     client: LlamaStackClient, model_id: str, query_request: QueryRequest
 ) -> str:
-
+    """Retrieve response from LLMs and agents."""
     available_shields = [shield.identifier for shield in client.shields.list()]
     if not available_shields:
         logger.info("No available shields. Disabling safety")
@@ -124,6 +125,7 @@ def retrieve_response(
 
 def validate_attachments_metadata(attachments: list[Attachment]) -> None:
     """Validate the attachments metadata provided in the request.
+
     Raises HTTPException if any attachment has an improper type or content type.
     """
     for attachment in attachments:

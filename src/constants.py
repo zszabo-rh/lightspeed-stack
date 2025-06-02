@@ -1,3 +1,5 @@
+"""Constants used in business logic."""
+
 UNABLE_TO_PROCESS_RESPONSE = "Unable to process this request"
 
 # Supported attachment types

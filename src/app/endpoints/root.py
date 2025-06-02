@@ -27,5 +27,6 @@ index_page = """
 
 @router.get("/", response_class=HTMLResponse)
 def root_endpoint_handler(request: Request) -> HTMLResponse:
+    """Handle request to the / endpoint."""
     logger.info("Serving index page")
     return HTMLResponse(index_page)

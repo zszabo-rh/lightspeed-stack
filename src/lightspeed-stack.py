@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 def create_argument_parser() -> ArgumentParser:
+    """Create and configure argument parser object."""
     parser = ArgumentParser()
     parser.add_argument(
         "-v",
@@ -45,6 +46,7 @@ def dump_configuration(configuration: Configuration) -> None:
 
 
 def main() -> None:
+    """Entry point to the web service."""
     logger.info("Lightspeed stack startup")
     parser = create_argument_parser()
     args = parser.parse_args()

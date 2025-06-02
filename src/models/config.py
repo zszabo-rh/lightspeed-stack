@@ -1,3 +1,5 @@
+"""Model with service configuration."""
+
 from pydantic import BaseModel, model_validator
 
 from typing import Optional
@@ -16,6 +18,7 @@ class ServiceConfiguration(BaseModel):
 
     @model_validator(mode="after")
     def check_service_configuration(self) -> Self:
+        """Check service configuration."""
         if self.port <= 0:
             raise ValueError("Port value should not be negative")
         if self.port > 65535:
@@ -35,6 +38,7 @@ class LLamaStackConfiguration(BaseModel):
 
     @model_validator(mode="after")
     def check_llama_stack_model(self) -> Self:
+        """Check Llama stack configuration."""
         if self.url is None:
             if self.use_as_library_client is None:
                 raise ValueError(

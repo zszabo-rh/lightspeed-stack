@@ -22,4 +22,5 @@ get_config_responses: dict[int | str, dict[str, Any]] = {
 
 @router.get("/config", responses=get_config_responses)
 def config_endpoint_handler(request: Request) -> Configuration:
+    """Handle requests to the /config endpoint."""
     return configuration.configuration
