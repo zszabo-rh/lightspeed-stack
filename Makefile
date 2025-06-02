@@ -38,3 +38,8 @@ docs/config.png:	docs/config.puml ## Generate an image with configuration graph
 	mv classes.png config.png && \
 	popd
 
+shellcheck: ## Run shellcheck
+	wget -qO- "https://github.com/koalaman/shellcheck/releases/download/stable/shellcheck-stable.linux.x86_64.tar.xz" | tar -xJv \
+	shellcheck --version
+	shellcheck -- */*.sh
+
