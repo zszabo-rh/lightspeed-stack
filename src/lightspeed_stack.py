@@ -3,11 +3,12 @@
 from argparse import ArgumentParser
 import logging
 
+from rich.logging import RichHandler
+
 from runners.uvicorn import start_uvicorn
 from models.config import Configuration
 from configuration import configuration
 
-from rich.logging import RichHandler
 
 FORMAT = "%(message)s"
 logging.basicConfig(
@@ -39,10 +40,10 @@ def create_argument_parser() -> ArgumentParser:
     return parser
 
 
-def dump_configuration(configuration: Configuration) -> None:
+def dump_configuration(service_configuration: Configuration) -> None:
     """Dump actual configuration into JSON file."""
     with open("configuration.json", "w", encoding="utf-8") as fout:
-        fout.write(configuration.model_dump_json(indent=4))
+        fout.write(service_configuration.model_dump_json(indent=4))
 
 
 def main() -> None:
