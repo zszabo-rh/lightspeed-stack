@@ -1,5 +1,13 @@
 # lightspeed-stack
-LLM tooling stack
+
+## About The Project
+
+[![GitHub Pages](https://img.shields.io/badge/%20-GitHub%20Pages-informational)](https://lightspeed-core.github.io/lightspeed-stack/)
+[![License](https://img.shields.io/badge/license-Apache-blue)](https://github.com/lightspeed-core/lightspeed-stack/blob/main/LICENSE)
+[![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
+
+Lightspeed Core Stack (LCS) is an AI powered assistant that provides answers to product questions using backend LLM services.
+
 
 <!-- vim-markdown-toc GFM -->
 
