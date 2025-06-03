@@ -2,18 +2,21 @@
 
 from fastapi import FastAPI
 from app import routers
+
 import version
 from log import get_logger
+from configuration import configuration
 
 
 logger = get_logger(__name__)
 
-
 logger.info("Initializing app")
 
+service_name = configuration.configuration.name
+
 app = FastAPI(
-    title="Lightspeed-core service - OpenAPI",
-    description="Lightspeed-core service API specification.",
+    title=f"{service_name} service - OpenAPI",
+    description=f"{service_name} service API specification.",
     version=version.__version__,
     license_info={
         "name": "Apache 2.0",
