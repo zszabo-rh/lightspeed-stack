@@ -53,7 +53,13 @@ def select_model_id(client: LlamaStackClient, query_request: QueryRequest) -> st
     if not model_id:
         logger.info("No model specified in request, using the first available LLM")
         try:
-            return next(m for m in models if m.model_type == "llm").identifier
+            model = next(
+                m
+                for m in models
+                if m.model_type == "llm"  # pyright: ignore[reportAttributeAccessIssue]
+            ).identifier
+            logger.info(f"Selected model: {model}")
+            return model
         except (StopIteration, AttributeError):
             message = "No LLM model found in available models"
             logger.error(message)
@@ -113,6 +119,7 @@ def retrieve_response(
         tools=[],
     )
     session_id = agent.create_session("chat_session")
+    logger.debug(f"Session ID: {session_id}")
     response = agent.create_turn(
         messages=[UserMessage(role="user", content=query_request.query)],
         session_id=session_id,
@@ -120,7 +127,9 @@ def retrieve_response(
         stream=False,
     )
 
-    return str(response.output_message.content)
+    return str(
+        response.output_message.content  # pyright: ignore[reportAttributeAccessIssue]
+    )
 
 
 def validate_attachments_metadata(attachments: list[Attachment]) -> None:
