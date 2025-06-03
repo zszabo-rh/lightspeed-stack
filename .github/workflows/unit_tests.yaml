@@ -28,4 +28,4 @@ jobs:
       - name: Install devel dependencies
         run: pdm install --dev
       - name: Run unit tests
-        run: pdm run python -m pytest tests/unit --cov=ols --cov=runner --cov-report term-missing
+        run: pdm run python -m pytest tests/unit --cov=src --cov=runner --cov-report term-missing
