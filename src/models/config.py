@@ -53,6 +53,7 @@ class LLamaStackConfiguration(BaseModel):
             self.use_as_library_client = False
         if self.use_as_library_client:
             if self.library_client_config_path is None:
+                # pylint: disable=line-too-long
                 raise ValueError(
                     "LLama stack library client mode is enabled but a configuration file path is not specified"  # noqa: C0301
                 )

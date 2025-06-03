@@ -1,8 +1,10 @@
 """Model for service requests."""
 
-from pydantic import BaseModel, model_validator
-from llama_stack_client.types.agents.turn_create_params import Document
 from typing import Optional, Self
+
+from pydantic import BaseModel, model_validator
+
+from llama_stack_client.types.agents.turn_create_params import Document
 
 
 class Attachment(BaseModel):
@@ -117,7 +119,7 @@ class QueryRequest(BaseModel):
             return []
         return [
             Document(content=att.content, mime_type=att.content_type)
-            for att in self.attachments
+            for att in self.attachments  # pylint: disable=not-an-iterable
         ]
 
     @model_validator(mode="after")
