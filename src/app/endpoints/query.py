@@ -30,7 +30,7 @@ query_response: dict[int | str, dict[str, Any]] = {
 
 @router.post("/query", responses=query_response)
 def query_endpoint_handler(
-    request: Request, query_request: QueryRequest
+    _request: Request, query_request: QueryRequest
 ) -> QueryResponse:
     """Handle request to the /query endpoint."""
     llama_stack_config = configuration.llama_stack_configuration
@@ -58,9 +58,9 @@ def select_model_id(client: LlamaStackClient, query_request: QueryRequest) -> st
                 for m in models
                 if m.model_type == "llm"  # pyright: ignore[reportAttributeAccessIssue]
             ).identifier
-            logger.info(f"Selected model: {model}")
+            logger.info("Selected model: %s", model)
             return model
-        except (StopIteration, AttributeError):
+        except (StopIteration, AttributeError) as e:
             message = "No LLM model found in available models"
             logger.error(message)
             raise HTTPException(
@@ -69,9 +69,9 @@ def select_model_id(client: LlamaStackClient, query_request: QueryRequest) -> st
                     "response": constants.UNABLE_TO_PROCESS_RESPONSE,
                     "cause": message,
                 },
-            )
+            ) from e
 
-    logger.info(f"Searching for model: {model_id}, provider: {provider_id}")
+    logger.info("Searching for model: %s, provider: %s", model_id, provider_id)
     if not any(
         m.identifier == model_id and m.provider_id == provider_id for m in models
     ):
@@ -96,7 +96,7 @@ def retrieve_response(
     if not available_shields:
         logger.info("No available shields. Disabling safety")
     else:
-        logger.info(f"Available shields found: {available_shields}")
+        logger.info("Available shields found: %s", available_shields)
 
     # use system prompt from request or default one
     system_prompt = (
@@ -104,7 +104,7 @@ def retrieve_response(
         if query_request.system_prompt
         else constants.DEFAULT_SYSTEM_PROMPT
     )
-    logger.debug(f"Using system prompt: {system_prompt}")
+    logger.debug("Using system prompt: %s", system_prompt)
 
     # TODO(lucasagomes): redact attachments content before sending to LLM
     # if attachments are provided, validate them
@@ -119,7 +119,7 @@ def retrieve_response(
         tools=[],
     )
     session_id = agent.create_session("chat_session")
-    logger.debug(f"Session ID: {session_id}")
+    logger.debug("Session ID: %s", session_id)
     response = agent.create_turn(
         messages=[UserMessage(role="user", content=query_request.query)],
         session_id=session_id,

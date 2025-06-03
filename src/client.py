@@ -23,9 +23,9 @@ def get_llama_stack_client(
             return client
         msg = "Configuration problem: library_client_config_path option is not set"
         logger.error(msg)
-        raise Exception(msg)
-    else:
-        logger.info("Using Llama stack running as a service")
-        return LlamaStackClient(
-            base_url=llama_stack_config.url, api_key=llama_stack_config.api_key
-        )
+        # tisnik: use custom exception there - with cause etc.
+        raise Exception(msg)  # pylint: disable=broad-exception-raised
+    logger.info("Using Llama stack running as a service")
+    return LlamaStackClient(
+        base_url=llama_stack_config.url, api_key=llama_stack_config.api_key
+    )
