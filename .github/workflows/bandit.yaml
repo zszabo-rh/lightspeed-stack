@@ -13,5 +13,5 @@ jobs:
     steps:
       - uses: mdegis/bandit-action@v1.0
         with:
-          path: "ols"
+          path: "src"
           exit_zero: true
