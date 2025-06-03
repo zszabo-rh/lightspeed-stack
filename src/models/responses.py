@@ -1,7 +1,8 @@
 """Models for service responses."""
 
-from pydantic import BaseModel
 from typing import Any, Optional
+
+from pydantic import BaseModel
 
 
 class ModelsResponse(BaseModel):

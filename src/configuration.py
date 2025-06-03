@@ -1,9 +1,9 @@
 """Configuration loader."""
 
-import yaml
-
 import logging
 from typing import Any, Optional
+
+import yaml
 from models.config import Configuration, LLamaStackConfiguration
 
 logger = logging.getLogger(__name__)
