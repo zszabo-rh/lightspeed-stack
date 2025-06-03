@@ -10,7 +10,7 @@ logger = logging.getLogger("app.endpoints.handlers")
 router = APIRouter(tags=["root"])
 
 
-index_page = """
+INDEX_PAGE = """
 <html>
     <head>
         <title>Lightspeed core service</title>
@@ -26,7 +26,7 @@ index_page = """
 
 
 @router.get("/", response_class=HTMLResponse)
-def root_endpoint_handler(request: Request) -> HTMLResponse:
+def root_endpoint_handler(_request: Request) -> HTMLResponse:
     """Handle request to the / endpoint."""
     logger.info("Serving index page")
-    return HTMLResponse(index_page)
+    return HTMLResponse(INDEX_PAGE)
