@@ -9,7 +9,7 @@ license = {file = "LICENSE"}
 dependencies = [
     "fastapi>=0.115.6",
     "uvicorn>=0.32.1",
-    "llama-stack>=0.2.7",
+    "llama-stack>=0.2.9",
     "rich>=14.0.0",
 ]
 

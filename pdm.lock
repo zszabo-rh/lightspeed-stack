@@ -530,7 +530,7 @@ files = [
 
 [[package]]
 name = "llama-stack"
-version = "0.2.7"
+version = "0.2.9"
 requires_python = ">=3.10"
 summary = "Llama Stack"
 groups = ["default"]
@@ -543,7 +543,7 @@ dependencies = [
     "jinja2>=3.1.6",
     "jsonschema",
     "kubernetes",
-    "llama-stack-client>=0.2.7",
+    "llama-stack-client>=0.2.9",
     "openai>=1.66",
     "pillow",
     "prompt-toolkit",
@@ -556,13 +556,13 @@ dependencies = [
     "tiktoken",
 ]
 files = [
-    {file = "llama_stack-0.2.7-py3-none-any.whl", hash = "sha256:420d23ca911cfd0b23b83efc9abc0a59378001a4a4b3286140b0631f7f321657"},
-    {file = "llama_stack-0.2.7.tar.gz", hash = "sha256:67e007a4c23e341012ec21699d9f1e1462c9e33744464963a19432823a5e281b"},
+    {file = "llama_stack-0.2.9-py3-none-any.whl", hash = "sha256:ef23be87393353839b5c10e4b883a00a262f6575c6579bf80e99db98aa4f4ae1"},
+    {file = "llama_stack-0.2.9.tar.gz", hash = "sha256:03d06423e37507b811029a8a002265f8e861af6ff30e4bb99325e312bf23b0a8"},
 ]
 
 [[package]]
 name = "llama-stack-client"
-version = "0.2.7"
+version = "0.2.9"
 requires_python = ">=3.7"
 summary = "The official Python library for the llama-stack-client API"
 groups = ["default"]
@@ -583,8 +583,8 @@ dependencies = [
     "typing-extensions<5,>=4.7",
 ]
 files = [
-    {file = "llama_stack_client-0.2.7-py3-none-any.whl", hash = "sha256:78b3f2abdb1770c7b1270a9c0ef58402a988401c564d2e6c83588779ac6fc38d"},
-    {file = "llama_stack_client-0.2.7.tar.gz", hash = "sha256:11aee11fdd5e0e8caad07c0cce9c4d88640938844372e7e3453a91ea0757fcb3"},
+    {file = "llama_stack_client-0.2.9-py3-none-any.whl", hash = "sha256:20eca8fc6f6c2e3f7a20fa2cf45782a3c5dc20d430746d563de4966af6cd42e9"},
+    {file = "llama_stack_client-0.2.9.tar.gz", hash = "sha256:529c24e17d3f2d57abc619c88b9989bf2a96dc1c90c3a80c5361e25a798e7729"},
 ]
 
 [[package]]
