@@ -17,21 +17,14 @@ dependencies = [
 Homepage = "https://github.com/lightspeed-core/lightspeed-stack"
 Issues = "https://github.com/lightspeed-core/lightspeed-stack/issues"
 
-[tool.pdm]
-distribution = true
-
 [dependency-groups]
 dev = [
     "black>=25.1.0",
     "pytest>=8.3.2",
     "pytest-cov>=5.0.0",
     "pytest-mock>=3.14.0",
+    "pyright>=1.1.401",
 ]
-
-[tool.pdm.scripts]
-start = "pdm run make run"
-test-unit = "pdm run make test-unit"
-test-integration = "pdm run make test-integration"
 
 [tool.pytest.ini_options]
 pythonpath = [
@@ -40,3 +33,15 @@ pythonpath = [
 addopts = [
     "--import-mode=importlib",
 ]
+
+[tool.pylint.main]
+source-roots = "src"
+
+[tool.pdm]
+distribution = true
+
+[tool.pdm.scripts]
+start = "pdm run make run"
+test-unit = "pdm run make test-unit"
+test-integration = "pdm run make test-integration"
+
