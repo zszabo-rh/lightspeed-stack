@@ -1,6 +1,6 @@
 import pytest
 
-from models.requests import QueryRequest, Attachment
+from models.requests import QueryRequest, Attachment, FeedbackRequest
 
 
 class TestAttachment:
@@ -123,3 +123,56 @@ class TestQueryRequest:
             ValueError, match="Model must be specified if provider is specified"
         ):
             QueryRequest(query="Tell me about Kubernetes", provider="OpenAI")
+
+
+class TestFeedbackRequest:
+    """Test cases for the FeedbackRequest model."""
+
+    def test_constructor(self) -> None:
+        """Test the FeedbackRequest constructor."""
+        fr = FeedbackRequest(
+            conversation_id="123e4567-e89b-12d3-a456-426614174000",
+            user_question="What is OpenStack?",
+            llm_response="OpenStack is a cloud computing platform.",
+            sentiment=1,
+            user_feedback="This is a great response!",
+        )
+        assert fr.conversation_id == "123e4567-e89b-12d3-a456-426614174000"
+        assert fr.user_question == "What is OpenStack?"
+        assert fr.llm_response == "OpenStack is a cloud computing platform."
+        assert fr.sentiment == 1
+        assert fr.user_feedback == "This is a great response!"
+
+    def test_check_invalid_uuid_format(self) -> None:
+        """Test the UUID format check."""
+        with pytest.raises(ValueError, match="Improper conversation ID invalid-uuid"):
+            FeedbackRequest(
+                conversation_id="invalid-uuid",
+                user_question="What is OpenStack?",
+                llm_response="OpenStack is a cloud computing platform.",
+            )
+
+    def test_check_sentiment(self) -> None:
+        """Test the sentiment value check."""
+        with pytest.raises(
+            ValueError, match="Improper sentiment value of 99, needs to be -1 or 1"
+        ):
+            FeedbackRequest(
+                conversation_id="123e4567-e89b-12d3-a456-426614174000",
+                user_question="What is OpenStack?",
+                llm_response="OpenStack is a cloud computing platform.",
+                sentiment=99,  # Invalid sentiment
+            )
+
+    def test_check_sentiment_or_user_feedback(self) -> None:
+        """Test that at least one of sentiment or user_feedback is provided."""
+        with pytest.raises(
+            ValueError, match="Either 'sentiment' or 'user_feedback' must be set"
+        ):
+            FeedbackRequest(
+                conversation_id="123e4567-e89b-12d3-a456-426614174000",
+                user_question="What is OpenStack?",
+                llm_response="OpenStack is a cloud computing platform.",
+                sentiment=None,
+                user_feedback=None,
+            )

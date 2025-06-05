@@ -40,6 +40,9 @@ def test_init_from_dict() -> None:
             "url": "http://x.y.com:1234",
             "use_as_library_client": False,
         },
+        "user_data_collection": {
+            "feedback_disabled": True,
+        },
     }
     cfg = AppConfig()
     cfg.init_from_dict(config_dict)
@@ -64,6 +67,8 @@ llama_stack:
   use_as_library_client: false
   url: http://localhost:8321
   api_key: xyzzy
+user_data_collection:
+  feedback_disabled: true
         """
         )
 

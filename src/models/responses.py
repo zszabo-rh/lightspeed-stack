@@ -157,3 +157,61 @@ class NotAvailableResponse(BaseModel):
             ]
         }
     }
+
+
+class FeedbackResponse(BaseModel):
+    """Model representing a response to a feedback request.
+
+    Attributes:
+        response: The response of the feedback request.
+
+    Example:
+        ```python
+        feedback_response = FeedbackResponse(response="feedback received")
+        ```
+    """
+
+    response: str
+
+    # provides examples for /docs endpoint
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "response": "feedback received",
+                }
+            ]
+        }
+    }
+
+
+class StatusResponse(BaseModel):
+    """Model representing a response to a status request.
+
+    Attributes:
+        functionality: The functionality of the service.
+        status: The status of the service.
+
+    Example:
+        ```python
+        status_response = StatusResponse(
+            functionality="feedback",
+            status={"enabled": True},
+        )
+        ```
+    """
+
+    functionality: str
+    status: dict
+
+    # provides examples for /docs endpoint
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "functionality": "feedback",
+                    "status": {"enabled": True},
+                }
+            ]
+        }
+    }

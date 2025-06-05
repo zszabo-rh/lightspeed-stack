@@ -4,7 +4,15 @@ from typing import Any, Optional
 
 from app.routers import include_routers  # noqa:E402
 
-from app.endpoints import root, info, models, query, health, config  # noqa:E402
+from app.endpoints import (
+    root,
+    info,
+    models,
+    query,
+    health,
+    config,
+    feedback,
+)  # noqa:E402
 
 
 class MockFastAPI:
@@ -25,10 +33,11 @@ def test_include_routers() -> None:
     include_routers(app)
 
     # are all routers added?
-    assert len(app.routers) == 6
+    assert len(app.routers) == 7
     assert root.router in app.routers
     assert info.router in app.routers
     assert models.router in app.routers
     assert query.router in app.routers
     assert health.router in app.routers
     assert config.router in app.routers
+    assert feedback.router in app.routers

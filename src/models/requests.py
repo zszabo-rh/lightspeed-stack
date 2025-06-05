@@ -2,9 +2,10 @@
 
 from typing import Optional, Self
 
-from pydantic import BaseModel, model_validator
-
+from pydantic import BaseModel, model_validator, field_validator
 from llama_stack_client.types.agents.turn_create_params import Document
+
+from utils import suid
 
 
 class Attachment(BaseModel):
@@ -129,4 +130,73 @@ class QueryRequest(BaseModel):
             raise ValueError("Provider must be specified if model is specified")
         if self.provider and not self.model:
             raise ValueError("Model must be specified if provider is specified")
+        return self
+
+
+class FeedbackRequest(BaseModel):
+    """Model representing a feedback request.
+
+    Attributes:
+        conversation_id: The required conversation ID (UUID).
+        user_question: The required user question.
+        llm_response: The required LLM response.
+        sentiment: The optional sentiment.
+        user_feedback: The optional user feedback.
+
+    Example:
+        ```python
+        feedback_request = FeedbackRequest(
+            conversation_id="12345678-abcd-0000-0123-456789abcdef",
+            user_question="what are you doing?",
+            user_feedback="Great service!",
+            llm_response="I don't know",
+            sentiment=-1,
+        )
+        ```
+    """
+
+    conversation_id: str
+    user_question: str
+    llm_response: str
+    sentiment: Optional[int] = None
+    user_feedback: Optional[str] = None
+
+    # provides examples for /docs endpoint
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "conversation_id": "12345678-abcd-0000-0123-456789abcdef",
+                    "user_question": "foo",
+                    "llm_response": "bar",
+                    "user_feedback": "Great service!",
+                    "sentiment": 1,
+                }
+            ]
+        }
+    }
+
+    @field_validator("conversation_id")
+    @classmethod
+    def check_uuid(cls, value: str) -> str:
+        """Check if conversation ID has the proper format."""
+        if not suid.check_suid(value):
+            raise ValueError(f"Improper conversation ID {value}")
+        return value
+
+    @field_validator("sentiment")
+    @classmethod
+    def check_sentiment(cls, value: Optional[int]) -> Optional[int]:
+        """Check if sentiment value is as expected."""
+        if value not in {-1, 1, None}:
+            raise ValueError(
+                f"Improper sentiment value of {value}, needs to be -1 or 1"
+            )
+        return value
+
+    @model_validator(mode="after")
+    def check_sentiment_or_user_feedback_set(self) -> Self:
+        """Ensure that either 'sentiment' or 'user_feedback' is set."""
+        if self.sentiment is None and self.user_feedback is None:
+            raise ValueError("Either 'sentiment' or 'user_feedback' must be set")
         return self
