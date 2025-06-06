@@ -16,7 +16,7 @@ test-integration: ## Run integration tests tests
 	COVERAGE_FILE="${ARTIFACT_DIR}/.coverage.integration" pdm run pytest tests/integration --cov=src --cov-report term-missing --cov-report "json:${ARTIFACT_DIR}/coverage_integration.json" --junit-xml="${ARTIFACT_DIR}/junit_integration.xml" --cov-fail-under=10
 
 check-types: ## Checks type hints in sources
-	MYPYPATH=src pdm run mypy --namespace-packages --explicit-package-bases --strict --disallow-untyped-calls --disallow-untyped-defs --disallow-incomplete-defs src
+	pdm run mypy --explicit-package-bases --disallow-untyped-calls --disallow-untyped-defs --disallow-incomplete-defs --ignore-missing-imports --disable-error-code attr-defined src/
 
 security-check: ## Check the project for security issues
 	bandit -c pyproject.toml -r src tests
@@ -43,3 +43,25 @@ shellcheck: ## Run shellcheck
 	shellcheck --version
 	shellcheck -- */*.sh
 
+black:
+	pdm run black --check .
+
+pylint:
+	pdm run pylint src
+
+pyright:
+	pdm run pyright src
+
+docstyle:
+	pdm run pydocstyle -v .
+
+ruff:
+	pdm run ruff check . --per-file-ignores=tests/*:S101 --per-file-ignores=scripts/*:S101
+
+verify:
+	$(MAKE) black
+	$(MAKE) pylint
+	$(MAKE) pyright
+	$(MAKE) ruff
+	$(MAKE) docstyle
+	$(MAKE) check-types

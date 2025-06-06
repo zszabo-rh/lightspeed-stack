@@ -17,7 +17,11 @@ jobs:
           python-version: '3.11'
       - name: Python version
         run: python --version
-      - name: Pydocstyle install
-        run: pip install --user pydocstyle
-      - name: Python docstring checks
-        run: pydocstyle -v .
+      - name: PDM installation
+        run: pip install --user pdm
+      - name: Install dependencies
+        run: pdm install
+      - name: Install devel dependencies
+        run: pdm install --group default,dev
+      - name: Python linter
+        run: make docstyle

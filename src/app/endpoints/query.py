@@ -127,9 +127,7 @@ def retrieve_response(
         stream=False,
     )
 
-    return str(
-        response.output_message.content  # pyright: ignore[reportAttributeAccessIssue]
-    )
+    return str(response.output_message.content)  # type: ignore[union-attr]
 
 
 def validate_attachments_metadata(attachments: list[Attachment]) -> None:
