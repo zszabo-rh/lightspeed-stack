@@ -4,7 +4,7 @@ import logging
 from typing import Any, Optional
 
 import yaml
-from models.config import Configuration, LLamaStackConfiguration
+from models.config import Configuration, LLamaStackConfiguration, UserDataCollection
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +50,14 @@ class AppConfig:
             self._configuration is not None
         ), "logic error: configuration is not loaded"
         return self._configuration.llama_stack
+
+    @property
+    def user_data_collection_configuration(self) -> UserDataCollection:
+        """Return user data collection configuration."""
+        assert (
+            self._configuration is not None
+        ), "logic error: configuration is not loaded"
+        return self._configuration.user_data_collection
 
 
 configuration: AppConfig = AppConfig()

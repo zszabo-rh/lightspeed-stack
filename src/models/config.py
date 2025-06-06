@@ -60,9 +60,24 @@ class LLamaStackConfiguration(BaseModel):
         return self
 
 
+class UserDataCollection(BaseModel):
+    """User data collection configuration."""
+
+    feedback_disabled: bool = True
+    feedback_storage: Optional[str] = None
+
+    @model_validator(mode="after")
+    def check_storage_location_is_set_when_needed(self) -> Self:
+        """Check that storage_location is set when enabled."""
+        if not self.feedback_disabled and self.feedback_storage is None:
+            raise ValueError("feedback_storage is required when feedback is enabled")
+        return self
+
+
 class Configuration(BaseModel):
     """Global service configuration."""
 
     name: str
     service: ServiceConfiguration
     llama_stack: LLamaStackConfiguration
+    user_data_collection: UserDataCollection

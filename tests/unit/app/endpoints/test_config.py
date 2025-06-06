@@ -33,6 +33,9 @@ def test_config_endpoint_handler_configuration_loaded(mocker):
             "url": "http://x.y.com:1234",
             "use_as_library_client": False,
         },
+        "user_data_collection": {
+            "feedback_disabled": True,
+        },
     }
     cfg = AppConfig()
     cfg.init_from_dict(config_dict)

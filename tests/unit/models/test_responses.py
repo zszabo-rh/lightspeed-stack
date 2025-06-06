@@ -1,4 +1,4 @@
-from models.responses import QueryResponse
+from models.responses import QueryResponse, StatusResponse
 
 
 class TestQueryResponse:
@@ -18,3 +18,13 @@ class TestQueryResponse:
         qr = QueryResponse(response="LLM answer")
         assert qr.conversation_id is None
         assert qr.response == "LLM answer"
+
+
+class TestStatusResponse:
+    """Test cases for the StatusResponse model."""
+
+    def test_constructor(self) -> None:
+        """Test the StatusResponse constructor."""
+        sr = StatusResponse(functionality="feedback", status={"enabled": True})
+        assert sr.functionality == "feedback"
+        assert sr.status == {"enabled": True}
