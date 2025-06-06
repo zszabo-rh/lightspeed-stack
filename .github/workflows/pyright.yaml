@@ -25,4 +25,4 @@ jobs:
       - name: Install devel dependencies
         run: pdm install --group default,dev
       - name: Run Pyright tests
-        run: pdm run pyright src
+        run: make pyright

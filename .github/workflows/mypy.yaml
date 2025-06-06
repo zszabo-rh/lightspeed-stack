@@ -17,7 +17,11 @@ jobs:
           python-version: '3.11'
       - name: Python version
         run: python --version
-      - name: Mypy installation
-        run: pip install --user mypy pydantic types-PyYAML
-      - name: Type checks
-        run: mypy --explicit-package-bases --disallow-untyped-calls --disallow-untyped-defs --disallow-incomplete-defs --ignore-missing-imports --disable-error-code attr-defined src/
+      - name: PDM installation
+        run: pip install --user pdm
+      - name: Install dependencies
+        run: pdm install
+      - name: Install devel dependencies
+        run: pdm install --group default,dev
+      - name: Python linter
+        run: make check-types
