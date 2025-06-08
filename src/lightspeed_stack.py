@@ -61,7 +61,7 @@ def main() -> None:
     if args.dump_configuration:
         dump_configuration(configuration.configuration)
     else:
-        start_uvicorn()
+        start_uvicorn(configuration.service_configuration)
     logger.info("Lightspeed stack finished")
 
 
