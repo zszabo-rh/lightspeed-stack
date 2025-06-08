@@ -4,7 +4,12 @@ import logging
 from typing import Any, Optional
 
 import yaml
-from models.config import Configuration, LLamaStackConfiguration, UserDataCollection
+from models.config import (
+    Configuration,
+    LLamaStackConfiguration,
+    UserDataCollection,
+    ServiceConfiguration,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +47,14 @@ class AppConfig:
             self._configuration is not None
         ), "logic error: configuration is not loaded"
         return self._configuration
+
+    @property
+    def service_configuration(self) -> ServiceConfiguration:
+        """Return service configuration."""
+        assert (
+            self._configuration is not None
+        ), "logic error: configuration is not loaded"
+        return self._configuration.service
 
     @property
     def llama_stack_configuration(self) -> LLamaStackConfiguration:
