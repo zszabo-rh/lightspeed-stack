@@ -2,7 +2,11 @@
 
 import pytest
 
-from models.config import LLamaStackConfiguration, ServiceConfiguration
+from models.config import (
+    LLamaStackConfiguration,
+    ServiceConfiguration,
+    UserDataCollection,
+)
 
 
 def test_service_configuration_constructor() -> None:
@@ -79,3 +83,24 @@ def test_llama_stack_wrong_configuration_no_config_file() -> None:
         match="LLama stack library client mode is enabled but a configuration file path is not specified",
     ):
         LLamaStackConfiguration(use_as_library_client=True)
+
+
+def test_user_data_collection_collection_enabled() -> None:
+    """Test the UserDataCollection constructor."""
+    # correct configuration
+    cfg = UserDataCollection(feedback_disabled=True, feedback_storage=None)
+    assert cfg is not None
+
+
+def test_user_data_collection_colection_disabled() -> None:
+    """Test the UserDataCollection constructor."""
+    # correct configuration
+    cfg = UserDataCollection(feedback_disabled=False, feedback_storage="")
+    assert cfg is not None
+
+    # incorrect configuration
+    with pytest.raises(
+        ValueError,
+        match="feedback_storage is required when feedback is enabled",
+    ):
+        UserDataCollection(feedback_disabled=False, feedback_storage=None)
