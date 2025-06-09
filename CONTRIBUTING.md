@@ -42,3 +42,41 @@
 5. Submit PR from your fork to main branch of the project repo
 
 
+## Setting up your development environment
+
+The development requires at least [Python 3.11](https://docs.python.org/3/whatsnew/3.11.html) due to significant improvement on performance, optimizations which benefit modern ML, AI, LLM, NL stacks, and improved asynchronous processing capabilities. It is also possible to use Python 3.12 or Python 3.13.
+
+```bash
+# clone your fork
+git clone https://github.com/YOUR-GIT-PROFILE/lightspeed-stack.git
+
+# move into the directory
+cd lightspeed-stack
+
+# setup your environment with pdm
+pdm install
+
+# Now you can run test commands trough make targets, or prefix the rest of commands with `pdm run`, eg. `pdm run make test`
+
+# run unit tests
+make unit-tests
+
+# run integration tests
+make integration-tests
+
+# code formatting
+# (this is also run automatically as part of pre-commit hook if configured)
+make format
+
+# code style and docstring style
+# (this is also run automatically as part of pre-commit hook if configured)
+make verify
+
+# check type hints
+# (this is also run automatically as part of pre-commit hook)
+make check-types
+```
+
+Happy hacking!
+
+
