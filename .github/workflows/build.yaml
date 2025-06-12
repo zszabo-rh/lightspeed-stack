@@ -20,3 +20,4 @@ jobs:
         run: podman --version
       - name: Build image
         run: podman build -t lightspeed-stack:latest .
+
