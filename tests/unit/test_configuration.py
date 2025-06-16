@@ -49,6 +49,7 @@ def test_init_from_dict() -> None:
     assert cfg.configuration is not None
     assert cfg.llama_stack_configuration is not None
     assert cfg.service_configuration is not None
+    assert cfg.user_data_collection_configuration is not None
 
 
 def test_load_proper_configuration(tmpdir) -> None:
@@ -78,3 +79,4 @@ user_data_collection:
     assert cfg.configuration is not None
     assert cfg.llama_stack_configuration is not None
     assert cfg.service_configuration is not None
+    assert cfg.user_data_collection_configuration is not None
