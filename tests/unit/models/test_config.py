@@ -92,6 +92,8 @@ def test_user_data_collection_collection_enabled() -> None:
     # correct configuration
     cfg = UserDataCollection(feedback_disabled=True, feedback_storage=None)
     assert cfg is not None
+    assert cfg.feedback_disabled is True
+    assert cfg.feedback_storage is None
 
 
 def test_user_data_collection_colection_disabled() -> None:
