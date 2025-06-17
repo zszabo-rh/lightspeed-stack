@@ -4,6 +4,8 @@
 <!-- vim-markdown-toc GFM -->
 
 * [TLDR;](#tldr)
+* [Prerequisities](#prerequisities)
+    * [Tooling installation](#tooling-installation)
 * [Setting up your development environment](#setting-up-your-development-environment)
 * [Definition of Done](#definition-of-done)
     * [A deliverable is to be considered “done” when](#a-deliverable-is-to-be-considered-done-when)
@@ -18,18 +20,8 @@
         * [Patching](#patching)
         * [Verifying that some exception is thrown](#verifying-that-some-exception-is-thrown)
         * [Checking what was printed and logged to stdout or stderr by the tested code](#checking-what-was-printed-and-logged-to-stdout-or-stderr-by-the-tested-code)
-    * [Tips and hints for developing e2e tests](#tips-and-hints-for-developing-e2e-tests)
-        * [Detecting which statements are called in real service](#detecting-which-statements-are-called-in-real-service)
-* [Benchmarks](#benchmarks)
-    * [Running benchmarks](#running-benchmarks)
-    * [`pytest-benchmark` package](#pytest-benchmark-package)
-    * [Basic usage of `benchmark` fixture](#basic-usage-of-benchmark-fixture)
-    * [Combination of `benchmark` fixture with other fixtures](#combination-of-benchmark-fixture-with-other-fixtures)
-    * [Example output from benchmarks](#example-output-from-benchmarks)
-* [Updating Dependencies](#updating-dependencies)
 * [Code style](#code-style)
     * [Docstrings style](#docstrings-style)
-* [Adding a new provider/model](#adding-a-new-providermodel)
 
 <!-- vim-markdown-toc -->
 
@@ -95,6 +87,21 @@ make check-types
 Happy hacking!
 
 
+## Definition of Done
+
+### A deliverable is to be considered “done” when
+
+* Code is complete, commented, and merged to the relevant release branch
+* User facing documentation written (where relevant)
+* Acceptance criteria in the related Jira ticket (where applicable) are verified and fulfilled
+* Pull request title+commit includes Jira number
+* Changes are covered by unit tests that run cleanly in the CI environment (where relevant)
+* Changes are covered by integration tests that run cleanly in the CI environment (where relevant)
+* Changes are covered by E2E tests that run cleanly in the CI environment (where relevant)
+* All linters are running cleanly in the CI environment
+* Code changes reviewed by at least one peer
+* Code changes acked by at least one project owner
+
 ## Automation
 
 ### Pre-commit hook settings
@@ -104,6 +111,12 @@ to copy file `hooks/pre-commit` into subdirectory `.git/hooks/`. It must be done
 because the copied file is an executable script (so from GIT point of view it is unsafe
 to enable it automatically).
 
+
+### Code coverage measurement
+
+During testing, code coverage is measured. If the coverage is below defined threshold (see `pyproject.toml` settings for actual value stored in section `[tool.coverage.report]`), tests will fail. We measured and checked code coverage in order to be able to develop software with high quality.
+
+Code coverage reports are generated in JSON and also in format compatible with [_JUnit_ test automation framework](https://junit.org/junit5/). It is also possible to start `make coverage-report` to generate code coverage reports in the form of interactive HTML pages. These pages are stored in the `htmlcov` subdirectory. Just open the index page from this subdirectory in your web browser.
 
 ### Type hints checks
 
@@ -151,6 +164,123 @@ To disable _Pylint_ rule in source code, the comment line in following format ca
 # pylint: disable=C0415
 ```
 
+
+
+### Security checks
+
+Static security check is performed by _Bandit_ tool. The check can be started by using:
+
+```
+make security-check
+```
+## Testing
+
+Two groups of software tests are used in this repository, each group from the test suite having different granularity. These groups are designed to represent three layers:
+
+1. Unit Tests
+1. Integration Tests
+
+Unit tests followed by integration and e2e tests can be started by using the following command:
+
+```
+make test
+```
+
+It is also possible to run just one selected group of tests:
+
+```
+make test-unit                 Run the unit tests
+make test-integration          Run integration tests tests
+make test-e2e                  Run end to end tests
+```
+
+All tests are based on the [Pytest framework](https://docs.pytest.org/en/) and code coverage is measured by the plugin [pytest-cov](https://github.com/pytest-dev/pytest-cov). For mocking and patching, the [unittest framework](https://docs.python.org/3/library/unittest.html) is used.
+
+Currently code coverage threshold for integration tests is set to 60%. This value is specified directly in Makefile, because the coverage threshold is different from threshold required for unit tests.
+
+As specified in Definition of Done, new changes need to be covered by tests.
+
+
+
+### Tips and hints for developing unit tests
+
+#### Patching
+
+**WARNING**:
+Since tests are executed using Pytest, which relies heavily on fixtures,
+we discourage use of `patch` decorators in all test code, as they may interact with one another.
+
+It is possible to use patching inside the test implementation as a context manager:
+
+```python
+def test_xyz():
+    with patch("ols.config", new=Mock()):
+        ...
+        ...
+        ...
+```
+
+- `new=` allow us to use different function or class
+- `return_value=` allow us to define return value (no mock will be called)
+
+
+#### Verifying that some exception is thrown
+
+Sometimes it is needed to test whether some exception is thrown from a tested function or method. In this case `pytest.raises` can be used:
+
+
+```python
+def test_conversation_cache_wrong_cache(invalid_cache_type_config):
+    """Check if wrong cache env.variable is detected properly."""
+    with pytest.raises(ValueError):
+        CacheFactory.conversation_cache(invalid_cache_type_config)
+```
+
+It is also possible to check if the exception is thrown with the expected message. The message (or its part) is written as regexp:
+
+```python
+def test_constructor_no_provider():
+    """Test that constructor checks for provider."""
+    # we use bare Exception in the code, so need to check
+    # message, at least
+    with pytest.raises(Exception, match="ERROR: Missing provider"):
+        load_llm(provider=None)
+```
+
+#### Checking what was printed and logged to stdout or stderr by the tested code
+
+It is possible to capture stdout and stderr by using standard fixture `capsys`:
+
+```python
+def test_foobar(capsys):
+    """Test the foobar function that prints to stdout."""
+    foobar("argument1", "argument2")
+
+    # check captured log output
+    captured_out = capsys.readouterr().out
+    assert captured_out == "Output printed by foobar function"
+    captured_err = capsys.readouterr().err
+    assert captured_err == ""
+```
+
+Capturing logs:
+
+```python
+@patch.dict(os.environ, {"LOG_LEVEL": "INFO"})
+def test_logger_show_message_flag(mock_load_dotenv, capsys):
+    """Test logger set with show_message flag."""
+    logger = Logger(logger_name="foo", log_level=logging.INFO, show_message=True)
+    logger.logger.info("This is my debug message")
+
+    # check captured log output
+    # the log message should be captured
+    captured_out = capsys.readouterr().out
+    assert "This is my debug message" in captured_out
+
+    # error output should be empty
+    captured_err = capsys.readouterr().err
+    assert captured_err == ""
+```
 
 
 ## Code style
