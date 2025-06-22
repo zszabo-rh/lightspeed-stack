@@ -8,7 +8,7 @@ from runners.uvicorn import start_uvicorn
 
 
 def test_start_uvicorn() -> None:
-    """Test the function to start Uvicorn server."""
+    """Test the function to start Uvicorn server using de-facto default configuration."""
     configuration = ServiceConfiguration(host="localhost", port=8080, workers=1)
 
     # don't start real Uvicorn server
@@ -20,6 +20,9 @@ def test_start_uvicorn() -> None:
             port=8080,
             workers=1,
             log_level=20,
+            ssl_certfile=None,
+            ssl_keyfile=None,
+            ssl_keyfile_password="",
             use_colors=True,
             access_log=True,
         )
