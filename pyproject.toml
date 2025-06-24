@@ -13,8 +13,8 @@ dependencies = [
     "rich>=14.0.0",
 ]
 
-[tool.pdm.version]
-source = "file"
+[tool.hatch.version]
+source = "code"
 path = "src/version.py"
 
 [project.urls]
@@ -50,16 +50,7 @@ addopts = [
 [tool.pylint.main]
 source-roots = "src"
 
-[tool.pdm]
-distribution = true
-
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
-
-[tool.pdm.scripts]
-start = "make run"
-test-unit = "make test-unit"
-test-integration = "make test-integration"
-verify = "make verify"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
