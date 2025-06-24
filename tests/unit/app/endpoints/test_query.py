@@ -75,7 +75,7 @@ def _test_query_endpoint_handler(mocker, store_transcript=False):
 
     query_request = QueryRequest(query=query)
 
-    response = query_endpoint_handler(None, query_request)
+    response = query_endpoint_handler(query_request)
 
     # Assert the response is as expected
     assert response.response == "LLM answer"
@@ -250,7 +250,9 @@ def test_retrieve_response_no_available_shields(mocker):
     query_request = QueryRequest(query="What is OpenStack?")
     model_id = "fake_model_id"
 
-    response = retrieve_response(mock_client, model_id, query_request)
+    response = retrieve_response(
+        mock_client, model_id, query_request, token="fake_token"
+    )
 
     assert response == "LLM answer"
     mock_agent.create_turn.assert_called_once_with(
@@ -281,7 +283,9 @@ def test_retrieve_response_one_available_shield(mocker):
     query_request = QueryRequest(query="What is OpenStack?")
     model_id = "fake_model_id"
 
-    response = retrieve_response(mock_client, model_id, query_request)
+    response = retrieve_response(
+        mock_client, model_id, query_request, token="fake_token"
+    )
 
     assert response == "LLM answer"
     mock_agent.create_turn.assert_called_once_with(
@@ -315,7 +319,9 @@ def test_retrieve_response_two_available_shields(mocker):
     query_request = QueryRequest(query="What is OpenStack?")
     model_id = "fake_model_id"
 
-    response = retrieve_response(mock_client, model_id, query_request)
+    response = retrieve_response(
+        mock_client, model_id, query_request, token="fake_token"
+    )
 
     assert response == "LLM answer"
     mock_agent.create_turn.assert_called_once_with(
@@ -345,7 +351,9 @@ def test_retrieve_response_with_one_attachment(mocker):
     query_request = QueryRequest(query="What is OpenStack?", attachments=attachments)
     model_id = "fake_model_id"
 
-    response = retrieve_response(mock_client, model_id, query_request)
+    response = retrieve_response(
+        mock_client, model_id, query_request, token="fake_token"
+    )
 
     assert response == "LLM answer"
     mock_agent.create_turn.assert_called_once_with(
@@ -385,7 +393,9 @@ def test_retrieve_response_with_two_attachments(mocker):
     query_request = QueryRequest(query="What is OpenStack?", attachments=attachments)
     model_id = "fake_model_id"
 
-    response = retrieve_response(mock_client, model_id, query_request)
+    response = retrieve_response(
+        mock_client, model_id, query_request, token="fake_token"
+    )
 
     assert response == "LLM answer"
     mock_agent.create_turn.assert_called_once_with(
