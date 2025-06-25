@@ -5,7 +5,7 @@ import json
 import requests
 from behave import given, then, when
 from behave.runner import Context
-from tests.e2e.utils.utils import validate_json
+from tests.e2e.utils.utils import normalize_endpoint, validate_json
 
 # default timeout for HTTP operations
 DEFAULT_TIMEOUT = 10
@@ -147,8 +147,19 @@ def set_rest_api_prefix(context: Context, prefix: str) -> None:
 
 
 @when("I access endpoint {endpoint} using HTTP GET method")
+def access_non_rest_api_endpoint_get(context: Context, endpoint: str) -> None:
+    """Send GET HTTP request to tested service."""
+    endpoint = normalize_endpoint(endpoint)
+    base = f"http://{context.hostname}:{context.port}"
+    path = f"{endpoint}".replace("//", "/")
+    url = base + path
+    context.response = requests.get(url, timeout=DEFAULT_TIMEOUT)
+
+
+@when("I access REST API endpoint {endpoint} using HTTP GET method")
 def access_rest_api_endpoint_get(context: Context, endpoint: str) -> None:
     """Send GET HTTP request to tested service."""
+    endpoint = normalize_endpoint(endpoint)
     base = f"http://{context.hostname}:{context.port}"
     path = f"{context.api_prefix}/{endpoint}".replace("//", "/")
     url = base + path

@@ -5,6 +5,14 @@ from typing import Any
 import jsonschema
 
 
+def normalize_endpoint(endpoint: str) -> str:
+    """Normalize endpoint to be added into the URL."""
+    endpoint = endpoint.replace('"', "")
+    if not endpoint.startswith("/"):
+        endpoint = "/" + endpoint
+    return endpoint
+
+
 def validate_json(message: Any, schema: Any) -> None:
     """Check the JSON message with the given schema."""
     try:
