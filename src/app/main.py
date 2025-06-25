@@ -1,7 +1,7 @@
 """Definition of FastAPI based web service."""
 
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 from fastapi import FastAPI
 from app import routers
 
@@ -18,7 +18,7 @@ service_name = configuration.configuration.name
 
 
 @asynccontextmanager
-async def lifespan(fastapi_app: FastAPI) -> AsyncGenerator[None]:
+async def lifespan(fastapi_app: FastAPI) -> AsyncGenerator[None, None]:
     """Handle app lifespan events."""
     # Startup
     logger.info("Starting up: registering MCP servers")
