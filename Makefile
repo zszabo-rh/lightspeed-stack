@@ -3,7 +3,7 @@ PATH_TO_PLANTUML := ~/bin
 
 
 run: ## Run the service locally
-	python src/lightspeed_stack.py
+	pdm run python src/lightspeed_stack.py
 
 test-unit: ## Run the unit tests
 	@echo "Running unit tests..."
