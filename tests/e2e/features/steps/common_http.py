@@ -147,7 +147,7 @@ def set_rest_api_prefix(context: Context, prefix: str) -> None:
 
 
 @when("I access endpoint {endpoint} using HTTP GET method")
-def access_rest_api_endpoint_get(context: Context, endpoint: str) -> None:
+def access_non_rest_api_endpoint_get(context: Context, endpoint: str) -> None:
     """Send GET HTTP request to tested service."""
     endpoint = normalize_endpoint(endpoint)
     base = f"http://{context.hostname}:{context.port}"

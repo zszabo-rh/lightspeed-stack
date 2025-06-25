@@ -7,7 +7,7 @@ import jsonschema
 
 def normalize_endpoint(endpoint: str) -> str:
     """Normalize endpoint to be added into the URL."""
-    endpoint = endpoint.replace("\"", "")
+    endpoint = endpoint.replace('"', "")
     if not endpoint.startswith("/"):
         endpoint = "/" + endpoint
     return endpoint
