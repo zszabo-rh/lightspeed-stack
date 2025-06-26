@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:910b28fc47a38a82cf708002e2acd98de248bbe659eb0ca2e78b6d210eeba7c6"
+content_hash = "sha256:1c3007f78f03df53463aedf4198dd311bf0a1b47d103b0a65e785098462dc1ee"
 
 [[metadata.targets]]
 requires_python = ">=3.11.1,<=3.12.10"
@@ -157,6 +157,27 @@ groups = ["default"]
 files = [
     {file = "attrs-25.3.0-py3-none-any.whl", hash = "sha256:427318ce031701fea540783410126f03899a97ffc6f61596ad581ac2e40e3bc3"},
     {file = "attrs-25.3.0.tar.gz", hash = "sha256:75d7cefc7fb576747b2c81b4442d4d4a1ce0900973527c011d1030fd3bf4af1b"},
+]
+
+[[package]]
+name = "behave"
+version = "1.2.6"
+requires_python = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+summary = "behave is behaviour-driven development, Python style"
+groups = ["dev"]
+dependencies = [
+    "argparse; python_version < \"2.7\"",
+    "enum34; python_version < \"3.4\"",
+    "importlib; python_version < \"2.7\"",
+    "ordereddict; python_version < \"2.7\"",
+    "parse-type>=0.4.2",
+    "parse>=1.8.2",
+    "six>=1.11",
+    "traceback2; python_version < \"3.0\"",
+]
+files = [
+    {file = "behave-1.2.6-py2.py3-none-any.whl", hash = "sha256:ebda1a6c9e5bfe95c5f9f0a2794e01c7098b3dde86c10a95d8621c5907ff6f1c"},
+    {file = "behave-1.2.6.tar.gz", hash = "sha256:b9662327aa53294c1351b0a9c369093ccec1d21026f050c3bd9b3e5cccf81a86"},
 ]
 
 [[package]]
@@ -993,6 +1014,33 @@ files = [
 ]
 
 [[package]]
+name = "parse"
+version = "1.20.2"
+summary = "parse() is the opposite of format()"
+groups = ["dev"]
+files = [
+    {file = "parse-1.20.2-py2.py3-none-any.whl", hash = "sha256:967095588cb802add9177d0c0b6133b5ba33b1ea9007ca800e526f42a85af558"},
+    {file = "parse-1.20.2.tar.gz", hash = "sha256:b41d604d16503c79d81af5165155c0b20f6c8d6c559efa66b4b695c3e5a0a0ce"},
+]
+
+[[package]]
+name = "parse-type"
+version = "0.6.4"
+requires_python = "!=3.0.*,!=3.1.*,>=2.7"
+summary = "Simplifies to build parse types based on the parse module"
+groups = ["dev"]
+dependencies = [
+    "enum34; python_version < \"3.4\"",
+    "parse>=1.13.1; python_version <= \"2.7\"",
+    "parse>=1.18.0; python_version >= \"3.0\"",
+    "six>=1.15",
+]
+files = [
+    {file = "parse_type-0.6.4-py2.py3-none-any.whl", hash = "sha256:83d41144a82d6b8541127bf212dd76c7f01baff680b498ce8a4d052a7a5bce4c"},
+    {file = "parse_type-0.6.4.tar.gz", hash = "sha256:5e1ec10440b000c3f818006033372939e693a9ec0176f446d9303e4db88489a6"},
+]
+
+[[package]]
 name = "pathspec"
 version = "0.12.1"
 requires_python = ">=3.8"
@@ -1628,7 +1676,7 @@ name = "six"
 version = "1.17.0"
 requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 summary = "Python 2 and 3 compatibility utilities"
-groups = ["default"]
+groups = ["default", "dev"]
 files = [
     {file = "six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"},
     {file = "six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"},
