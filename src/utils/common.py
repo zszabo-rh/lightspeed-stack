@@ -45,15 +45,9 @@ async def register_mcp_servers_async(
         )
     else:
         # Service client - use sync interface
-        register_mcp_servers(logger, configuration)
+        client = get_llama_stack_client(configuration.llama_stack)
 
-
-def register_mcp_servers(logger: Logger, configuration: Configuration) -> None:
-    """Register Model Context Protocol (MCP) servers with the LlamaStack client (sync)."""
-    # Service client - use sync interface
-    client = get_llama_stack_client(configuration.llama_stack)
-
-    _register_mcp_toolgroups_sync(client, configuration.mcp_servers, logger)
+        _register_mcp_toolgroups_sync(client, configuration.mcp_servers, logger)
 
 
 async def _register_mcp_toolgroups_async(
