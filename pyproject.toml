@@ -31,6 +31,7 @@ dev = [
     "types-PyYAML>=6.0.2",
     "ruff>=0.11.13",
     "aiosqlite",
+    "behave>=1.2.6",
 ]
 
 [tool.pytest.ini_options]
