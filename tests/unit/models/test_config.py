@@ -323,12 +323,46 @@ def test_dump_configuration(tmp_path) -> None:
 
     with open(dump_file, "r", encoding="utf-8") as fin:
         content = json.load(fin)
+        # content should be loaded
         assert content is not None
+
+        # all sections must exists
         assert "name" in content
         assert "service" in content
         assert "llama_stack" in content
         assert "user_data_collection" in content
         assert "mcp_servers" in content
+
+        # check the whole deserialized JSON file content
+        assert content == {
+            "name": "test_name",
+            "service": {
+                "host": "localhost",
+                "port": 8080,
+                "auth_enabled": False,
+                "workers": 1,
+                "color_log": True,
+                "access_log": True,
+                "tls_config": {
+                    "tls_certificate_path": None,
+                    "tls_key_path": None,
+                    "tls_key_password": None,
+                },
+            },
+            "llama_stack": {
+                "url": None,
+                "api_key": None,
+                "use_as_library_client": True,
+                "library_client_config_path": "foo",
+            },
+            "user_data_collection": {
+                "feedback_disabled": True,
+                "feedback_storage": None,
+                "transcripts_disabled": True,
+                "transcripts_storage": None,
+            },
+            "mcp_servers": [],
+        }
 
 
 def test_dump_configuration_with_mcp_servers(tmp_path) -> None:
@@ -358,3 +392,40 @@ def test_dump_configuration_with_mcp_servers(tmp_path) -> None:
         assert content["mcp_servers"][0]["name"] == "test-server"
         assert content["mcp_servers"][0]["url"] == "http://localhost:8080"
         assert content["mcp_servers"][0]["provider_id"] == "model-context-protocol"
+
+        # check the whole deserialized JSON file content
+        assert content == {
+            "name": "test_name",
+            "service": {
+                "host": "localhost",
+                "port": 8080,
+                "auth_enabled": False,
+                "workers": 1,
+                "color_log": True,
+                "access_log": True,
+                "tls_config": {
+                    "tls_certificate_path": None,
+                    "tls_key_path": None,
+                    "tls_key_password": None,
+                },
+            },
+            "llama_stack": {
+                "url": None,
+                "api_key": None,
+                "use_as_library_client": True,
+                "library_client_config_path": "foo",
+            },
+            "user_data_collection": {
+                "feedback_disabled": True,
+                "feedback_storage": None,
+                "transcripts_disabled": True,
+                "transcripts_storage": None,
+            },
+            "mcp_servers": [
+                {
+                    "name": "test-server",
+                    "provider_id": "model-context-protocol",
+                    "url": "http://localhost:8080",
+                },
+            ],
+        }
