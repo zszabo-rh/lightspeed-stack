@@ -36,6 +36,13 @@ def create_argument_parser() -> ArgumentParser:
         action="store_true",
         default=None,
     )
+    parser.add_argument(
+        "-c",
+        "--config",
+        dest="config_file",
+        help="path to configuration file (default: lightspeed-stack.yaml)",
+        default="lightspeed-stack.yaml",
+    )
     return parser
 
 
@@ -45,7 +52,7 @@ def main() -> None:
     parser = create_argument_parser()
     args = parser.parse_args()
 
-    configuration.load_configuration("lightspeed-stack.yaml")
+    configuration.load_configuration(args.config_file)
     logger.info("Configuration: %s", configuration.configuration)
     logger.info(
         "Llama stack configuration: %s", configuration.llama_stack_configuration
