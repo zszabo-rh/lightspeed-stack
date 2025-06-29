@@ -1,4 +1,8 @@
-"""Lightspeed stack."""
+"""Lightspeed stack.
+
+This source file contains entry point to the service. It is implemented in the
+main() function.
+"""
 
 from argparse import ArgumentParser
 import logging
