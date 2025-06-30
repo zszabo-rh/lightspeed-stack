@@ -32,6 +32,11 @@ async def register_mcp_servers_async(
     logger: Logger, configuration: Configuration
 ) -> None:
     """Register Model Context Protocol (MCP) servers with the LlamaStack client (async)."""
+    # Skip MCP registration if no MCP servers are configured
+    if not configuration.mcp_servers:
+        logger.debug("No MCP servers configured, skipping registration")
+        return
+
     if configuration.llama_stack.use_as_library_client:
         # Library client - use async interface
         # config.py validation ensures library_client_config_path is not None

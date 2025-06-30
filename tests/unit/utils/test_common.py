@@ -30,10 +30,8 @@ async def test_register_mcp_servers_empty_list(mocker):
     # Mock the logger
     mock_logger = Mock(spec=Logger)
 
-    # Mock the LlamaStack client
-    mock_client = Mock()
-    mock_client.tools.list.return_value = []
-    mocker.patch("utils.common.get_llama_stack_client", return_value=mock_client)
+    # Mock the LlamaStack client (shouldn't be called since no MCP servers)
+    mock_get_client = mocker.patch("utils.common.get_llama_stack_client")
 
     # Create configuration with empty MCP servers
     config = Configuration(
@@ -48,10 +46,12 @@ async def test_register_mcp_servers_empty_list(mocker):
     # Call the function
     await register_mcp_servers_async(mock_logger, config)
 
-    # Verify client.tools.list was called
-    mock_client.tools.list.assert_called_once()
-    # Verify client.toolgroups.register was not called since no MCP servers
-    assert not mock_client.toolgroups.register.called
+    # Verify get_llama_stack_client was NOT called since no MCP servers
+    mock_get_client.assert_not_called()
+    # Verify debug message was logged
+    mock_logger.debug.assert_called_with(
+        "No MCP servers configured, skipping registration"
+    )
 
 
 @pytest.mark.asyncio
