@@ -15,6 +15,8 @@ Lightspeed Core Stack (LCS) is an AI powered assistant that provides answers to 
 * [Installation](#installation)
 * [Configuration](#configuration)
 * [Usage](#usage)
+    * [Make targets](#make-targets)
+    * [Running Linux container image](#running-linux-container-image)
 * [Contributing](#contributing)
 * [License](#license)
 * [Additional tools](#additional-tools)
@@ -53,6 +55,26 @@ options:
   -c CONFIG_FILE, --config CONFIG_FILE
                         path to configuration file (default: lightspeed-stack.yaml)
 
+```
+
+## Make targets
+
+```
+Usage: make <OPTIONS> ... <TARGETS>
+
+Available targets are:
+
+run                               Run the service locally
+test-unit                         Run the unit tests
+test-integration                  Run integration tests tests
+test-e2e                          Run BDD tests for the service
+check-types                       Checks type hints in sources
+security-check                    Check the project for security issues
+format                            Format the code into unified format
+schema                            Generate OpenAPI schema file
+requirements.txt                  Generate requirements.txt file containing hashes for all non-devel packages
+shellcheck                        Run shellcheck
+help                              Show this help screen
 ```
 
 ## Running Linux container image
