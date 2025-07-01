@@ -11,8 +11,6 @@ jobs:
       contents: read
       pull-requests: read
     name: "Pyright"
-    env:
-      PDM_BUILD_DIR: /tmp/pdm-build
     steps:
       - uses: actions/checkout@v4
       - name: Install uv

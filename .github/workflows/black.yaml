@@ -10,8 +10,6 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
-    env:
-      PDM_BUILD_DIR: /tmp/pdm-build
     steps:
       - uses: actions/checkout@v4
       - name: Install uv

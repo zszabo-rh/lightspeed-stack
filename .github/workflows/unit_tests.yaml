@@ -13,8 +13,6 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
-    env:
-      UV_IGNORE_PYPROJECT_VERSION: 1  # Ignore Python pyproject.toml version
     steps:
       - uses: actions/checkout@v4
       - name: Install uv
