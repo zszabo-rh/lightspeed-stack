@@ -14,7 +14,6 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
     env:
-      PDM_BUILD_DIR: /tmp/pdm-build
       UV_IGNORE_PYPROJECT_VERSION: 1  # Ignore Python pyproject.toml version
     steps:
       - uses: actions/checkout@v4
