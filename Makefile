@@ -34,7 +34,7 @@ schema:	## Generate OpenAPI schema file
 requirements.txt:	pyproject.toml pdm.lock ## Generate requirements.txt file containing hashes for all non-devel packages
 	pdm export --prod --format requirements --output requirements.txt --no-extras --without evaluation
 
-docs/config.puml: ## Generate PlantUML class diagram for configuration
+docs/config.puml:	src/models/config.py ## Generate PlantUML class diagram for configuration
 	pyreverse src/models/config.py --output puml --output-directory=docs/
 	mv docs/classes.puml docs/config.puml
 
@@ -71,3 +71,12 @@ verify:
 	$(MAKE) ruff
 	$(MAKE) docstyle
 	$(MAKE) check-types
+
+help: ## Show this help screen
+	@echo 'Usage: make <OPTIONS> ... <TARGETS>'
+	@echo ''
+	@echo 'Available targets are:'
+	@echo ''
+	@grep -E '^[ a-zA-Z0-9_.-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
+		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-33s\033[0m %s\n", $$1, $$2}'
+	@echo ''
