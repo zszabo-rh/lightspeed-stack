@@ -87,6 +87,8 @@ To pull and run the image with own configuration:
 1. `podman run -it -p 8080:8080 -v my-lightspeed-stack-config.yaml:/app-root/lightspeed-stack.yaml:Z quay.io/lightspeed-core/lightspeed-stack:latest`
 1. Open `localhost:8080` in your browser
 
+If a connection in your browser does not work please check that in the config file `host` option looks like: `host: 0.0.0.0`.
+
 # Contributing
 
 * See [contributors](CONTRIBUTING.md) guide.

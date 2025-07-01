@@ -3,34 +3,35 @@ PATH_TO_PLANTUML := ~/bin
 
 
 run: ## Run the service locally
-	pdm run python src/lightspeed_stack.py
+	uv run src/lightspeed_stack.py
 
 test-unit: ## Run the unit tests
 	@echo "Running unit tests..."
 	@echo "Reports will be written to ${ARTIFACT_DIR}"
-	COVERAGE_FILE="${ARTIFACT_DIR}/.coverage.unit" pdm run pytest tests/unit --cov=src --cov-report term-missing --cov-report "json:${ARTIFACT_DIR}/coverage_unit.json" --junit-xml="${ARTIFACT_DIR}/junit_unit.xml" --cov-fail-under=60
+	COVERAGE_FILE="${ARTIFACT_DIR}/.coverage.unit" uv run pytest tests/unit --cov=src --cov-report term-missing --cov-report "json:${ARTIFACT_DIR}/coverage_unit.json" --junit-xml="${ARTIFACT_DIR}/junit_unit.xml" --cov-fail-under=60
 
 test-integration: ## Run integration tests tests
 	@echo "Running integration tests..."
 	@echo "Reports will be written to ${ARTIFACT_DIR}"
-	COVERAGE_FILE="${ARTIFACT_DIR}/.coverage.integration" pdm run pytest tests/integration --cov=src --cov-report term-missing --cov-report "json:${ARTIFACT_DIR}/coverage_integration.json" --junit-xml="${ARTIFACT_DIR}/junit_integration.xml" --cov-fail-under=10
+	COVERAGE_FILE="${ARTIFACT_DIR}/.coverage.integration" uv run pytest tests/integration --cov=src --cov-report term-missing --cov-report "json:${ARTIFACT_DIR}/coverage_integration.json" --junit-xml="${ARTIFACT_DIR}/junit_integration.xml" --cov-fail-under=10
 
 test-e2e: ## Run BDD tests for the service
-	PYTHONDONTWRITEBYTECODE=1 pdm run python -m behave --tags=-skip -D dump_errors=true @tests/e2e/test_list.txt \
+	PYTHONDONTWRITEBYTECODE=1 uv run behave --tags=-skip -D dump_errors=true @tests/e2e/test_list.txt \
 
 check-types: ## Checks type hints in sources
-	pdm run mypy --explicit-package-bases --disallow-untyped-calls --disallow-untyped-defs --disallow-incomplete-defs --ignore-missing-imports --disable-error-code attr-defined src/
+	uv run mypy --explicit-package-bases --disallow-untyped-calls --disallow-untyped-defs --disallow-incomplete-defs --ignore-missing-imports --disable-error-code attr-defined src/
 
 security-check: ## Check the project for security issues
 	bandit -c pyproject.toml -r src tests
 
 format: ## Format the code into unified format
-	pdm run black .
-	pdm run ruff check . --fix
+	uv run black .
+	uv run ruff check . --fix
 
 schema:	## Generate OpenAPI schema file
-	pdm run scripts/generate_openapi_schema.py docs/openapi.json
+	uv run scripts/generate_openapi_schema.py docs/openapi.json
 
+# TODO uv migration
 requirements.txt:	pyproject.toml pdm.lock ## Generate requirements.txt file containing hashes for all non-devel packages
 	pdm export --prod --format requirements --output requirements.txt --no-extras --without evaluation
 
@@ -50,19 +51,19 @@ shellcheck: ## Run shellcheck
 	shellcheck -- */*.sh
 
 black:
-	pdm run black --check .
+	uv run black --check .
 
 pylint:
-	pdm run pylint src
+	uv run pylint src
 
 pyright:
-	pdm run pyright src
+	uv run pyright src
 
 docstyle:
-	pdm run pydocstyle -v .
+	uv run pydocstyle -v .
 
 ruff:
-	pdm run ruff check . --per-file-ignores=tests/*:S101 --per-file-ignores=scripts/*:S101
+	uv run ruff check . --per-file-ignores=tests/*:S101 --per-file-ignores=scripts/*:S101
 
 verify:
 	$(MAKE) black
