@@ -42,6 +42,19 @@ Installation steps depends on operation system. Please look at instructions for 
 
 # Usage
 
+```
+usage: lightspeed_stack.py [-h] [-v] [-d] [-c CONFIG_FILE]
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         make it verbose
+  -d, --dump-configuration
+                        dump actual configuration into JSON file and quit
+  -c CONFIG_FILE, --config CONFIG_FILE
+                        path to configuration file (default: lightspeed-stack.yaml)
+
+```
+
 ## Running Linux container image
 
 Container image is built every time a new pull request is merged to main branch. Currently there are tags `latest` and `main` pointing to the latest image.
