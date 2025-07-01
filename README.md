@@ -17,6 +17,9 @@ Lightspeed Core Stack (LCS) is an AI powered assistant that provides answers to 
 * [Usage](#usage)
     * [Make targets](#make-targets)
     * [Running Linux container image](#running-linux-container-image)
+* [Endpoints](#endpoints)
+    * [Readiness Endpoint](#readiness-endpoint)
+    * [Liveness Endpoint](#liveness-endpoint)
 * [Contributing](#contributing)
 * [License](#license)
 * [Additional tools](#additional-tools)
@@ -88,6 +91,50 @@ To pull and run the image with own configuration:
 1. Open `localhost:8080` in your browser
 
 If a connection in your browser does not work please check that in the config file `host` option looks like: `host: 0.0.0.0`.
+
+# Endpoints
+
+The service provides health check endpoints that can be used for monitoring, load balancing, and orchestration systems like Kubernetes.
+
+## Readiness Endpoint
+
+**Endpoint:** `GET /v1/readiness`
+
+The readiness endpoint checks if the service is ready to handle requests by verifying the health status of all configured LLM providers.
+
+**Response:**
+- **200 OK**: Service is ready - all providers are healthy
+- **503 Service Unavailable**: Service is not ready - one or more providers are unhealthy
+
+**Response Body:**
+```json
+{
+  "ready": true,
+  "reason": "All providers are healthy",
+  "providers": []
+}
+```
+
+**Response Fields:**
+- `ready` (boolean): Indicates if the service is ready to handle requests
+- `reason` (string): Human-readable explanation of the readiness state
+- `providers` (array): List of unhealthy providers (empty when service is ready)
+
+## Liveness Endpoint
+
+**Endpoint:** `GET /v1/liveness`
+
+The liveness endpoint performs a basic health check to verify the service is alive and responding.
+
+**Response:**
+- **200 OK**: Service is alive
+
+**Response Body:**
+```json
+{
+  "alive": true
+}
+```
 
 # Contributing
 
