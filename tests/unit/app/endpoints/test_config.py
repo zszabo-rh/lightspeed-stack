@@ -8,8 +8,8 @@ from configuration import AppConfig
 def test_config_endpoint_handler_configuration_not_loaded(mocker):
     """Test the config endpoint handler."""
     mocker.patch(
-        "app.endpoints.config.configuration",
-        return_value=mocker.Mock(),
+        "app.endpoints.config.configuration._configuration",
+        new=None,
     )
     mocker.patch("app.endpoints.config.configuration", None)
 
@@ -39,6 +39,9 @@ def test_config_endpoint_handler_configuration_loaded(mocker):
         },
         "user_data_collection": {
             "feedback_disabled": True,
+        },
+        "authentication": {
+            "module": "noop",
         },
     }
     cfg = AppConfig()
