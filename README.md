@@ -28,9 +28,9 @@ Lightspeed Core Stack (LCS) is an AI powered assistant that provides answers to 
 
 # Prerequisities
 
-* Python 3.11, 3.12, or 3.13
+* Python 3.12, or 3.13
     - please note that currently Python 3.14 is not officially supported
-    - all sources are made (backward) compatible with Python 3.11; it is checked on CI
+    - all sources are made (backward) compatible with Python 3.12; it is checked on CI
 
 # Installation
 
