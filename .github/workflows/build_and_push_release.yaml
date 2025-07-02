@@ -8,7 +8,7 @@ on:
 env:
   IMAGE_NAME: lightspeed-stack
   IMAGE_NAMESPACE: lightspeed-core
-  REGISTRY: quay.io
+  IMAGE_REGISTRY: quay.io
   GIT_TAG: ${{ github.ref_name }}
   LATEST_TAG: latest
   CONTAINER_FILE: Containerfile
