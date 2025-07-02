@@ -43,7 +43,64 @@ Installation steps depends on operation system. Please look at instructions for 
 - [Linux installation](https://lightspeed-core.github.io/lightspeed-stack/installation_linux)
 - [macOS installation](https://lightspeed-core.github.io/lightspeed-stack/installation_macos)
 
+
+
 # Configuration
+
+The Llama Stack can be run as a standalone server and accessed via its the REST
+API. However, instead of direct communication via the REST API (and JSON
+format), there is an even better alternative. It is based on the so-called
+Llama Stack Client. It is a library available for Python, Swift, Node.js or
+Kotlin, which "wraps" the REST API stack in a suitable way, which is easier for
+many applications.
+
+## Llama Stack as separate server
+
+If Llama Stack runs as a separate server, the Lightspeed service needs to be configured to be able to access it. For example, if server runs on localhost:8321, the service configuration should look like:
+
+```yaml
+name: foo bar baz
+service:
+  host: localhost
+  port: 8080
+  auth_enabled: false
+  workers: 1
+  color_log: true
+  access_log: true
+llama_stack:
+  use_as_library_client: false
+  url: http://localhost:8321
+user_data_collection:
+  feedback_disabled: false
+  feedback_storage: "/tmp/data/feedback"
+  transcripts_disabled: false
+  transcripts_storage: "/tmp/data/transcripts"
+```
+
+## Llama Stack as client library
+
+There are situations in which it is not advisable to run two processors (one with Llama Stack, the other with a service). In these cases, the stack can be run directly within the client application. For such situations, the configuration file could look like:
+
+```yaml
+name: foo bar baz
+service:
+  host: localhost
+  port: 8080
+  auth_enabled: false
+  workers: 1
+  color_log: true
+  access_log: true
+llama_stack:
+  use_as_library_client: true
+  library_client_config_path: <path-to-llama-stack-run.yaml-file>
+user_data_collection:
+  feedback_disabled: false
+  feedback_storage: "/tmp/data/feedback"
+  transcripts_disabled: false
+  transcripts_storage: "/tmp/data/transcripts"
+```
+
+
 
 # Usage
 
