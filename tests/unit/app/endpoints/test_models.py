@@ -124,11 +124,10 @@ def test_models_endpoint_handler_unable_to_retrieve_models_list(mocker):
     # Mock the LlamaStack client
     mock_client = Mock()
     mock_client.models.list.return_value = []
-
-    # Mock the LlamaStack client (shouldn't be called directly)
-    mocker.patch(
-        "app.endpoints.models.get_llama_stack_client", return_value=mock_client
-    )
+    mock_lsc = mocker.patch("client.LlamaStackClientHolder.get_client")
+    mock_lsc.return_value = mock_client
+    mock_config = mocker.Mock()
+    mocker.patch("app.endpoints.models.configuration", mock_config)
 
     request = None
     response = models_endpoint_handler(request)

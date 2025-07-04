@@ -17,7 +17,7 @@ from fastapi import APIRouter, HTTPException, Request, Depends, status
 from fastapi.responses import StreamingResponse
 
 from auth import get_auth_dependency
-from client import get_async_llama_stack_client
+from client import AsyncLlamaStackClientHolder
 from configuration import configuration
 from models.requests import QueryRequest
 from utils.endpoints import check_configuration_loaded, get_system_prompt
@@ -197,7 +197,7 @@ async def streaming_query_endpoint_handler(
 
     try:
         # try to get Llama Stack client
-        client = await get_async_llama_stack_client(llama_stack_config)
+        client = AsyncLlamaStackClientHolder().get_client()
         model_id = select_model_id(await client.models.list(), query_request)
         response, conversation_id = await retrieve_response(
             client,

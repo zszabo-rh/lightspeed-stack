@@ -6,7 +6,7 @@ from typing import Any
 from llama_stack_client import APIConnectionError
 from fastapi import APIRouter, HTTPException, Request, status
 
-from client import get_llama_stack_client
+from client import LlamaStackClientHolder
 from configuration import configuration
 from models.responses import ModelsResponse
 from utils.endpoints import check_configuration_loaded
@@ -52,11 +52,12 @@ def models_endpoint_handler(_request: Request) -> ModelsResponse:
 
     try:
         # try to get Llama Stack client
-        client = get_llama_stack_client(llama_stack_configuration)
+        client = LlamaStackClientHolder().get_client()
         # retrieve models
         models = client.models.list()
         m = [dict(m) for m in models]
         return ModelsResponse(models=m)
+
     # connection to Llama Stack server
     except APIConnectionError as e:
         logger.error("Unable to connect to Llama Stack: %s", e)

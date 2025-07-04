@@ -99,6 +99,8 @@ def test_is_transcripts_disabled(setup_configuration, mocker):
 def _test_query_endpoint_handler(mocker, store_transcript=False):
     """Test the query endpoint handler."""
     mock_client = mocker.Mock()
+    mock_lsc = mocker.patch("client.LlamaStackClientHolder.get_client")
+    mock_lsc.return_value = mock_client
     mock_client.models.list.return_value = [
         mocker.Mock(identifier="model1", model_type="llm", provider_id="provider1"),
         mocker.Mock(identifier="model2", model_type="llm", provider_id="provider2"),
@@ -113,7 +115,7 @@ def _test_query_endpoint_handler(mocker, store_transcript=False):
     llm_response = "LLM answer"
     conversation_id = "fake_conversation_id"
     query = "What is OpenStack?"
-    mocker.patch("app.endpoints.query.get_llama_stack_client", return_value=mock_client)
+
     mocker.patch(
         "app.endpoints.query.retrieve_response",
         return_value=(llm_response, conversation_id),
@@ -838,10 +840,8 @@ def test_query_endpoint_handler_on_connection_error(mocker):
     query_request = QueryRequest(query=query)
 
     # simulate situation when it is not possible to connect to Llama Stack
-    mocker.patch(
-        "app.endpoints.query.get_llama_stack_client",
-        side_effect=APIConnectionError(request=query_request),
-    )
+    mock_lsc = mocker.Mock()
+    mock_lsc.get_client.side_effect = APIConnectionError(request=query_request)
 
     with pytest.raises(Exception):
         query_endpoint_handler(query_request)
