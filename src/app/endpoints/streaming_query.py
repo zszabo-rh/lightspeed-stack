@@ -4,11 +4,12 @@ import json
 import logging
 from typing import Any, AsyncIterator
 
+from llama_stack_client import APIConnectionError
 from llama_stack_client.lib.agents.agent import AsyncAgent  # type: ignore
 from llama_stack_client import AsyncLlamaStackClient  # type: ignore
 from llama_stack_client.types import UserMessage  # type: ignore
 
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, HTTPException, Request, Depends, status
 from fastapi.responses import StreamingResponse
 
 from client import get_async_llama_stack_client
@@ -16,6 +17,7 @@ from configuration import configuration
 from models.requests import QueryRequest
 import constants
 from utils.auth import auth_dependency
+from utils.endpoints import check_configuration_loaded
 from utils.common import retrieve_user_id
 
 
@@ -128,47 +130,63 @@ async def streaming_query_endpoint_handler(
     auth: Any = Depends(auth_dependency),
 ) -> StreamingResponse:
     """Handle request to the /streaming_query endpoint."""
+    check_configuration_loaded(configuration)
+
     llama_stack_config = configuration.llama_stack_configuration
     logger.info("LLama stack config: %s", llama_stack_config)
-    client = await get_async_llama_stack_client(llama_stack_config)
-    model_id = select_model_id(await client.models.list(), query_request)
-    conversation_id = retrieve_conversation_id(query_request)
-    response = await retrieve_response(client, model_id, query_request)
 
-    async def response_generator(turn_response: Any) -> AsyncIterator[str]:
-        """Generate SSE formatted streaming response."""
-        chunk_id = 0
-        complete_response = ""
+    try:
+        # try to get Llama Stack client
+        client = await get_async_llama_stack_client(llama_stack_config)
+        model_id = select_model_id(await client.models.list(), query_request)
+        conversation_id = retrieve_conversation_id(query_request)
+        response = await retrieve_response(client, model_id, query_request)
 
-        # Send start event
-        yield stream_start_event(conversation_id)
+        async def response_generator(turn_response: Any) -> AsyncIterator[str]:
+            """Generate SSE formatted streaming response."""
+            chunk_id = 0
+            complete_response = ""
 
-        async for chunk in turn_response:
-            if event := stream_build_event(chunk, chunk_id):
-                complete_response += json.loads(event.replace("data: ", ""))["data"][
-                    "token"
-                ]
-                chunk_id += 1
-                yield event
+            # Send start event
+            yield stream_start_event(conversation_id)
 
-        yield stream_end_event()
+            async for chunk in turn_response:
+                if event := stream_build_event(chunk, chunk_id):
+                    complete_response += json.loads(event.replace("data: ", ""))[
+                        "data"
+                    ]["token"]
+                    chunk_id += 1
+                    yield event
 
-        if not is_transcripts_enabled():
-            logger.debug("Transcript collection is disabled in the configuration")
-        else:
-            store_transcript(
-                user_id=retrieve_user_id(auth),
-                conversation_id=conversation_id,
-                query_is_valid=True,  # TODO(lucasagomes): implement as part of query validation
-                query=query_request.query,
-                query_request=query_request,
-                response=complete_response,
-                rag_chunks=[],  # TODO(lucasagomes): implement rag_chunks
-                truncated=False,  # TODO(lucasagomes): implement truncation as part of quota work
-                attachments=query_request.attachments or [],
-            )
+            yield stream_end_event()
 
-    return StreamingResponse(response_generator(response))
+            if not is_transcripts_enabled():
+                logger.debug("Transcript collection is disabled in the configuration")
+            else:
+                store_transcript(
+                    user_id=retrieve_user_id(auth),
+                    conversation_id=conversation_id,
+                    query_is_valid=True,  # TODO(lucasagomes): implement as part of query validation
+                    query=query_request.query,
+                    query_request=query_request,
+                    response=complete_response,
+                    rag_chunks=[],  # TODO(lucasagomes): implement rag_chunks
+                    truncated=False,  # TODO(lucasagomes): implement truncation as part
+                    # of quota work
+                    attachments=query_request.attachments or [],
+                )
+
+        return StreamingResponse(response_generator(response))
+    # connection to Llama Stack server
+    except APIConnectionError as e:
+        logger.error("Unable to connect to Llama Stack: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "response": "Unable to connect to Llama Stack",
+                "cause": str(e),
+            },
+        ) from e
 
 
 async def retrieve_response(
