@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 from llama_stack_client.lib.agents.agent import Agent
 
+from llama_stack_client import APIConnectionError
 from llama_stack_client import LlamaStackClient  # type: ignore
 from llama_stack_client.types import UserMessage  # type: ignore
 from llama_stack_client.types.agents.turn_create_params import (
@@ -25,6 +26,7 @@ from models.requests import QueryRequest, Attachment
 import constants
 from utils.auth import auth_dependency
 from utils.common import retrieve_user_id
+from utils.endpoints import check_configuration_loaded
 from utils.suid import get_suid
 
 logger = logging.getLogger("app.endpoints.handlers")
@@ -35,6 +37,12 @@ query_response: dict[int | str, dict[str, Any]] = {
     200: {
         "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
         "response": "LLM ansert",
+    },
+    503: {
+        "detail": {
+            "response": "Unable to connect to Llama Stack",
+            "cause": "Connection error.",
+        }
     },
 }
 
@@ -66,29 +74,44 @@ def query_endpoint_handler(
     auth: Any = Depends(auth_dependency),
 ) -> QueryResponse:
     """Handle request to the /query endpoint."""
+    check_configuration_loaded(configuration)
+
     llama_stack_config = configuration.llama_stack_configuration
     logger.info("LLama stack config: %s", llama_stack_config)
-    client = get_llama_stack_client(llama_stack_config)
-    model_id = select_model_id(client.models.list(), query_request)
-    conversation_id = retrieve_conversation_id(query_request)
-    response = retrieve_response(client, model_id, query_request, auth)
 
-    if not is_transcripts_enabled():
-        logger.debug("Transcript collection is disabled in the configuration")
-    else:
-        store_transcript(
-            user_id=retrieve_user_id(auth),
-            conversation_id=conversation_id,
-            query_is_valid=True,  # TODO(lucasagomes): implement as part of query validation
-            query=query_request.query,
-            query_request=query_request,
-            response=response,
-            rag_chunks=[],  # TODO(lucasagomes): implement rag_chunks
-            truncated=False,  # TODO(lucasagomes): implement truncation as part of quota work
-            attachments=query_request.attachments or [],
-        )
+    try:
+        # try to get Llama Stack client
+        client = get_llama_stack_client(llama_stack_config)
+        model_id = select_model_id(client.models.list(), query_request)
+        conversation_id = retrieve_conversation_id(query_request)
+        response = retrieve_response(client, model_id, query_request, auth)
 
-    return QueryResponse(conversation_id=conversation_id, response=response)
+        if not is_transcripts_enabled():
+            logger.debug("Transcript collection is disabled in the configuration")
+        else:
+            store_transcript(
+                user_id=retrieve_user_id(auth),
+                conversation_id=conversation_id,
+                query_is_valid=True,  # TODO(lucasagomes): implement as part of query validation
+                query=query_request.query,
+                query_request=query_request,
+                response=response,
+                rag_chunks=[],  # TODO(lucasagomes): implement rag_chunks
+                truncated=False,  # TODO(lucasagomes): implement truncation as part of quota work
+                attachments=query_request.attachments or [],
+            )
+
+        return QueryResponse(conversation_id=conversation_id, response=response)
+    # connection to Llama Stack server
+    except APIConnectionError as e:
+        logger.error("Unable to connect to Llama Stack: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "response": "Unable to connect to Llama Stack",
+                "cause": str(e),
+            },
+        ) from e
 
 
 def select_model_id(models: ModelListResponse, query_request: QueryRequest) -> str:
