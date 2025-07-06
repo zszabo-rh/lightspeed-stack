@@ -1,13 +1,61 @@
 import pytest
 
+from fastapi import HTTPException, status
+
 from app.endpoints.query import get_rag_toolgroups
 from app.endpoints.streaming_query import (
     streaming_query_endpoint_handler,
     retrieve_response,
     stream_build_event,
 )
+from llama_stack_client import APIConnectionError
 from models.requests import QueryRequest, Attachment
 from llama_stack_client.types import UserMessage  # type: ignore
+
+
+@pytest.mark.asyncio
+async def test_streaming_query_endpoint_handler_configuration_not_loaded(mocker):
+    """Test the streaming query endpoint handler if configuration is not loaded."""
+    # simulate state when no configuration is loaded
+    mocker.patch(
+        "app.endpoints.streaming_query.configuration",
+        return_value=mocker.Mock(),
+    )
+    mocker.patch("app.endpoints.streaming_query.configuration", None)
+
+    query = "What is OpenStack?"
+    query_request = QueryRequest(query=query)
+
+    # await the async function
+    with pytest.raises(HTTPException) as e:
+        await streaming_query_endpoint_handler(None, query_request, auth="mock_auth")
+        assert e.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert e.detail["response"] == "Configuration is not loaded"
+
+
+@pytest.mark.asyncio
+async def test_streaming_query_endpoint_on_connection_error(mocker):
+    """Test the streaming query endpoint handler if connection can not be established."""
+    # simulate state when no configuration is loaded
+    mocker.patch(
+        "app.endpoints.streaming_query.configuration",
+        return_value=mocker.Mock(),
+    )
+
+    query = "What is OpenStack?"
+    query_request = QueryRequest(query=query)
+
+    # simulate situation when it is not possible to connect to Llama Stack
+    mocker.patch(
+        "app.endpoints.streaming_query.get_async_llama_stack_client",
+        side_effect=APIConnectionError(request=query_request),
+    )
+
+    # await the async function
+    with pytest.raises(HTTPException) as e:
+        await streaming_query_endpoint_handler(None, query_request, auth="mock_auth")
+        assert e.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert e.detail["response"] == "Configuration is not loaded"
 
 
 async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False):
