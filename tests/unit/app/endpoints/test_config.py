@@ -1,5 +1,6 @@
 import pytest
 
+from fastapi import HTTPException, status
 from app.endpoints.config import config_endpoint_handler
 from configuration import AppConfig
 
@@ -7,13 +8,16 @@ from configuration import AppConfig
 def test_config_endpoint_handler_configuration_not_loaded(mocker):
     """Test the config endpoint handler."""
     mocker.patch(
-        "app.endpoints.query.configuration",
+        "app.endpoints.config.configuration",
         return_value=mocker.Mock(),
     )
+    mocker.patch("app.endpoints.config.configuration", None)
 
     request = None
-    with pytest.raises(Exception, match="logic error: configuration is not loaded"):
+    with pytest.raises(HTTPException) as e:
         config_endpoint_handler(request)
+        assert e.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert e.detail["response"] == "Configuration is not loaded"
 
 
 def test_config_endpoint_handler_configuration_loaded(mocker):
