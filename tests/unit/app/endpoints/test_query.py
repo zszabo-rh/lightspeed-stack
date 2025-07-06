@@ -14,6 +14,7 @@ from app.endpoints.query import (
     store_transcript,
     get_rag_toolgroups,
 )
+from llama_stack_client import APIConnectionError
 from models.requests import QueryRequest, Attachment
 from models.config import ModelContextProtocolServer
 from llama_stack_client.types import UserMessage  # type: ignore
@@ -45,6 +46,22 @@ def setup_configuration():
     cfg = AppConfig()
     cfg.init_from_dict(config_dict)
     return cfg
+
+
+def test_query_endpoint_handler_configuration_not_loaded(mocker):
+    """Test the query endpoint handler if configuration is not loaded."""
+    # simulate state when no configuration is loaded
+    mocker.patch(
+        "app.endpoints.query.configuration",
+        return_value=mocker.Mock(),
+    )
+    mocker.patch("app.endpoints.query.configuration", None)
+
+    request = None
+    with pytest.raises(HTTPException) as e:
+        query_endpoint_handler(request)
+        assert e.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert e.detail["response"] == "Configuration is not loaded"
 
 
 def test_is_transcripts_enabled(setup_configuration, mocker):
@@ -137,7 +154,7 @@ def _test_query_endpoint_handler(mocker, store_transcript=False):
         mock_transcript.assert_not_called()
 
 
-def test_query_endpoint_handler(mocker):
+def test_query_endpoint_handler_transcript_storage_disabled(mocker):
     """Test the query endpoint handler with transcript storage disabled."""
     _test_query_endpoint_handler(mocker, store_transcript=False)
 
@@ -704,3 +721,24 @@ def test_get_rag_toolgroups(mocker):
     assert len(result) == 1
     assert result[0]["name"] == "builtin::rag/knowledge_search"
     assert result[0]["args"]["vector_db_ids"] == vector_db_ids
+
+
+def test_query_endpoint_handler_on_connection_error(mocker):
+    """Test the query endpoint handler."""
+    mocker.patch(
+        "app.endpoints.query.configuration",
+        return_value=mocker.Mock(),
+    )
+
+    # construct mocked query
+    query = "What is OpenStack?"
+    query_request = QueryRequest(query=query)
+
+    # simulate situation when it is not possible to connect to Llama Stack
+    mocker.patch(
+        "app.endpoints.query.get_llama_stack_client",
+        side_effect=APIConnectionError(request=query_request),
+    )
+
+    with pytest.raises(Exception):
+        query_endpoint_handler(query_request)
