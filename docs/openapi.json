@@ -131,6 +131,13 @@
                         "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
                         "response": "LLM ansert"
                     },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "detail": {
+                            "response": "Unable to connect to Llama Stack",
+                            "cause": "Connection error."
+                        }
+                    },
                     "422": {
                         "description": "Validation Error",
                         "content": {
