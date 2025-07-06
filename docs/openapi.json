@@ -96,6 +96,9 @@
                                 "model_type": "llm"
                             }
                         ]
+                    },
+                    "503": {
+                        "description": "Connection to Llama Stack is broken"
                     }
                 }
             }
