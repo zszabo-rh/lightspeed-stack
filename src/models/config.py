@@ -87,21 +87,29 @@ class LLamaStackConfiguration(BaseModel):
 
 class DataCollectorConfiguration(BaseModel):
     """Data collector configuration for sending data to ingress server."""
-    
+
     enabled: bool = False
     ingress_server_url: Optional[str] = None
     ingress_server_auth_token: Optional[str] = None
-    collection_interval: int = 2 * 60 * 60  # 2 hours
+    collection_interval: Optional[int] = None
     cleanup_after_send: bool = True  # Remove local files after successful send
-    connection_timeout_seconds: int = 30
-    
+    connection_timeout: int = 30
+
     @model_validator(mode="after")
     def check_archival_configuration(self) -> Self:
         """Check data archival configuration."""
         if self.enabled and self.ingress_server_url is None:
-            raise ValueError("ingress_server_url is required when data archival is enabled")
-        if self.collection_interval <= 0:
-            raise ValueError("collection_interval must be positive")
+            raise ValueError(
+                "ingress_server_url is required when data archival is enabled"
+            )
+        if self.enabled and self.collection_interval is None:
+            raise ValueError(
+                "collection_interval is required when data archival is enabled"
+            )
+        if self.collection_interval is not None and self.collection_interval <= 0:
+            raise ValueError(
+                "collection_interval must be positive when data archival is enabled"
+            )
         return self
 
 

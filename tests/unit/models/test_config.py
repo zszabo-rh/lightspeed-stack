@@ -13,6 +13,7 @@ from models.config import (
     UserDataCollection,
     TLSConfiguration,
     ModelContextProtocolServer,
+    DataCollectorConfiguration,
 )
 
 
@@ -127,6 +128,63 @@ def test_user_data_collection_transcripts_disabled() -> None:
         match="transcripts_storage is required when transcripts is enabled",
     ):
         UserDataCollection(transcripts_disabled=False, transcripts_storage=None)
+
+
+def test_user_data_collection_data_collector_enabled() -> None:
+    """Test the UserDataCollection constructor for data collector."""
+    # correct configuration
+    cfg = UserDataCollection(
+        data_collector=DataCollectorConfiguration(
+            enabled=True,
+            ingress_server_url="http://localhost:8080",
+            ingress_server_auth_token="xyzzy",
+            collection_interval=60,
+        )
+    )
+    assert cfg is not None
+    assert cfg.data_collector.enabled is True
+
+
+def test_user_data_collection_data_collector_wrong_configuration() -> None:
+    """Test the UserDataCollection constructor for data collector."""
+    # incorrect configuration
+    with pytest.raises(
+        ValueError, match="ingress_server_url is required when data archival is enabled"
+    ):
+        UserDataCollection(
+            data_collector=DataCollectorConfiguration(
+                enabled=True,
+                ingress_server_url=None,
+                ingress_server_auth_token="xyzzy",
+                collection_interval=60,
+            )
+        )
+
+    with pytest.raises(
+        ValueError,
+        match="collection_interval is required when data archival is enabled",
+    ):
+        UserDataCollection(
+            data_collector=DataCollectorConfiguration(
+                enabled=True,
+                ingress_server_url="http://localhost:8080",
+                ingress_server_auth_token="xyzzy",
+                collection_interval=None,
+            )
+        )
+
+    with pytest.raises(
+        ValueError,
+        match="collection_interval must be positive when data archival is enabled",
+    ):
+        UserDataCollection(
+            data_collector=DataCollectorConfiguration(
+                enabled=True,
+                ingress_server_url="http://localhost:8080",
+                ingress_server_auth_token="xyzzy",
+                collection_interval=0,
+            )
+        )
 
 
 def test_tls_configuration() -> None:
@@ -366,6 +424,14 @@ def test_dump_configuration(tmp_path) -> None:
                 "feedback_storage": None,
                 "transcripts_disabled": True,
                 "transcripts_storage": None,
+                "data_collector": {
+                    "enabled": False,
+                    "ingress_server_url": None,
+                    "ingress_server_auth_token": None,
+                    "collection_interval": None,
+                    "cleanup_after_send": True,
+                    "connection_timeout": 30,
+                },
             },
             "mcp_servers": [],
             "authentication": {
@@ -434,6 +500,14 @@ def test_dump_configuration_with_one_mcp_server(tmp_path) -> None:
                 "feedback_storage": None,
                 "transcripts_disabled": True,
                 "transcripts_storage": None,
+                "data_collector": {
+                    "enabled": False,
+                    "ingress_server_url": None,
+                    "ingress_server_auth_token": None,
+                    "collection_interval": None,
+                    "cleanup_after_send": True,
+                    "connection_timeout": 30,
+                },
             },
             "mcp_servers": [
                 {
@@ -516,6 +590,14 @@ def test_dump_configuration_with_more_mcp_servers(tmp_path) -> None:
                 "feedback_storage": None,
                 "transcripts_disabled": True,
                 "transcripts_storage": None,
+                "data_collector": {
+                    "enabled": False,
+                    "ingress_server_url": None,
+                    "ingress_server_auth_token": None,
+                    "collection_interval": None,
+                    "cleanup_after_send": True,
+                    "connection_timeout": 30,
+                },
             },
             "mcp_servers": [
                 {

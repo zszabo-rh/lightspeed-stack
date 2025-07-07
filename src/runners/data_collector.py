@@ -2,21 +2,19 @@
 
 import logging
 
-from configuration import configuration
+from models.config import DataCollectorConfiguration
 from services.data_collector import DataCollectorService
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def start_data_collector() -> None:
+def start_data_collector(configuration: DataCollectorConfiguration) -> None:
     """Start the data collector service as a standalone process."""
     logger.info("Starting data collector runner")
-    
-    collector_config = configuration.user_data_collection_configuration.data_collector
-    
-    if not collector_config.enabled:
+
+    if not configuration.enabled:
         logger.info("Data collection is disabled")
         return
-    
+
     service = DataCollectorService()
-    service.run() 
+    service.run()

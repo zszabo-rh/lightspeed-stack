@@ -15,25 +15,35 @@ from log import get_logger
 logger = get_logger(__name__)
 
 
-class DataCollectorService:
-    """Service for collecting and sending user data to ingress server."""
+class DataCollectorService:  # pylint: disable=too-few-public-methods
+    """Service for collecting and sending user data to ingress server.
+
+    This service handles the periodic collection and transmission of user data
+    including feedback and transcripts to the configured ingress server.
+    """
 
     def run(self) -> None:
         """Run the periodic data collection loop."""
-        collector_config = configuration.user_data_collection_configuration.data_collector
-        
+        collector_config = (
+            configuration.user_data_collection_configuration.data_collector
+        )
+
         logger.info("Starting data collection service")
-        
+
         while True:
             try:
                 self._perform_collection()
-                logger.info(f"Next collection scheduled in {collector_config.collection_interval} seconds")
-                time.sleep(collector_config.collection_interval)
+                logger.info(
+                    "Next collection scheduled in %s seconds",
+                    collector_config.collection_interval,
+                )
+                if collector_config.collection_interval is not None:
+                    time.sleep(collector_config.collection_interval)
             except KeyboardInterrupt:
                 logger.info("Data collection service stopped by user")
                 break
-            except Exception as e:
-                logger.error(f"Error during collection process: {e}", exc_info=True)
+            except (OSError, requests.RequestException) as e:
+                logger.error("Error during collection process: %s", e, exc_info=True)
                 time.sleep(300)  # Wait 5 minutes before retrying on error
 
     def _perform_collection(self) -> None:
@@ -48,19 +58,29 @@ class DataCollectorService:
             logger.info("No files to collect")
             return
 
-        logger.info(f"Found {len(feedback_files)} feedback files and {len(transcript_files)} transcript files to collect")
+        logger.info(
+            "Found %s feedback files and %s transcript files to collect",
+            len(feedback_files),
+            len(transcript_files),
+        )
 
         # Create and send archives
         collections_sent = 0
         try:
             if feedback_files:
-                collections_sent += self._create_and_send_tarball(feedback_files, "feedback")
+                collections_sent += self._create_and_send_tarball(
+                    feedback_files, "feedback"
+                )
             if transcript_files:
-                collections_sent += self._create_and_send_tarball(transcript_files, "transcripts")
+                collections_sent += self._create_and_send_tarball(
+                    transcript_files, "transcripts"
+                )
 
-            logger.info(f"Successfully sent {collections_sent} collections to ingress server")
-        except Exception as e:
-            logger.error(f"Failed to create or send collections: {e}", exc_info=True)
+            logger.info(
+                "Successfully sent %s collections to ingress server", collections_sent
+            )
+        except (OSError, requests.RequestException, tarfile.TarError) as e:
+            logger.error("Failed to create or send collections: %s", e, exc_info=True)
             raise
 
     def _collect_feedback_files(self) -> List[Path]:
@@ -95,7 +115,9 @@ class DataCollectorService:
         if not files:
             return 0
 
-        collector_config = configuration.user_data_collection_configuration.data_collector
+        collector_config = (
+            configuration.user_data_collection_configuration.data_collector
+        )
 
         # Create one tarball with all files
         tarball_path = self._create_tarball(files, data_type)
@@ -117,7 +139,7 @@ class DataCollectorService:
         temp_dir = Path(tempfile.gettempdir())
         tarball_path = temp_dir / tarball_name
 
-        logger.info(f"Creating tarball {tarball_path} with {len(files)} files")
+        logger.info("Creating tarball %s with %s files", tarball_path, len(files))
 
         with tarfile.open(tarball_path, "w:gz") as tar:
             for file_path in files:
@@ -125,51 +147,64 @@ class DataCollectorService:
                     # Add file with relative path to maintain directory structure
                     arcname = str(file_path.relative_to(file_path.parents[-2]))
                     tar.add(file_path, arcname=arcname)
-                except Exception as e:
-                    logger.warning(f"Failed to add {file_path} to tarball: {e}")
-        
-        logger.info(f"Created tarball {tarball_path} ({tarball_path.stat().st_size} bytes)")
+                except (OSError, ValueError) as e:
+                    logger.warning("Failed to add %s to tarball: %s", file_path, e)
+
+        logger.info(
+            "Created tarball %s (%s bytes)", tarball_path, tarball_path.stat().st_size
+        )
         return tarball_path
 
     def _send_tarball(self, tarball_path: Path) -> None:
         """Send the tarball to the ingress server."""
-        collector_config = configuration.user_data_collection_configuration.data_collector
+        collector_config = (
+            configuration.user_data_collection_configuration.data_collector
+        )
+
+        if collector_config.ingress_server_url is None:
+            raise ValueError("Ingress server URL is not configured")
 
         headers = {
             "Content-Type": "application/vnd.redhat.lightspeed-stack.periodic+tar",
         }
 
         if collector_config.ingress_server_auth_token:
-            headers["Authorization"] = f"Bearer {collector_config.ingress_server_auth_token}"
+            headers["Authorization"] = (
+                f"Bearer {collector_config.ingress_server_auth_token}"
+            )
 
         with open(tarball_path, "rb") as f:
             data = f.read()
 
-        logger.info(f"Sending tarball {tarball_path.name} to {collector_config.ingress_server_url}")
+        logger.info(
+            "Sending tarball %s to %s",
+            tarball_path.name,
+            collector_config.ingress_server_url,
+        )
 
         response = requests.post(
             collector_config.ingress_server_url,
             data=data,
             headers=headers,
-            timeout=collector_config.connection_timeout_seconds,
+            timeout=collector_config.connection_timeout,
         )
 
         if response.status_code >= 400:
-            raise Exception(
+            raise requests.HTTPError(
                 f"Failed to send tarball to ingress server. "
                 f"Status: {response.status_code}, Response: {response.text}"
             )
 
-        logger.info(f"Successfully sent tarball {tarball_path.name} to ingress server")
+        logger.info("Successfully sent tarball %s to ingress server", tarball_path.name)
 
     def _cleanup_files(self, files: List[Path]) -> None:
         """Remove files after successful transmission."""
         for file_path in files:
             try:
                 file_path.unlink()
-                logger.debug(f"Removed file {file_path}")
+                logger.debug("Removed file %s", file_path)
             except OSError as e:
-                logger.warning(f"Failed to remove file {file_path}: {e}")
+                logger.warning("Failed to remove file %s: %s", file_path, e)
 
     def _cleanup_empty_directories(self) -> None:
         """Remove empty directories from transcript storage."""
@@ -189,7 +224,7 @@ class DataCollectorService:
                     if conv_dir.is_dir() and not any(conv_dir.iterdir()):
                         try:
                             conv_dir.rmdir()
-                            logger.debug(f"Removed empty directory {conv_dir}")
+                            logger.debug("Removed empty directory %s", conv_dir)
                         except OSError:
                             pass
 
@@ -197,7 +232,7 @@ class DataCollectorService:
                 if not any(user_dir.iterdir()):
                     try:
                         user_dir.rmdir()
-                        logger.debug(f"Removed empty directory {user_dir}")
+                        logger.debug("Removed empty directory %s", user_dir)
                     except OSError:
                         pass
 
@@ -205,6 +240,6 @@ class DataCollectorService:
         """Remove the temporary tarball file."""
         try:
             tarball_path.unlink()
-            logger.debug(f"Removed temporary tarball {tarball_path}")
+            logger.debug("Removed temporary tarball %s", tarball_path)
         except OSError as e:
-            logger.warning(f"Failed to remove temporary tarball {tarball_path}: {e}")
+            logger.warning("Failed to remove temporary tarball %s: %s", tarball_path, e)
