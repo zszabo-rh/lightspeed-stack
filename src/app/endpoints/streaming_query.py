@@ -68,6 +68,7 @@ async def get_agent(
     _agent_cache[conversation_id] = agent
     return agent, conversation_id
 
+
 METADATA_PATTERN = re.compile(r"\nMetadata: (\{.+})\n")
 
 
@@ -104,7 +105,10 @@ def stream_end_event(metadata_map: dict) -> str:
                         "doc_url": v["docs_url"],
                         "doc_title": v["title"],
                     }
-                    for _, v in metadata_map.items()
+                    for v in filter(
+                        lambda v: ("docs_url" in v) and ("title" in v),
+                        metadata_map.values(),
+                    )
                 ],
                 "truncated": None,  # TODO(jboos): implement truncated
                 "input_tokens": 0,  # TODO(jboos): implement input tokens

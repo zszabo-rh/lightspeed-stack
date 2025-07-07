@@ -30,6 +30,12 @@ Metadata: {'docs_url': 'https://example.com/doc2', 'title': 'Doc2', 'document_id
 """,
     """END of knowledge_search tool results.
 """,
+    # Following metadata contains an intentionally incorrect keyword "Title" (instead of "title")
+    # and it is not picked as a referenced document.
+    """Result 3
+Content: ABC
+Metadata: {'docs_url': 'https://example.com/doc3', 'Title': 'Doc3', 'document_id': 'doc-3'}
+""",
     """The above results were retrieved to help answer the user\'s query: "Sample Query".
 Use them as supporting information only in answering this query.
 """,
