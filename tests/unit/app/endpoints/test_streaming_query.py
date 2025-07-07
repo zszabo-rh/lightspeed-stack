@@ -2,6 +2,7 @@ import pytest
 import json
 
 from fastapi import HTTPException, status
+from llama_stack_client.types.shared.interleaved_content_item import TextContentItem
 
 from app.endpoints.query import get_rag_toolgroups
 from app.endpoints.streaming_query import (
@@ -13,6 +14,32 @@ from llama_stack_client import APIConnectionError
 from models.requests import QueryRequest, Attachment
 from models.config import ModelContextProtocolServer
 from llama_stack_client.types import UserMessage  # type: ignore
+
+
+SAMPLE_KNOWLEDGE_SEARCH_RESULTS = [
+    """knowledge_search tool found 2 chunks:
+BEGIN of knowledge_search tool results.
+""",
+    """Result 1
+Content: ABC
+Metadata: {'docs_url': 'https://example.com/doc1', 'title': 'Doc1', 'document_id': 'doc-1'}
+""",
+    """Result 2
+Content: ABC
+Metadata: {'docs_url': 'https://example.com/doc2', 'title': 'Doc2', 'document_id': 'doc-2'}
+""",
+    """END of knowledge_search tool results.
+""",
+    # Following metadata contains an intentionally incorrect keyword "Title" (instead of "title")
+    # and it is not picked as a referenced document.
+    """Result 3
+Content: ABC
+Metadata: {'docs_url': 'https://example.com/doc3', 'Title': 'Doc3', 'document_id': 'doc-3'}
+""",
+    """The above results were retrieved to help answer the user\'s query: "Sample Query".
+Use them as supporting information only in answering this query.
+""",
+]
 
 
 @pytest.mark.asyncio
@@ -80,6 +107,31 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
                 )
             )
         ),
+        mocker.Mock(
+            event=mocker.Mock(
+                payload=mocker.Mock(
+                    event_type="step_complete",
+                    step_type="tool_execution",
+                    step_details=mocker.Mock(
+                        step_type="tool_execution",
+                        tool_responses=[
+                            mocker.Mock(
+                                tool_name="knowledge_search",
+                                content=[
+                                    TextContentItem(text=s, type="text")
+                                    for s in SAMPLE_KNOWLEDGE_SEARCH_RESULTS
+                                ],
+                            )
+                        ],
+                        tool_calls=[
+                            mocker.Mock(
+                                tool_name="knowledge_search",
+                            )
+                        ],
+                    ),
+                )
+            )
+        ),
     ]
 
     mocker.patch(
@@ -136,6 +188,13 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
     assert '"event": "end"' in full_content
     assert "LLM answer" in full_content
 
+    # Assert referenced documents
+    assert len(streaming_content) == 4
+    d = json.loads(streaming_content[3][5:])
+    referenced_documents = d["data"]["referenced_documents"]
+    assert len(referenced_documents) == 2
+    assert referenced_documents[1]["doc_title"] == "Doc2"
+
     # Assert the store_transcript function is called if transcripts are enabled
     if store_transcript:
         mock_transcript.assert_called_once_with(
@@ -144,7 +203,7 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
             query_is_valid=True,
             query=query,
             query_request=query_request,
-            response="LLM answer",
+            response="LLM answerknowledge_search",
             attachments=[],
             rag_chunks=[],
             truncated=False,
@@ -451,7 +510,7 @@ def test_stream_build_event_step_progress(mocker):
     mock_chunk.event.payload.delta.text = "This is a test response"
 
     chunk_id = 0
-    result = stream_build_event(mock_chunk, chunk_id)
+    result = stream_build_event(mock_chunk, chunk_id, {})
 
     assert result is not None
     assert "data: " in result
@@ -464,24 +523,39 @@ def test_stream_build_event_step_progress(mocker):
 def test_stream_build_event_step_complete(mocker):
     """Test stream_build_event function with step_complete event type."""
     # Create a properly nested mock chunk structure
-    mock_chunk = mocker.Mock()
-    mock_chunk.event = mocker.Mock()
-    mock_chunk.event.payload = mocker.Mock()
-    mock_chunk.event.payload.event_type = "step_complete"
-    mock_chunk.event.payload.step_type = "tool_execution"
-    mock_chunk.event.payload.step_details = mocker.Mock()
-    mock_chunk.event.payload.step_details.step_type = "tool_execution"
-    mock_chunk.event.payload.step_details.tool_calls = [
-        mocker.Mock(tool_name="search_tool")
-    ]
+    mock_chunk = mocker.Mock(
+        event=mocker.Mock(
+            payload=mocker.Mock(
+                event_type="step_complete",
+                step_type="tool_execution",
+                step_details=mocker.Mock(
+                    step_type="tool_execution",
+                    tool_responses=[
+                        mocker.Mock(
+                            tool_name="knowledge_search",
+                            content=[
+                                TextContentItem(text=s, type="text")
+                                for s in SAMPLE_KNOWLEDGE_SEARCH_RESULTS
+                            ],
+                        )
+                    ],
+                    tool_calls=[
+                        mocker.Mock(
+                            tool_name="knowledge_search",
+                        )
+                    ],
+                ),
+            )
+        )
+    )
 
     chunk_id = 0
-    result = stream_build_event(mock_chunk, chunk_id)
+    result = stream_build_event(mock_chunk, chunk_id, {})
 
     assert result is not None
     assert "data: " in result
     assert '"event": "token"' in result
-    assert '"token": "search_tool"' in result
+    assert '"token": "knowledge_search"' in result
     assert '"role": "tool_execution"' in result
     assert '"id": 0' in result
 
@@ -494,7 +568,7 @@ def test_stream_build_event_returns_none(mocker):
     # Deliberately not setting payload attribute
 
     chunk_id = 0
-    result = stream_build_event(mock_chunk, chunk_id)
+    result = stream_build_event(mock_chunk, chunk_id, {})
 
     assert result is None
 
