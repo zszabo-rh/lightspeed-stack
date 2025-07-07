@@ -211,7 +211,18 @@ def _extract_bearer_token(header: str) -> str:
 
 
 class K8SAuthDependency(AuthInterface):  # pylint: disable=too-few-public-methods
-    """No-op AuthDependency class that bypasses authentication and authorization checks."""
+    """FastAPI dependency for Kubernetes (k8s) authentication and authorization.
+
+    K8SAuthDependency is an authentication and authorization dependency for FastAPI endpoints,
+    integrating with Kubernetes RBAC via SubjectAccessReview (SAR).
+
+    This class extracts the user token from the request headers, retrieves user information,
+    and performs a Kubernetes SAR to determine if the user is authorized.
+
+    Raises:
+        HTTPException: HTTP 403 if the token is invalid, expired, or the user is not authorized.
+
+    """
 
     def __init__(self, virtual_path: str = DEFAULT_VIRTUAL_PATH) -> None:
         """Initialize the required allowed paths for authorization checks."""
