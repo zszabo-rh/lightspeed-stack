@@ -8,6 +8,9 @@ PYTHON_REGISTRY = pypi
 run: ## Run the service locally
 	uv run src/lightspeed_stack.py
 
+run-data-collector: ## Run the data collector service locally
+	uv run src/lightspeed_stack.py --data-collector
+
 test-unit: ## Run the unit tests
 	@echo "Running unit tests..."
 	@echo "Reports will be written to ${ARTIFACT_DIR}"
