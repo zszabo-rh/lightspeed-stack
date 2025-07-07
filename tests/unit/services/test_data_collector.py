@@ -2,6 +2,8 @@
 
 from pathlib import Path
 from unittest.mock import patch, MagicMock
+import requests
+import tarfile
 
 from services.data_collector import DataCollectorService
 
@@ -37,7 +39,7 @@ def test_run_with_exception(mock_config, mock_sleep) -> None:
     service = DataCollectorService()
 
     with patch.object(service, "_perform_collection") as mock_perform:
-        mock_perform.side_effect = [Exception("Test error"), KeyboardInterrupt()]
+        mock_perform.side_effect = [OSError("Test error"), KeyboardInterrupt()]
 
         service.run()
 
@@ -268,7 +270,7 @@ def test_create_tarball_file_add_error(
     mock_gettempdir.return_value = "/tmp"
 
     mock_tar = MagicMock()
-    mock_tar.add.side_effect = Exception("File error")
+    mock_tar.add.side_effect = OSError("File error")
     mock_tarfile.return_value.__enter__.return_value = mock_tar
 
     files = [Path("/data/test/file1.json")]
@@ -358,6 +360,74 @@ def test_send_tarball_http_error(mock_post, mock_config) -> None:
             assert False, "Expected exception"
         except Exception as e:
             assert "Failed to send tarball" in str(e)
+
+
+@patch("services.data_collector.configuration")
+def test_send_tarball_missing_url(mock_config) -> None:
+    """Test tarball sending when ingress server URL is None."""
+    service = DataCollectorService()
+
+    mock_config.user_data_collection_configuration.data_collector.ingress_server_url = (
+        None
+    )
+
+    try:
+        service._send_tarball(Path("/tmp/test.tar.gz"))
+        assert False, "Expected ValueError"
+    except ValueError as e:
+        assert "Ingress server URL is not configured" in str(e)
+
+
+@patch("services.data_collector.configuration")
+def test_perform_collection_with_specific_exceptions(mock_config) -> None:
+    """Test _perform_collection with specific exception types that should be caught."""
+    service = DataCollectorService()
+
+    # Test with OSError
+    with patch.object(
+        service, "_collect_feedback_files", return_value=[Path("/tmp/test.json")]
+    ):
+        with patch.object(service, "_collect_transcript_files", return_value=[]):
+            with patch.object(
+                service, "_create_and_send_tarball", side_effect=OSError("OS Error")
+            ):
+                try:
+                    service._perform_collection()
+                    assert False, "Expected OSError"
+                except OSError as e:
+                    assert str(e) == "OS Error"
+
+    # Test with requests.RequestException
+    with patch.object(
+        service, "_collect_feedback_files", return_value=[Path("/tmp/test.json")]
+    ):
+        with patch.object(service, "_collect_transcript_files", return_value=[]):
+            with patch.object(
+                service,
+                "_create_and_send_tarball",
+                side_effect=requests.RequestException("Request Error"),
+            ):
+                try:
+                    service._perform_collection()
+                    assert False, "Expected RequestException"
+                except requests.RequestException as e:
+                    assert str(e) == "Request Error"
+
+    # Test with tarfile.TarError
+    with patch.object(
+        service, "_collect_feedback_files", return_value=[Path("/tmp/test.json")]
+    ):
+        with patch.object(service, "_collect_transcript_files", return_value=[]):
+            with patch.object(
+                service,
+                "_create_and_send_tarball",
+                side_effect=tarfile.TarError("Tar Error"),
+            ):
+                try:
+                    service._perform_collection()
+                    assert False, "Expected TarError"
+                except tarfile.TarError as e:
+                    assert str(e) == "Tar Error"
 
 
 def test_cleanup_files_success() -> None:
