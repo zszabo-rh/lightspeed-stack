@@ -29,6 +29,7 @@ import constants
 from auth import get_auth_dependency
 from utils.common import retrieve_user_id
 from utils.endpoints import check_configuration_loaded, get_system_prompt
+from utils.mcp_headers import mcp_headers_dependency
 from utils.suid import get_suid
 
 logger = logging.getLogger("app.endpoints.handlers")
@@ -82,7 +83,6 @@ def get_agent(
         model=model_id,
         instructions=system_prompt,
         input_shields=available_shields if available_shields else [],
-        tools=[mcp.name for mcp in configuration.mcp_servers],
         enable_session_persistence=True,
     )
     conversation_id = agent.create_session(get_suid())
@@ -94,6 +94,7 @@ def get_agent(
 def query_endpoint_handler(
     query_request: QueryRequest,
     auth: Any = Depends(auth_dependency),
+    mcp_headers: dict[str, dict[str, str]] = Depends(mcp_headers_dependency),
 ) -> QueryResponse:
     """Handle request to the /query endpoint."""
     check_configuration_loaded(configuration)
@@ -106,7 +107,11 @@ def query_endpoint_handler(
         client = get_llama_stack_client(llama_stack_config)
         model_id = select_model_id(client.models.list(), query_request)
         response, conversation_id = retrieve_response(
-            client, model_id, query_request, auth
+            client,
+            model_id,
+            query_request,
+            auth,
+            mcp_headers=mcp_headers,
         )
 
         if not is_transcripts_enabled():
@@ -186,6 +191,7 @@ def retrieve_response(
     model_id: str,
     query_request: QueryRequest,
     token: str,
+    mcp_headers: dict[str, dict[str, str]] | None = None,
 ) -> tuple[str, str]:
     """Retrieve response from LLMs and agents."""
     available_shields = [shield.identifier for shield in client.shields.list()]
@@ -211,8 +217,10 @@ def retrieve_response(
         query_request.conversation_id,
     )
 
-    mcp_headers = {}
-    if token:
+    # preserve compatibility when mcp_headers is not provided
+    if mcp_headers is None:
+        mcp_headers = {}
+    if not mcp_headers and token:
         for mcp_server in configuration.mcp_servers:
             mcp_headers[mcp_server.url] = {
                 "Authorization": f"Bearer {token}",
@@ -227,12 +235,15 @@ def retrieve_response(
     }
 
     vector_db_ids = [vector_db.identifier for vector_db in client.vector_dbs.list()]
+    toolgroups = (get_rag_toolgroups(vector_db_ids) or []) + [
+        mcp_server.name for mcp_server in configuration.mcp_servers
+    ]
     response = agent.create_turn(
         messages=[UserMessage(role="user", content=query_request.query)],
         session_id=conversation_id,
         documents=query_request.get_documents(),
         stream=False,
-        toolgroups=get_rag_toolgroups(vector_db_ids),
+        toolgroups=toolgroups or None,
     )
 
     return str(response.output_message.content), conversation_id  # type: ignore[union-attr]

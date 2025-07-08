@@ -64,8 +64,8 @@ async def test_register_mcp_servers_single_server_not_registered(mocker):
     # Mock the LlamaStack client
     mock_client = Mock()
     mock_tool = Mock()
-    mock_tool.toolgroup_id = "existing-server"
-    mock_client.tools.list.return_value = [mock_tool]
+    mock_tool.provider_resource_id = "existing-server"
+    mock_client.toolgroups.list.return_value = [mock_tool]
     mock_client.toolgroups.register.return_value = None
     mocker.patch("utils.common.get_llama_stack_client", return_value=mock_client)
 
@@ -87,8 +87,8 @@ async def test_register_mcp_servers_single_server_not_registered(mocker):
     # Call the function
     await register_mcp_servers_async(mock_logger, config)
 
-    # Verify client.tools.list was called
-    mock_client.tools.list.assert_called_once()
+    # Verify client.toolgroups.list was called
+    mock_client.toolgroups.list.assert_called_once()
     # Verify client.toolgroups.register was called with correct parameters
     mock_client.toolgroups.register.assert_called_once_with(
         toolgroup_id="new-server",
@@ -108,8 +108,8 @@ async def test_register_mcp_servers_single_server_already_registered(mocker):
     # Mock the LlamaStack client
     mock_client = Mock()
     mock_tool = Mock()
-    mock_tool.toolgroup_id = "existing-server"
-    mock_client.tools.list.return_value = [mock_tool]
+    mock_tool.provider_resource_id = "existing-server"
+    mock_client.toolgroups.list.return_value = [mock_tool]
     mocker.patch("utils.common.get_llama_stack_client", return_value=mock_client)
 
     # Create configuration with MCP server that matches existing toolgroup
@@ -131,7 +131,7 @@ async def test_register_mcp_servers_single_server_already_registered(mocker):
     await register_mcp_servers_async(mock_logger, config)
 
     # Verify client.tools.list was called
-    mock_client.tools.list.assert_called_once()
+    mock_client.toolgroups.list.assert_called_once()
     # Verify client.toolgroups.register was NOT called since server already registered
     assert not mock_client.toolgroups.register.called
 
@@ -145,10 +145,10 @@ async def test_register_mcp_servers_multiple_servers_mixed_registration(mocker):
     # Mock the LlamaStack client
     mock_client = Mock()
     mock_tool1 = Mock()
-    mock_tool1.toolgroup_id = "existing-server"
+    mock_tool1.provider_resource_id = "existing-server"
     mock_tool2 = Mock()
-    mock_tool2.toolgroup_id = "another-existing"
-    mock_client.tools.list.return_value = [mock_tool1, mock_tool2]
+    mock_tool2.provider_resource_id = "another-existing"
+    mock_client.toolgroups.list.return_value = [mock_tool1, mock_tool2]
     mock_client.toolgroups.register.return_value = None
     mocker.patch("utils.common.get_llama_stack_client", return_value=mock_client)
 
@@ -177,7 +177,7 @@ async def test_register_mcp_servers_multiple_servers_mixed_registration(mocker):
     await register_mcp_servers_async(mock_logger, config)
 
     # Verify client.tools.list was called
-    mock_client.tools.list.assert_called_once()
+    mock_client.toolgroups.list.assert_called_once()
     # Verify client.toolgroups.register was called twice (for the two new servers)
     assert mock_client.toolgroups.register.call_count == 2
 
@@ -205,7 +205,7 @@ async def test_register_mcp_servers_with_custom_provider(mocker):
 
     # Mock the LlamaStack client
     mock_client = Mock()
-    mock_client.tools.list.return_value = []
+    mock_client.toolgroups.list.return_value = []
     mock_client.toolgroups.register.return_value = None
     mocker.patch("utils.common.get_llama_stack_client", return_value=mock_client)
 
@@ -251,8 +251,8 @@ async def test_register_mcp_servers_async_with_library_client(mocker):
 
     # Mock tools.list to return empty list
     mock_tool = Mock()
-    mock_tool.toolgroup_id = "existing-tool"
-    mock_async_client.tools.list = AsyncMock(return_value=[mock_tool])
+    mock_tool.provider_resource_id = "existing-tool"
+    mock_async_client.toolgroups.list = AsyncMock(return_value=[mock_tool])
     mock_async_client.toolgroups.register = AsyncMock()
 
     mocker.patch(
@@ -281,7 +281,7 @@ async def test_register_mcp_servers_async_with_library_client(mocker):
     # Verify initialization was called
     mock_async_client.initialize.assert_called_once()
     # Verify tools.list was called
-    mock_async_client.tools.list.assert_called_once()
+    mock_async_client.toolgroups.list.assert_called_once()
     # Verify toolgroups.register was called for the new server
     mock_async_client.toolgroups.register.assert_called_once_with(
         toolgroup_id="test-server",
