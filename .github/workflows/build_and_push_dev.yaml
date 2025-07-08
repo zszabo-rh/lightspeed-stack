@@ -36,6 +36,7 @@ jobs:
         with:
           image: ${{ env.IMAGE_NAME }}
           tags: |
+            ${{ env.DEV_TAG }}
             ${{ env.LATEST_TAG }}
           containerfiles: |
             ${{ env.CONTAINER_FILE }}
