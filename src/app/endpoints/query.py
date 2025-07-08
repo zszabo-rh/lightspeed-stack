@@ -26,13 +26,14 @@ from configuration import configuration
 from models.responses import QueryResponse
 from models.requests import QueryRequest, Attachment
 import constants
-from utils.auth import auth_dependency
+from auth import get_auth_dependency
 from utils.common import retrieve_user_id
 from utils.endpoints import check_configuration_loaded
 from utils.suid import get_suid
 
 logger = logging.getLogger("app.endpoints.handlers")
 router = APIRouter(tags=["query"])
+auth_dependency = get_auth_dependency()
 
 # Global agent registry to persist agents across requests
 _agent_cache: TTLCache[str, Agent] = TTLCache(maxsize=1000, ttl=3600)
