@@ -20,8 +20,7 @@ from auth import get_auth_dependency
 from client import get_async_llama_stack_client
 from configuration import configuration
 from models.requests import QueryRequest
-import constants
-from utils.endpoints import check_configuration_loaded
+from utils.endpoints import check_configuration_loaded, get_system_prompt
 from utils.common import retrieve_user_id
 from utils.suid import get_suid
 
@@ -265,11 +264,7 @@ async def retrieve_response(
         logger.info("Available shields found: %s", available_shields)
 
     # use system prompt from request or default one
-    system_prompt = (
-        query_request.system_prompt
-        if query_request.system_prompt
-        else constants.DEFAULT_SYSTEM_PROMPT
-    )
+    system_prompt = get_system_prompt(query_request, configuration)
     logger.debug("Using system prompt: %s", system_prompt)
 
     # TODO(lucasagomes): redact attachments content before sending to LLM
