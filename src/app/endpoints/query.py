@@ -28,7 +28,7 @@ from models.requests import QueryRequest, Attachment
 import constants
 from auth import get_auth_dependency
 from utils.common import retrieve_user_id
-from utils.endpoints import check_configuration_loaded
+from utils.endpoints import check_configuration_loaded, get_system_prompt
 from utils.suid import get_suid
 
 logger = logging.getLogger("app.endpoints.handlers")
@@ -195,11 +195,7 @@ def retrieve_response(
         logger.info("Available shields found: %s", available_shields)
 
     # use system prompt from request or default one
-    system_prompt = (
-        query_request.system_prompt
-        if query_request.system_prompt
-        else constants.DEFAULT_SYSTEM_PROMPT
-    )
+    system_prompt = get_system_prompt(query_request, configuration)
     logger.debug("Using system prompt: %s", system_prompt)
 
     # TODO(lucasagomes): redact attachments content before sending to LLM
