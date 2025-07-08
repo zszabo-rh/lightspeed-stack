@@ -6,6 +6,7 @@ from typing import Any, Optional
 import yaml
 from models.config import (
     Configuration,
+    Customization,
     LLamaStackConfiguration,
     UserDataCollection,
     ServiceConfiguration,
@@ -89,6 +90,14 @@ class AppConfig:
             self._configuration is not None
         ), "logic error: configuration is not loaded"
         return self._configuration.authentication
+
+    @property
+    def customization(self) -> Optional[Customization]:
+        """Return customization configuration."""
+        assert (
+            self._configuration is not None
+        ), "logic error: configuration is not loaded"
+        return self._configuration.customization
 
 
 configuration: AppConfig = AppConfig()

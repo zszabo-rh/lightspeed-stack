@@ -7,6 +7,8 @@ from typing_extensions import Self
 
 import constants
 
+from utils import checks
+
 
 class TLSConfiguration(BaseModel):
     """TLS configuration."""
@@ -123,6 +125,23 @@ class AuthenticationConfiguration(BaseModel):
         return self
 
 
+class Customization(BaseModel):
+    """Service customization."""
+
+    system_prompt_path: Optional[FilePath] = None
+    system_prompt: Optional[str] = None
+
+    @model_validator(mode="after")
+    def check_authentication_model(self) -> Self:
+        """Load system prompt from file."""
+        if self.system_prompt_path is not None:
+            checks.file_check(self.system_prompt_path, "system prompt")
+            self.system_prompt = checks.get_attribute_from_file(
+                dict(self), "system_prompt_path"
+            )
+        return self
+
+
 class Configuration(BaseModel):
     """Global service configuration."""
 
@@ -134,6 +153,7 @@ class Configuration(BaseModel):
     authentication: Optional[AuthenticationConfiguration] = (
         AuthenticationConfiguration()
     )
+    customization: Optional[Customization] = None
 
     def dump(self, filename: str = "configuration.json") -> None:
         """Dump actual configuration into JSON file."""
