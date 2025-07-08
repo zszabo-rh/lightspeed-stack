@@ -49,6 +49,7 @@ def test_init_from_dict() -> None:
             "feedback_disabled": True,
         },
         "mcp_servers": [],
+        "customization": None,
     }
     cfg = AppConfig()
     cfg.init_from_dict(config_dict)
@@ -110,6 +111,7 @@ def test_init_from_dict_with_mcp_servers() -> None:
                 "url": "https://api.example.com",
             },
         ],
+        "customization": None,
     }
     cfg = AppConfig()
     cfg.init_from_dict(config_dict)
@@ -216,6 +218,7 @@ def test_mcp_servers_property_empty() -> None:
             "feedback_disabled": True,
         },
         "mcp_servers": [],
+        "customization": None,
     }
     cfg = AppConfig()
     cfg.init_from_dict(config_dict)
@@ -251,6 +254,7 @@ def test_mcp_servers_property_with_servers() -> None:
                 "url": "http://localhost:8080",
             },
         ],
+        "customization": None,
     }
     cfg = AppConfig()
     cfg.init_from_dict(config_dict)
@@ -306,3 +310,46 @@ def test_mcp_servers_not_loaded():
         AssertionError, match="logic error: configuration is not loaded"
     ):
         cfg.mcp_servers
+
+
+def test_load_configuration_with_customization(tmpdir) -> None:
+    """Test loading configuration from YAML file with customization."""
+    system_prompt_filename = tmpdir / "system_prompt.txt"
+    with open(system_prompt_filename, "w") as fout:
+        fout.write("this is system prompt")
+
+    cfg_filename = tmpdir / "config.yaml"
+    with open(cfg_filename, "w") as fout:
+        fout.write(
+            f"""
+name: test service
+service:
+  host: localhost
+  port: 8080
+  auth_enabled: false
+  workers: 1
+  color_log: true
+  access_log: true
+llama_stack:
+  use_as_library_client: false
+  url: http://localhost:8321
+  api_key: test-key
+user_data_collection:
+  feedback_disabled: true
+mcp_servers:
+  - name: filesystem-server
+    url: http://localhost:3000
+  - name: git-server
+    provider_id: custom-git-provider
+    url: https://git.example.com/mcp
+customization:
+  system_prompt_path: {system_prompt_filename}
+            """
+        )
+
+    cfg = AppConfig()
+    cfg.load_configuration(cfg_filename)
+
+    assert cfg.customization is not None
+    assert cfg.customization.system_prompt is not None
+    assert cfg.customization.system_prompt == "this is system prompt"

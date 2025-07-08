@@ -43,6 +43,7 @@ def test_config_endpoint_handler_configuration_loaded(mocker):
         "authentication": {
             "module": "noop",
         },
+        "customization": None,
     }
     cfg = AppConfig()
     cfg.init_from_dict(config_dict)

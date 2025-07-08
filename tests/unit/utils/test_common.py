@@ -42,6 +42,7 @@ async def test_register_mcp_servers_empty_list(mocker):
         ),
         user_data_collection=UserDataCollection(feedback_disabled=True),
         mcp_servers=[],
+        customization=None,
     )
     # Call the function
     await register_mcp_servers_async(mock_logger, config)
@@ -80,6 +81,7 @@ async def test_register_mcp_servers_single_server_not_registered(mocker):
         ),
         user_data_collection=UserDataCollection(feedback_disabled=True),
         mcp_servers=[mcp_server],
+        customization=None,
     )
 
     # Call the function
@@ -122,6 +124,7 @@ async def test_register_mcp_servers_single_server_already_registered(mocker):
         ),
         user_data_collection=UserDataCollection(feedback_disabled=True),
         mcp_servers=[mcp_server],
+        customization=None,
     )
 
     # Call the function
@@ -167,6 +170,7 @@ async def test_register_mcp_servers_multiple_servers_mixed_registration(mocker):
         ),
         user_data_collection=UserDataCollection(feedback_disabled=True),
         mcp_servers=mcp_servers,
+        customization=None,
     )
 
     # Call the function
@@ -219,6 +223,7 @@ async def test_register_mcp_servers_with_custom_provider(mocker):
         ),
         user_data_collection=UserDataCollection(feedback_disabled=True),
         mcp_servers=[mcp_server],
+        customization=None,
     )
 
     # Call the function
@@ -267,6 +272,7 @@ async def test_register_mcp_servers_async_with_library_client(mocker):
         ),
         user_data_collection=UserDataCollection(feedback_disabled=True),
         mcp_servers=[mcp_server],
+        customization=None,
     )
 
     # Call the async function

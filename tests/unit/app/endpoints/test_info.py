@@ -22,6 +22,7 @@ def test_info_endpoint(mocker):
         "user_data_collection": {
             "feedback_disabled": True,
         },
+        "customization": None,
     }
     cfg = AppConfig()
     cfg.init_from_dict(config_dict)

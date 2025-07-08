@@ -250,6 +250,7 @@ def test_configuration_empty_mcp_servers() -> None:
             feedback_disabled=True, feedback_storage=None
         ),
         mcp_servers=[],
+        customization=None,
     )
     assert cfg is not None
     assert cfg.mcp_servers == []
@@ -270,6 +271,7 @@ def test_configuration_single_mcp_server() -> None:
             feedback_disabled=True, feedback_storage=None
         ),
         mcp_servers=[mcp_server],
+        customization=None,
     )
     assert cfg is not None
     assert len(cfg.mcp_servers) == 1
@@ -296,6 +298,7 @@ def test_configuration_multiple_mcp_servers() -> None:
             feedback_disabled=True, feedback_storage=None
         ),
         mcp_servers=mcp_servers,
+        customization=None,
     )
     assert cfg is not None
     assert len(cfg.mcp_servers) == 3
@@ -317,6 +320,7 @@ def test_dump_configuration(tmp_path) -> None:
             feedback_disabled=True, feedback_storage=None
         ),
         mcp_servers=[],
+        customization=None,
     )
     assert cfg is not None
     dump_file = tmp_path / "test.json"
@@ -370,6 +374,7 @@ def test_dump_configuration(tmp_path) -> None:
                 "k8s_ca_cert_path": None,
                 "k8s_cluster_api": None,
             },
+            "customization": None,
         }
 
 
@@ -388,6 +393,7 @@ def test_dump_configuration_with_one_mcp_server(tmp_path) -> None:
             feedback_disabled=True, feedback_storage=None
         ),
         mcp_servers=mcp_servers,
+        customization=None,
     )
     dump_file = tmp_path / "test.json"
     cfg.dump(dump_file)
@@ -442,6 +448,7 @@ def test_dump_configuration_with_one_mcp_server(tmp_path) -> None:
                 "k8s_ca_cert_path": None,
                 "k8s_cluster_api": None,
             },
+            "customization": None,
         }
 
 
@@ -462,6 +469,7 @@ def test_dump_configuration_with_more_mcp_servers(tmp_path) -> None:
             feedback_disabled=True, feedback_storage=None
         ),
         mcp_servers=mcp_servers,
+        customization=None,
     )
     dump_file = tmp_path / "test.json"
     cfg.dump(dump_file)
@@ -532,6 +540,7 @@ def test_dump_configuration_with_more_mcp_servers(tmp_path) -> None:
                 "k8s_ca_cert_path": None,
                 "k8s_cluster_api": None,
             },
+            "customization": None,
         }
 
 
