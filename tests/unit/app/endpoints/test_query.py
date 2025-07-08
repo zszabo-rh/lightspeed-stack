@@ -41,6 +41,7 @@ def setup_configuration():
             "transcripts_disabled": True,
         },
         "mcp_servers": [],
+        "customization": None,
     }
     cfg = AppConfig()
     cfg.init_from_dict(config_dict)

@@ -27,6 +27,10 @@ config_dict = {
         "k8s_ca_cert_path": None,
         "k8s_cluster_api": None,
     },
+    "customization": {
+        "system_prompt_path": None,
+        "system_prompt": None,
+    },
 }
 
 # NOTE(lucasagomes): Configuration must be initialized before importing
