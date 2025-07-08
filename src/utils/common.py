@@ -62,13 +62,15 @@ async def _register_mcp_toolgroups_async(
 ) -> None:
     """Async logic for registering MCP toolgroups."""
     # Get registered tools
-    registered_tools = await client.tools.list()
-    registered_toolgroups = [tool.toolgroup_id for tool in registered_tools]
-    logger.debug("Registered toolgroups: %s", set(registered_toolgroups))
+    registered_toolgroups = await client.toolgroups.list()
+    registered_toolgroups_ids = [
+        tool_group.provider_resource_id for tool_group in registered_toolgroups
+    ]
+    logger.debug("Registered toolgroups: %s", registered_toolgroups_ids)
 
     # Register toolgroups for MCP servers if not already registered
     for mcp in mcp_servers:
-        if mcp.name not in registered_toolgroups:
+        if mcp.name not in registered_toolgroups_ids:
             logger.debug("Registering MCP server: %s, %s", mcp.name, mcp.url)
 
             registration_params = {
@@ -87,14 +89,16 @@ def _register_mcp_toolgroups_sync(
     logger: Logger,
 ) -> None:
     """Sync logic for registering MCP toolgroups."""
-    # Get registered tools
-    registered_tools = client.tools.list()
-    registered_toolgroups = [tool.toolgroup_id for tool in registered_tools]
-    logger.debug("Registered toolgroups: %s", set(registered_toolgroups))
+    # Get registered tool groups
+    registered_toolgroups = client.toolgroups.list()
+    registered_toolgroups_ids = [
+        tool_group.provider_resource_id for tool_group in registered_toolgroups
+    ]
+    logger.debug("Registered toolgroups: %s", registered_toolgroups_ids)
 
     # Register toolgroups for MCP servers if not already registered
     for mcp in mcp_servers:
-        if mcp.name not in registered_toolgroups:
+        if mcp.name not in registered_toolgroups_ids:
             logger.debug("Registering MCP server: %s, %s", mcp.name, mcp.url)
 
             registration_params = {

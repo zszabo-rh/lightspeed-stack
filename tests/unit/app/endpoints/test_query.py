@@ -610,7 +610,7 @@ def test_retrieve_response_with_mcp_servers(prepare_agent_mocks, mocker):
         session_id="fake_session_id",
         documents=[],
         stream=False,
-        toolgroups=None,
+        toolgroups=[mcp_server.name for mcp_server in mcp_servers],
     )
 
 
@@ -652,10 +652,79 @@ def test_retrieve_response_with_mcp_servers_empty_token(prepare_agent_mocks, moc
         None,  # conversation_id
     )
 
-    # Check that the agent's extra_headers property was set correctly (empty mcp_headers)
-    expected_extra_headers = {
-        "X-LlamaStack-Provider-Data": json.dumps({"mcp_headers": {}})
+    # Check that create_turn was called with the correct parameters
+    mock_agent.create_turn.assert_called_once_with(
+        messages=[UserMessage(role="user", content="What is OpenStack?")],
+        session_id="fake_session_id",
+        documents=[],
+        stream=False,
+        toolgroups=[mcp_server.name for mcp_server in mcp_servers],
+    )
+
+
+def test_retrieve_response_with_mcp_servers_and_mcp_headers(mocker):
+    """Test the retrieve_response function with MCP servers configured."""
+    mock_agent = mocker.Mock()
+    mock_agent.create_turn.return_value.output_message.content = "LLM answer"
+    mock_client = mocker.Mock()
+    mock_client.shields.list.return_value = []
+    mock_client.vector_dbs.list.return_value = []
+
+    # Mock configuration with MCP servers
+    mcp_servers = [
+        ModelContextProtocolServer(
+            name="filesystem-server", url="http://localhost:3000"
+        ),
+        ModelContextProtocolServer(
+            name="git-server",
+            provider_id="custom-git",
+            url="https://git.example.com/mcp",
+        ),
+    ]
+    mock_config = mocker.Mock()
+    mock_config.mcp_servers = mcp_servers
+    mocker.patch("app.endpoints.query.configuration", mock_config)
+    mock_get_agent = mocker.patch(
+        "app.endpoints.query.get_agent", return_value=(mock_agent, "fake_session_id")
+    )
+
+    query_request = QueryRequest(query="What is OpenStack?")
+    model_id = "fake_model_id"
+    access_token = ""
+    mcp_headers = {
+        "http://localhost:3000": {"Authorization": "Bearer test_token_123"},
+        "https://git.example.com/mcp": {"Authorization": "Bearer test_token_123"},
     }
+
+    response, conversation_id = retrieve_response(
+        mock_client,
+        model_id,
+        query_request,
+        access_token,
+        mcp_headers=mcp_headers,
+    )
+
+    assert response == "LLM answer"
+    assert conversation_id == "fake_session_id"
+
+    # Verify get_agent was called with the correct parameters
+    mock_get_agent.assert_called_once_with(
+        mock_client,
+        model_id,
+        mocker.ANY,  # system_prompt
+        [],  # available_shields
+        None,  # conversation_id
+    )
+
+    # Check that the agent's extra_headers property was set correctly
+    expected_extra_headers = {
+        "X-LlamaStack-Provider-Data": json.dumps(
+            {
+                "mcp_headers": mcp_headers,
+            }
+        )
+    }
+
     assert mock_agent.extra_headers == expected_extra_headers
 
     # Check that create_turn was called with the correct parameters
@@ -664,7 +733,7 @@ def test_retrieve_response_with_mcp_servers_empty_token(prepare_agent_mocks, moc
         session_id="fake_session_id",
         documents=[],
         stream=False,
-        toolgroups=None,
+        toolgroups=[mcp_server.name for mcp_server in mcp_servers],
     )
 
 
@@ -844,7 +913,6 @@ def test_get_agent_cache_miss_with_conversation_id(
         model="test_model",
         instructions="test_prompt",
         input_shields=["shield1"],
-        tools=["mcp_server_1"],
         enable_session_persistence=True,
     )
 
@@ -895,7 +963,6 @@ def test_get_agent_no_conversation_id(setup_configuration, prepare_agent_mocks, 
         model="test_model",
         instructions="test_prompt",
         input_shields=["shield1"],
-        tools=["mcp_server_1"],
         enable_session_persistence=True,
     )
 
@@ -946,7 +1013,6 @@ def test_get_agent_empty_shields(setup_configuration, prepare_agent_mocks, mocke
         model="test_model",
         instructions="test_prompt",
         input_shields=[],
-        tools=["mcp_server_1"],
         enable_session_persistence=True,
     )
 
@@ -998,7 +1064,6 @@ def test_get_agent_multiple_mcp_servers(
         model="test_model",
         instructions="test_prompt",
         input_shields=["shield1", "shield2"],
-        tools=["mcp_server_1", "mcp_server_2"],
         enable_session_persistence=True,
     )
 
@@ -1044,6 +1109,5 @@ def test_get_agent_session_persistence_enabled(
         model="test_model",
         instructions="test_prompt",
         input_shields=["shield1"],
-        tools=["mcp_server_1"],
         enable_session_persistence=True,
     )
