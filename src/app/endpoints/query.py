@@ -23,7 +23,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 
 from client import LlamaStackClientHolder
 from configuration import configuration
-from models.responses import QueryResponse
+from models.responses import QueryResponse, UnauthorizedResponse, ForbiddenResponse
 from models.requests import QueryRequest, Attachment
 import constants
 from auth import get_auth_dependency
@@ -43,6 +43,14 @@ query_response: dict[int | str, dict[str, Any]] = {
     200: {
         "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
         "response": "LLM ansert",
+    },
+    400: {
+        "description": "Missing or invalid credentials provided by client",
+        "model": UnauthorizedResponse,
+    },
+    403: {
+        "description": "User is not authorized",
+        "model": ForbiddenResponse,
     },
     503: {
         "detail": {
