@@ -16,10 +16,19 @@ def check_configuration_loaded(configuration: AppConfig) -> None:
         )
 
 
-def get_system_prompt(query_request: QueryRequest, _configuration: AppConfig) -> str:
+def get_system_prompt(query_request: QueryRequest, configuration: AppConfig) -> str:
     """Get the system prompt: the provided one, configured one, or default one."""
-    return (
-        query_request.system_prompt
-        if query_request.system_prompt
-        else constants.DEFAULT_SYSTEM_PROMPT
-    )
+    # system prompt defined in query request has precendence
+    if query_request.system_prompt:
+        return query_request.system_prompt
+
+    # customized system prompt should be used when query request
+    # does not contain one
+    if (
+        configuration.customization is not None
+        and configuration.customization.system_prompt is not None
+    ):
+        return configuration.customization.system_prompt
+
+    # default system prompt has the lowest precedence
+    return constants.DEFAULT_SYSTEM_PROMPT
