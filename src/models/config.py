@@ -96,19 +96,19 @@ class DataCollectorConfiguration(BaseModel):
     connection_timeout: int = 30
 
     @model_validator(mode="after")
-    def check_archival_configuration(self) -> Self:
-        """Check data archival configuration."""
+    def check_data_collector_configuration(self) -> Self:
+        """Check data collector configuration."""
         if self.enabled and self.ingress_server_url is None:
             raise ValueError(
-                "ingress_server_url is required when data archival is enabled"
+                "ingress_server_url is required when data collector is enabled"
             )
         if self.enabled and self.collection_interval is None:
             raise ValueError(
-                "collection_interval is required when data archival is enabled"
+                "collection_interval is required when data collector is enabled"
             )
         if self.collection_interval is not None and self.collection_interval <= 0:
             raise ValueError(
-                "collection_interval must be positive when data archival is enabled"
+                "collection_interval must be positive when data collector is enabled"
             )
         return self
 

@@ -149,7 +149,8 @@ def test_user_data_collection_data_collector_wrong_configuration() -> None:
     """Test the UserDataCollection constructor for data collector."""
     # incorrect configuration
     with pytest.raises(
-        ValueError, match="ingress_server_url is required when data archival is enabled"
+        ValueError,
+        match="ingress_server_url is required when data collector is enabled",
     ):
         UserDataCollection(
             data_collector=DataCollectorConfiguration(
@@ -162,7 +163,7 @@ def test_user_data_collection_data_collector_wrong_configuration() -> None:
 
     with pytest.raises(
         ValueError,
-        match="collection_interval is required when data archival is enabled",
+        match="collection_interval is required when data collector is enabled",
     ):
         UserDataCollection(
             data_collector=DataCollectorConfiguration(
@@ -175,7 +176,7 @@ def test_user_data_collection_data_collector_wrong_configuration() -> None:
 
     with pytest.raises(
         ValueError,
-        match="collection_interval must be positive when data archival is enabled",
+        match="collection_interval must be positive when data collector is enabled",
     ):
         UserDataCollection(
             data_collector=DataCollectorConfiguration(
