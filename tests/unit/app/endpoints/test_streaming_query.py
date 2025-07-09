@@ -115,10 +115,12 @@ async def test_streaming_query_endpoint_on_connection_error(mocker):
     query_request = QueryRequest(query=query)
 
     # simulate situation when it is not possible to connect to Llama Stack
-    mocker.patch(
-        "app.endpoints.streaming_query.get_async_llama_stack_client",
-        side_effect=APIConnectionError(request=query_request),
-    )
+    mock_client = mocker.AsyncMock()
+    mock_client.models.side_effect = APIConnectionError(request=query_request)
+    mock_lsc = mocker.patch("client.LlamaStackClientHolder.get_client")
+    mock_lsc.return_value = mock_client
+    mock_async_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
+    mock_async_lsc.return_value = mock_client
 
     # await the async function
     with pytest.raises(HTTPException) as e:
@@ -130,6 +132,8 @@ async def test_streaming_query_endpoint_on_connection_error(mocker):
 async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False):
     """Test the streaming query endpoint handler."""
     mock_client = mocker.AsyncMock()
+    mock_async_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
+    mock_async_lsc.return_value = mock_client
     mock_client.models.list.return_value = [
         mocker.Mock(identifier="model1", model_type="llm", provider_id="provider1"),
         mocker.Mock(identifier="model2", model_type="llm", provider_id="provider2"),
@@ -174,15 +178,7 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
         ),
     ]
 
-    mocker.patch(
-        "app.endpoints.streaming_query.configuration",
-        return_value=mocker.Mock(),
-    )
     query = "What is OpenStack?"
-    mocker.patch(
-        "app.endpoints.streaming_query.get_async_llama_stack_client",
-        return_value=mock_client,
-    )
     mocker.patch(
         "app.endpoints.streaming_query.retrieve_response",
         return_value=(mock_streaming_response, "test_conversation_id"),

@@ -21,7 +21,7 @@ from llama_stack_client.types.model_list_response import ModelListResponse
 
 from fastapi import APIRouter, HTTPException, status, Depends
 
-from client import get_llama_stack_client
+from client import LlamaStackClientHolder
 from configuration import configuration
 from models.responses import QueryResponse
 from models.requests import QueryRequest, Attachment
@@ -104,7 +104,7 @@ def query_endpoint_handler(
 
     try:
         # try to get Llama Stack client
-        client = get_llama_stack_client(llama_stack_config)
+        client = LlamaStackClientHolder().get_client()
         model_id = select_model_id(client.models.list(), query_request)
         response, conversation_id = retrieve_response(
             client,
@@ -130,6 +130,7 @@ def query_endpoint_handler(
             )
 
         return QueryResponse(conversation_id=conversation_id, response=response)
+
     # connection to Llama Stack server
     except APIConnectionError as e:
         logger.error("Unable to connect to Llama Stack: %s", e)

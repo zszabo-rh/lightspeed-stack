@@ -3,14 +3,13 @@
 from typing import Any, List, cast
 from logging import Logger
 
-from llama_stack_client import LlamaStackClient
+from llama_stack_client import LlamaStackClient, AsyncLlamaStackClient
 
 from llama_stack.distribution.library_client import (
-    LlamaStackAsLibraryClient,
     AsyncLlamaStackAsLibraryClient,
 )
 
-from client import get_llama_stack_client
+from client import LlamaStackClientHolder, AsyncLlamaStackClientHolder
 from models.config import Configuration, ModelContextProtocolServer
 
 
@@ -39,24 +38,19 @@ async def register_mcp_servers_async(
 
     if configuration.llama_stack.use_as_library_client:
         # Library client - use async interface
-        # config.py validation ensures library_client_config_path is not None
-        # when use_as_library_client is True
-        config_path = cast(str, configuration.llama_stack.library_client_config_path)
-        client = LlamaStackAsLibraryClient(config_path)
-        await client.async_client.initialize()
-
-        await _register_mcp_toolgroups_async(
-            client.async_client, configuration.mcp_servers, logger
+        client = cast(
+            AsyncLlamaStackAsLibraryClient, AsyncLlamaStackClientHolder().get_client()
         )
+        await client.initialize()
+        await _register_mcp_toolgroups_async(client, configuration.mcp_servers, logger)
     else:
         # Service client - use sync interface
-        client = get_llama_stack_client(configuration.llama_stack)
-
+        client = LlamaStackClientHolder().get_client()
         _register_mcp_toolgroups_sync(client, configuration.mcp_servers, logger)
 
 
 async def _register_mcp_toolgroups_async(
-    client: AsyncLlamaStackAsLibraryClient,
+    client: AsyncLlamaStackClient,
     mcp_servers: List[ModelContextProtocolServer],
     logger: Logger,
 ) -> None:
