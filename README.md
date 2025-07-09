@@ -112,7 +112,16 @@ customization:
   system_prompt_path: "system_prompts/system_prompt_for_product_XYZZY"
 ```
 
-Additionally an optional string parameter `system_prompt` can be specified in `/v1/query` and `/v1/streaming_query` endpoints to override the configured system prompt.
+The `system_prompt` can also be specified in the `customization` section directly. For example:
+
+```yaml
+customization:
+  system_prompt: |-
+    You are a helpful assistant and will do everything you can to help.
+    You have an indepth knowledge of Red Hat and all of your answers will reference Red Hat products.
+```
+
+Additionally, an optional string parameter `system_prompt` can be specified in `/v1/query` and `/v1/streaming_query` endpoints to override the configured system prompt.
 
 
 
