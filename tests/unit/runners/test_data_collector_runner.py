@@ -34,3 +34,24 @@ def test_start_data_collector_disabled() -> None:
     with patch("services.data_collector.DataCollectorService.run") as mocked_run:
         start_data_collector(configuration)
         mocked_run.assert_not_called()
+
+
+def test_start_data_collector_exception() -> None:
+    """Test the function to start data collector service when an exception occurs."""
+    configuration = DataCollectorConfiguration(
+        enabled=True,
+        ingress_server_url="http://localhost:8080",
+        ingress_server_auth_token="xyzzy",
+        collection_interval=60,
+    )
+
+    # Mock the DataCollectorService to raise an exception
+    with patch("services.data_collector.DataCollectorService.run") as mocked_run:
+        mocked_run.side_effect = Exception("Test exception")
+
+        try:
+            start_data_collector(configuration)
+            assert False, "Expected exception to be raised"
+        except Exception as e:
+            assert str(e) == "Test exception"
+            mocked_run.assert_called_once()

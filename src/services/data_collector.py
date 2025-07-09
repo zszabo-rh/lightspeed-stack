@@ -68,13 +68,19 @@ class DataCollectorService:  # pylint: disable=too-few-public-methods
         collections_sent = 0
         try:
             if feedback_files:
-                collections_sent += self._create_and_send_tarball(
-                    feedback_files, "feedback"
-                )
+                udc_config = configuration.user_data_collection_configuration
+                if udc_config.feedback_storage:
+                    feedback_base = Path(udc_config.feedback_storage)
+                    collections_sent += self._create_and_send_tarball(
+                        feedback_files, "feedback", feedback_base
+                    )
             if transcript_files:
-                collections_sent += self._create_and_send_tarball(
-                    transcript_files, "transcripts"
-                )
+                udc_config = configuration.user_data_collection_configuration
+                if udc_config.transcripts_storage:
+                    transcript_base = Path(udc_config.transcripts_storage)
+                    collections_sent += self._create_and_send_tarball(
+                        transcript_files, "transcripts", transcript_base
+                    )
 
             logger.info(
                 "Successfully sent %s collections to ingress server", collections_sent
@@ -110,7 +116,9 @@ class DataCollectorService:  # pylint: disable=too-few-public-methods
         # Recursively find all JSON files in the transcript directory structure
         return list(transcripts_dir.rglob("*.json"))
 
-    def _create_and_send_tarball(self, files: List[Path], data_type: str) -> int:
+    def _create_and_send_tarball(
+        self, files: List[Path], data_type: str, base_directory: Path
+    ) -> int:
         """Create a single tarball from all files and send to ingress server."""
         if not files:
             return 0
@@ -120,7 +128,7 @@ class DataCollectorService:  # pylint: disable=too-few-public-methods
         )
 
         # Create one tarball with all files
-        tarball_path = self._create_tarball(files, data_type)
+        tarball_path = self._create_tarball(files, data_type, base_directory)
         try:
             self._send_tarball(tarball_path)
             if collector_config.cleanup_after_send:
@@ -130,7 +138,9 @@ class DataCollectorService:  # pylint: disable=too-few-public-methods
         finally:
             self._cleanup_tarball(tarball_path)
 
-    def _create_tarball(self, files: List[Path], data_type: str) -> Path:
+    def _create_tarball(
+        self, files: List[Path], data_type: str, base_directory: Path
+    ) -> Path:
         """Create a tarball containing the specified files."""
         timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
         tarball_name = f"{data_type}_{timestamp}.tar.gz"
@@ -145,7 +155,7 @@ class DataCollectorService:  # pylint: disable=too-few-public-methods
             for file_path in files:
                 try:
                     # Add file with relative path to maintain directory structure
-                    arcname = str(file_path.relative_to(file_path.parents[-2]))
+                    arcname = str(file_path.relative_to(base_directory))
                     tar.add(file_path, arcname=arcname)
                 except (OSError, ValueError) as e:
                     logger.warning("Failed to add %s to tarball: %s", file_path, e)

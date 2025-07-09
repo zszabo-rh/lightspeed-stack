@@ -191,7 +191,7 @@ def test_create_and_send_tarball_no_files(mock_config) -> None:
     """Test creating tarball with no files."""
     service = DataCollectorService()
 
-    result = service._create_and_send_tarball([], "test")
+    result = service._create_and_send_tarball([], "test", Path("/tmp"))
     assert result == 0
 
 
@@ -211,7 +211,9 @@ def test_create_and_send_tarball_success(mock_config) -> None:
             with patch.object(service, "_cleanup_files"):
                 with patch.object(service, "_cleanup_empty_directories"):
                     with patch.object(service, "_cleanup_tarball"):
-                        result = service._create_and_send_tarball(files, "test")
+                        result = service._create_and_send_tarball(
+                            files, "test", Path("/tmp")
+                        )
                         assert result == 1
 
 
@@ -230,7 +232,7 @@ def test_create_and_send_tarball_no_cleanup(mock_config) -> None:
     ):
         with patch.object(service, "_send_tarball"):
             with patch.object(service, "_cleanup_tarball"):
-                result = service._create_and_send_tarball(files, "test")
+                result = service._create_and_send_tarball(files, "test", Path("/tmp"))
                 assert result == 1
 
 
@@ -251,7 +253,7 @@ def test_create_tarball_success(mock_tarfile, mock_gettempdir, mock_datetime) ->
     with patch.object(Path, "stat") as mock_stat:
         mock_stat.return_value.st_size = 1024
 
-        result = service._create_tarball(files, "test")
+        result = service._create_tarball(files, "test", Path("/data"))
 
         expected_path = Path("/tmp/test_20230101_120000.tar.gz")
         assert result == expected_path
@@ -278,7 +280,7 @@ def test_create_tarball_file_add_error(
     with patch.object(Path, "stat") as mock_stat:
         mock_stat.return_value.st_size = 1024
 
-        result = service._create_tarball(files, "test")
+        result = service._create_tarball(files, "test", Path("/data"))
 
         expected_path = Path("/tmp/test_20230101_120000.tar.gz")
         assert result == expected_path

@@ -16,5 +16,11 @@ def start_data_collector(configuration: DataCollectorConfiguration) -> None:
         logger.info("Data collection is disabled")
         return
 
-    service = DataCollectorService()
-    service.run()
+    try:
+        service = DataCollectorService()
+        service.run()
+    except Exception as e:
+        logger.error(
+            "Data collector service encountered an exception: %s", e, exc_info=True
+        )
+        raise
