@@ -14,6 +14,9 @@ Lightspeed Core Stack (LCS) is an AI powered assistant that provides answers to 
 * [Prerequisities](#prerequisities)
 * [Installation](#installation)
 * [Configuration](#configuration)
+    * [Llama Stack as separate server](#llama-stack-as-separate-server)
+    * [Llama Stack as client library](#llama-stack-as-client-library)
+    * [System prompt](#system-prompt)
 * [Usage](#usage)
     * [Make targets](#make-targets)
     * [Running Linux container image](#running-linux-container-image)
@@ -99,6 +102,17 @@ user_data_collection:
   transcripts_disabled: false
   transcripts_storage: "/tmp/data/transcripts"
 ```
+
+## System prompt
+
+   The service uses the, so called, system prompt to put the question into context before the question is sent to the selected LLM. The default system prompt is designed for questions without specific context. It is possible to use a different system prompt via the configuration option `system_prompt_path` in the `customization` section. That option must contain the path to the text file with the actual system prompt (can contain multiple lines). An example of such configuration:
+
+```yaml
+customization:
+  system_prompt_path: "system_prompts/system_prompt_for_product_XYZZY"
+```
+
+Additionally an optional string parameter `system_prompt` can be specified in `/v1/query` and `/v1/streaming_query` endpoints to override the configured system prompt.
 
 
 
