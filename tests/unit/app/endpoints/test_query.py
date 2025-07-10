@@ -913,6 +913,7 @@ def test_get_agent_cache_miss_with_conversation_id(
         model="test_model",
         instructions="test_prompt",
         input_shields=["shield1"],
+        tool_parser=None,
         enable_session_persistence=True,
     )
 
@@ -963,6 +964,7 @@ def test_get_agent_no_conversation_id(setup_configuration, prepare_agent_mocks, 
         model="test_model",
         instructions="test_prompt",
         input_shields=["shield1"],
+        tool_parser=None,
         enable_session_persistence=True,
     )
 
@@ -1013,6 +1015,7 @@ def test_get_agent_empty_shields(setup_configuration, prepare_agent_mocks, mocke
         model="test_model",
         instructions="test_prompt",
         input_shields=[],
+        tool_parser=None,
         enable_session_persistence=True,
     )
 
@@ -1064,6 +1067,7 @@ def test_get_agent_multiple_mcp_servers(
         model="test_model",
         instructions="test_prompt",
         input_shields=["shield1", "shield2"],
+        tool_parser=None,
         enable_session_persistence=True,
     )
 
@@ -1109,5 +1113,6 @@ def test_get_agent_session_persistence_enabled(
         model="test_model",
         instructions="test_prompt",
         input_shields=["shield1"],
+        tool_parser=None,
         enable_session_persistence=True,
     )
