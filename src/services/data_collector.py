@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import List
 
 import requests
-
+import constants
 from configuration import configuration
 from log import get_logger
 
@@ -44,7 +44,9 @@ class DataCollectorService:  # pylint: disable=too-few-public-methods
                 break
             except (OSError, requests.RequestException) as e:
                 logger.error("Error during collection process: %s", e, exc_info=True)
-                time.sleep(300)  # Wait 5 minutes before retrying on error
+                time.sleep(
+                    constants.DATA_COLLECTOR_RETRY_INTERVAL
+                )  # Wait 5 minutes before retrying on error
 
     def _perform_collection(self) -> None:
         """Perform a single collection operation."""

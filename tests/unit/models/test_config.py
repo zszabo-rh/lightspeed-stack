@@ -5,7 +5,13 @@ import pytest
 
 from pathlib import Path
 
-from constants import AUTH_MOD_NOOP, AUTH_MOD_K8S
+from constants import  (
+    AUTH_MOD_NOOP, 
+    AUTH_MOD_K8S, 
+    DATA_COLLECTOR_COLLECTION_INTERVAL, 
+    DATA_COLLECTOR_CONNECTION_TIMEOUT
+)
+
 from models.config import (
     Configuration,
     LLamaStackConfiguration,
@@ -158,32 +164,6 @@ def test_user_data_collection_data_collector_wrong_configuration() -> None:
                 ingress_server_url=None,
                 ingress_server_auth_token="xyzzy",
                 collection_interval=60,
-            )
-        )
-
-    with pytest.raises(
-        ValueError,
-        match="collection_interval is required when data collector is enabled",
-    ):
-        UserDataCollection(
-            data_collector=DataCollectorConfiguration(
-                enabled=True,
-                ingress_server_url="http://localhost:8080",
-                ingress_server_auth_token="xyzzy",
-                collection_interval=None,
-            )
-        )
-
-    with pytest.raises(
-        ValueError,
-        match="collection_interval must be positive when data collector is enabled",
-    ):
-        UserDataCollection(
-            data_collector=DataCollectorConfiguration(
-                enabled=True,
-                ingress_server_url="http://localhost:8080",
-                ingress_server_auth_token="xyzzy",
-                collection_interval=0,
             )
         )
 
@@ -429,9 +409,9 @@ def test_dump_configuration(tmp_path) -> None:
                     "enabled": False,
                     "ingress_server_url": None,
                     "ingress_server_auth_token": None,
-                    "collection_interval": None,
+                    "collection_interval": DATA_COLLECTOR_COLLECTION_INTERVAL,
                     "cleanup_after_send": True,
-                    "connection_timeout": 30,
+                    "connection_timeout": DATA_COLLECTOR_CONNECTION_TIMEOUT,
                 },
             },
             "mcp_servers": [],
@@ -505,9 +485,9 @@ def test_dump_configuration_with_one_mcp_server(tmp_path) -> None:
                     "enabled": False,
                     "ingress_server_url": None,
                     "ingress_server_auth_token": None,
-                    "collection_interval": None,
+                    "collection_interval": DATA_COLLECTOR_COLLECTION_INTERVAL,
                     "cleanup_after_send": True,
-                    "connection_timeout": 30,
+                    "connection_timeout": DATA_COLLECTOR_CONNECTION_TIMEOUT,
                 },
             },
             "mcp_servers": [
@@ -595,9 +575,9 @@ def test_dump_configuration_with_more_mcp_servers(tmp_path) -> None:
                     "enabled": False,
                     "ingress_server_url": None,
                     "ingress_server_auth_token": None,
-                    "collection_interval": None,
+                    "collection_interval": DATA_COLLECTOR_COLLECTION_INTERVAL,
                     "cleanup_after_send": True,
-                    "connection_timeout": 30,
+                    "connection_timeout": DATA_COLLECTOR_CONNECTION_TIMEOUT,
                 },
             },
             "mcp_servers": [
