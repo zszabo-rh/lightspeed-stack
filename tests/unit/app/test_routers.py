@@ -13,6 +13,7 @@ from app.endpoints import (
     config,
     feedback,
     streaming_query,
+    authorized,
 )  # noqa:E402
 
 
@@ -34,7 +35,7 @@ def test_include_routers() -> None:
     include_routers(app)
 
     # are all routers added?
-    assert len(app.routers) == 8
+    assert len(app.routers) == 9
     assert root.router in app.routers
     assert info.router in app.routers
     assert models.router in app.routers
@@ -43,3 +44,4 @@ def test_include_routers() -> None:
     assert config.router in app.routers
     assert feedback.router in app.routers
     assert streaming_query.router in app.routers
+    assert authorized.router in app.routers

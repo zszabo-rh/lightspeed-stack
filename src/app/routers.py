@@ -11,6 +11,7 @@ from app.endpoints import (
     config,
     feedback,
     streaming_query,
+    authorized,
 )
 
 
@@ -28,3 +29,4 @@ def include_routers(app: FastAPI) -> None:
     app.include_router(config.router, prefix="/v1")
     app.include_router(feedback.router, prefix="/v1")
     app.include_router(streaming_query.router, prefix="/v1")
+    app.include_router(authorized.router, prefix="/v1")

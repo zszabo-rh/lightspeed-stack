@@ -1,4 +1,9 @@
-from models.responses import QueryResponse, StatusResponse
+from models.responses import (
+    QueryResponse,
+    StatusResponse,
+    AuthorizedResponse,
+    UnauthorizedResponse,
+)
 
 
 class TestQueryResponse:
@@ -28,3 +33,27 @@ class TestStatusResponse:
         sr = StatusResponse(functionality="feedback", status={"enabled": True})
         assert sr.functionality == "feedback"
         assert sr.status == {"enabled": True}
+
+
+class TestAuthorizedResponse:
+    """Test cases for the AuthorizedResponse model."""
+
+    def test_constructor(self) -> None:
+        """Test the AuthorizedResponse constructor."""
+        ar = AuthorizedResponse(
+            user_id="123e4567-e89b-12d3-a456-426614174000",
+            username="testuser",
+        )
+        assert ar.user_id == "123e4567-e89b-12d3-a456-426614174000"
+        assert ar.username == "testuser"
+
+
+class TestUnauthorizedResponse:
+    """Test cases for the UnauthorizedResponse model."""
+
+    def test_constructor(self) -> None:
+        """Test the UnauthorizedResponse constructor."""
+        ur = UnauthorizedResponse(
+            detail="Missing or invalid credentials provided by client"
+        )
+        assert ur.detail == "Missing or invalid credentials provided by client"
