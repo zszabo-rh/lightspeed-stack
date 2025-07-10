@@ -31,6 +31,7 @@ from utils.common import retrieve_user_id
 from utils.endpoints import check_configuration_loaded, get_system_prompt
 from utils.mcp_headers import mcp_headers_dependency
 from utils.suid import get_suid
+from utils.types import GraniteToolParser
 
 logger = logging.getLogger("app.endpoints.handlers")
 router = APIRouter(tags=["query"])
@@ -83,6 +84,7 @@ def get_agent(
         model=model_id,
         instructions=system_prompt,
         input_shields=available_shields if available_shields else [],
+        tool_parser=GraniteToolParser.get_parser(model_id),
         enable_session_persistence=True,
     )
     conversation_id = agent.create_session(get_suid())
