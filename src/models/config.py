@@ -128,11 +128,12 @@ class AuthenticationConfiguration(BaseModel):
 class Customization(BaseModel):
     """Service customization."""
 
+    disable_query_system_prompt: bool = False
     system_prompt_path: Optional[FilePath] = None
     system_prompt: Optional[str] = None
 
     @model_validator(mode="after")
-    def check_authentication_model(self) -> Self:
+    def check_customization_model(self) -> Self:
         """Load system prompt from file."""
         if self.system_prompt_path is not None:
             checks.file_check(self.system_prompt_path, "system prompt")

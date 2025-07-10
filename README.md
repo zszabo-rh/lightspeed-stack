@@ -121,8 +121,13 @@ customization:
     You have an indepth knowledge of Red Hat and all of your answers will reference Red Hat products.
 ```
 
-Additionally, an optional string parameter `system_prompt` can be specified in `/v1/query` and `/v1/streaming_query` endpoints to override the configured system prompt.
+Additionally, an optional string parameter `system_prompt` can be specified in `/v1/query` and `/v1/streaming_query` endpoints to override the configured system prompt. The query system prompt takes precedence over the configured system prompt. You can use this config to disable query system prompts:
 
+```yaml
+customization:
+  system_prompt_path: "system_prompts/system_prompt_for_product_XYZZY"
+  disable_query_system_prompt: true
+```
 
 
 # Usage

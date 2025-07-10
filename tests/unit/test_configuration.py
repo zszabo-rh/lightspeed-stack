@@ -343,6 +343,7 @@ mcp_servers:
     provider_id: custom-git-provider
     url: https://git.example.com/mcp
 customization:
+  disable_query_system_prompt: true
   system_prompt_path: {system_prompt_filename}
             """
         )
