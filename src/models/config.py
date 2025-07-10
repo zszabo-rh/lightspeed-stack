@@ -2,9 +2,11 @@
 
 from typing import Optional
 
-from pydantic import BaseModel, model_validator, FilePath
+from pydantic import BaseModel, FilePath, PositiveInt, model_validator
 
 from typing_extensions import Self
+
+import constants
 
 
 class TLSConfiguration(BaseModel):
@@ -88,9 +90,9 @@ class DataCollectorConfiguration(BaseModel):
     enabled: bool = False
     ingress_server_url: Optional[str] = None
     ingress_server_auth_token: Optional[str] = None
-    collection_interval: Optional[int] = None
+    collection_interval: PositiveInt = constants.DATA_COLLECTOR_COLLECTION_INTERVAL
     cleanup_after_send: bool = True  # Remove local files after successful send
-    connection_timeout: int = 30
+    connection_timeout: PositiveInt = constants.DATA_COLLECTOR_CONNECTION_TIMEOUT
 
     @model_validator(mode="after")
     def check_data_collector_configuration(self) -> Self:
@@ -98,14 +100,6 @@ class DataCollectorConfiguration(BaseModel):
         if self.enabled and self.ingress_server_url is None:
             raise ValueError(
                 "ingress_server_url is required when data collector is enabled"
-            )
-        if self.enabled and self.collection_interval is None:
-            raise ValueError(
-                "collection_interval is required when data collector is enabled"
-            )
-        if self.collection_interval is not None and self.collection_interval <= 0:
-            raise ValueError(
-                "collection_interval must be positive when data collector is enabled"
             )
         return self
 
