@@ -112,6 +112,8 @@ def query_endpoint_handler(
     llama_stack_config = configuration.llama_stack_configuration
     logger.info("LLama stack config: %s", llama_stack_config)
 
+    _user_id, _user_name, token = auth
+
     try:
         # try to get Llama Stack client
         client = LlamaStackClientHolder().get_client()
@@ -120,7 +122,7 @@ def query_endpoint_handler(
             client,
             model_id,
             query_request,
-            auth,
+            token,
             mcp_headers=mcp_headers,
         )
 

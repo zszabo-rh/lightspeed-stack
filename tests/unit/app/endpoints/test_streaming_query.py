@@ -18,6 +18,8 @@ from models.requests import QueryRequest, Attachment
 from models.config import ModelContextProtocolServer
 from llama_stack_client.types import UserMessage  # type: ignore
 
+MOCK_AUTH = ("mock_user_id", "mock_username", "mock_token")
+
 
 SAMPLE_KNOWLEDGE_SEARCH_RESULTS = [
     """knowledge_search tool found 2 chunks:
@@ -97,7 +99,7 @@ async def test_streaming_query_endpoint_handler_configuration_not_loaded(mocker)
 
     # await the async function
     with pytest.raises(HTTPException) as e:
-        await streaming_query_endpoint_handler(None, query_request, auth="mock_auth")
+        await streaming_query_endpoint_handler(None, query_request, auth=MOCK_AUTH)
         assert e.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert e.detail["response"] == "Configuration is not loaded"
 
@@ -124,7 +126,7 @@ async def test_streaming_query_endpoint_on_connection_error(mocker):
 
     # await the async function
     with pytest.raises(HTTPException) as e:
-        await streaming_query_endpoint_handler(None, query_request, auth="mock_auth")
+        await streaming_query_endpoint_handler(None, query_request, auth=MOCK_AUTH)
         assert e.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert e.detail["response"] == "Configuration is not loaded"
 
@@ -200,7 +202,7 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
 
     # Await the async function
     response = await streaming_query_endpoint_handler(
-        None, query_request, auth="mock_auth"
+        None, query_request, auth=MOCK_AUTH
     )
 
     # Assert the response is a StreamingResponse
@@ -1111,3 +1113,47 @@ async def test_get_agent_session_persistence_enabled(
         tool_parser=None,
         enable_session_persistence=True,
     )
+
+
+@pytest.mark.asyncio
+async def test_auth_tuple_unpacking_in_streaming_query_endpoint_handler(mocker):
+    """Test that auth tuple is correctly unpacked in streaming query endpoint handler."""
+    # Mock dependencies
+    mock_config = mocker.Mock()
+    mock_config.llama_stack_configuration = mocker.Mock()
+    mocker.patch("app.endpoints.streaming_query.configuration", mock_config)
+
+    mock_client = mocker.AsyncMock()
+    mock_client.models.list.return_value = [
+        mocker.Mock(identifier="model1", model_type="llm", provider_id="provider1")
+    ]
+    mocker.patch(
+        "client.AsyncLlamaStackClientHolder.get_client", return_value=mock_client
+    )
+
+    # Mock retrieve_response to verify token is passed correctly
+    mock_streaming_response = mocker.AsyncMock()
+    mock_streaming_response.__aiter__.return_value = iter([])
+    mock_retrieve_response = mocker.patch(
+        "app.endpoints.streaming_query.retrieve_response",
+        return_value=(mock_streaming_response, "test_conversation_id"),
+    )
+
+    mocker.patch(
+        "app.endpoints.streaming_query.select_model_id", return_value="test_model"
+    )
+    mocker.patch(
+        "app.endpoints.streaming_query.is_transcripts_enabled", return_value=False
+    )
+    mocker.patch(
+        "app.endpoints.streaming_query.retrieve_user_id", return_value="user123"
+    )
+
+    _ = await streaming_query_endpoint_handler(
+        None,
+        QueryRequest(query="test query"),
+        auth=("user123", "username", "auth_token_123"),
+        mcp_headers=None,
+    )
+
+    assert mock_retrieve_response.call_args[0][3] == "auth_token_123"
