@@ -177,6 +177,10 @@ To pull and run the image with own configuration:
 
 If a connection in your browser does not work please check that in the config file `host` option looks like: `host: 0.0.0.0`.
 
+Container images are built for the following platforms:
+1. `linux/amd64` - main platform for deployment
+1. `linux/arm64`- Mac users with M1/M2/M3 CPUs
+
 # Endpoints
 
 The service provides health check endpoints that can be used for monitoring, load balancing, and orchestration systems like Kubernetes.
