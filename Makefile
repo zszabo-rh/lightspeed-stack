@@ -68,7 +68,7 @@ docstyle:
 ruff:
 	uv run ruff check . --per-file-ignores=tests/*:S101 --per-file-ignores=scripts/*:S101
 
-verify:
+verify: ## Run all linters
 	$(MAKE) black
 	$(MAKE) pylint
 	$(MAKE) pyright
@@ -77,6 +77,7 @@ verify:
 	$(MAKE) check-types
 
 distribution-archives: ## Generate distribution archives to be uploaded into Python registry
+	rm -rf dist
 	pdm run python -m build
 
 upload-distribution-archives: ## Upload distribution archives into Python registry
