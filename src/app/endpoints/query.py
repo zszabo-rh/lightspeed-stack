@@ -29,7 +29,7 @@ import constants
 from auth import get_auth_dependency
 from utils.common import retrieve_user_id
 from utils.endpoints import check_configuration_loaded, get_system_prompt
-from utils.mcp_headers import mcp_headers_dependency
+from utils.mcp_headers import mcp_headers_dependency, handle_mcp_headers_with_toolgroups
 from utils.suid import get_suid
 from utils.types import GraniteToolParser
 
@@ -231,6 +231,7 @@ def retrieve_response(
     # preserve compatibility when mcp_headers is not provided
     if mcp_headers is None:
         mcp_headers = {}
+    mcp_headers = handle_mcp_headers_with_toolgroups(mcp_headers, configuration)
     if not mcp_headers and token:
         for mcp_server in configuration.mcp_servers:
             mcp_headers[mcp_server.url] = {
