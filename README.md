@@ -23,6 +23,10 @@ Lightspeed Core Stack (LCS) is an AI powered assistant that provides answers to 
 * [Endpoints](#endpoints)
     * [Readiness Endpoint](#readiness-endpoint)
     * [Liveness Endpoint](#liveness-endpoint)
+* [Publish the service as Python package on PyPI](#publish-the-service-as-python-package-on-pypi)
+    * [Generate distribution archives to be uploaded into Python registry](#generate-distribution-archives-to-be-uploaded-into-python-registry)
+    * [Upload distribution archives into selected Python registry](#upload-distribution-archives-into-selected-python-registry)
+    * [Packages on PyPI and Test PyPI](#packages-on-pypi-and-test-pypi)
 * [Contributing](#contributing)
 * [License](#license)
 * [Additional tools](#additional-tools)
@@ -162,6 +166,9 @@ format                            Format the code into unified format
 schema                            Generate OpenAPI schema file
 requirements.txt                  Generate requirements.txt file containing hashes for all non-devel packages
 shellcheck                        Run shellcheck
+verify                            Run all linters
+distribution-archives             Generate distribution archives to be uploaded into Python registry
+upload-distribution-archives      Upload distribution archives into Python registry
 help                              Show this help screen
 ```
 
@@ -229,6 +236,51 @@ The liveness endpoint performs a basic health check to verify the service is ali
   "alive": true
 }
 ```
+
+# Publish the service as Python package on PyPI
+
+To publish the service as an Python package on PyPI to be installable by anyone
+(including Konflux hermetic builds), perform these two steps:
+
+## Generate distribution archives to be uploaded into Python registry
+
+```
+make distribution-archives
+```
+
+Please make sure that the archive was really built to avoid publishing older one.
+
+## Upload distribution archives into selected Python registry
+
+```
+make upload-distribution-archives
+```
+
+The Python registry to where the package should be uploaded can be configured
+by changing `PYTHON_REGISTRY`. It is possible to select `pypi` or `testpypi`.
+
+You might have your API token stored in file `~/.pypirc`. That file should have
+the following form:
+
+```
+[testpypi]
+  username = __token__
+  password = pypi-{your-API-token}
+ 
+[pypi]
+  username = __token__
+  password = pypi-{your-API-token}
+```
+
+If this configuration file does not exist, you will be prompted to specify API token from keyboard every time you try to upload the archive.
+
+
+
+## Packages on PyPI and Test PyPI
+
+* https://pypi.org/project/lightspeed-stack/
+* https://test.pypi.org/project/lightspeed-stack/0.1.0/
+
 
 # Contributing
 
