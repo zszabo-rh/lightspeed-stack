@@ -762,8 +762,14 @@ async def test_retrieve_response_with_mcp_servers_and_mcp_headers(mocker):
     model_id = "fake_model_id"
     access_token = ""
     mcp_headers = {
-        "http://localhost:3000": {"Authorization": "Bearer test_token_123"},
-        "https://git.example.com/mcp": {"Authorization": "Bearer test_token_456"},
+        "filesystem-server": {"Authorization": "Bearer test_token_123"},
+        "git-server": {"Authorization": "Bearer test_token_456"},
+        "http://another-server-mcp-server:3000": {
+            "Authorization": "Bearer test_token_789"
+        },
+        "unknown-mcp-server": {
+            "Authorization": "Bearer test_token_for_unknown-mcp-server"
+        },
     }
 
     response, conversation_id = await retrieve_response(
@@ -786,9 +792,17 @@ async def test_retrieve_response_with_mcp_servers_and_mcp_headers(mocker):
         None,  # conversation_id
     )
 
+    expected_mcp_headers = {
+        "http://localhost:3000": {"Authorization": "Bearer test_token_123"},
+        "https://git.example.com/mcp": {"Authorization": "Bearer test_token_456"},
+        "http://another-server-mcp-server:3000": {
+            "Authorization": "Bearer test_token_789"
+        },
+        # we do not put "unknown-mcp-server" url as it's unknown to lightspeed-stack
+    }
     # Check that the agent's extra_headers property was set correctly
     expected_extra_headers = {
-        "X-LlamaStack-Provider-Data": json.dumps({"mcp_headers": mcp_headers})
+        "X-LlamaStack-Provider-Data": json.dumps({"mcp_headers": expected_mcp_headers})
     }
     assert mock_agent.extra_headers == expected_extra_headers
 
