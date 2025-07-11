@@ -50,6 +50,10 @@ dev = [
     "aiosqlite",
     "behave>=1.2.6",
 ]
+build = [
+    "build>=1.2.2.post1",
+    "twine>=5.1.1",
+]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
