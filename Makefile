@@ -1,6 +1,9 @@
 ARTIFACT_DIR := $(if $(ARTIFACT_DIR),$(ARTIFACT_DIR),tests/test_results)
 PATH_TO_PLANTUML := ~/bin
 
+# Python registry to where the package should be uploaded
+PYTHON_REGISTRY = pypi
+
 
 run: ## Run the service locally
 	uv run src/lightspeed_stack.py
@@ -72,6 +75,12 @@ verify:
 	$(MAKE) ruff
 	$(MAKE) docstyle
 	$(MAKE) check-types
+
+distribution-archives: ## Generate distribution archives to be uploaded into Python registry
+	pdm run python -m build
+
+upload-distribution-archives: ## Upload distribution archives into Python registry
+	pdm run python -m twine upload --repository ${PYTHON_REGISTRY} dist/*
 
 help: ## Show this help screen
 	@echo 'Usage: make <OPTIONS> ... <TARGETS>'
