@@ -22,6 +22,7 @@ exclude = [
   # might need to be rewritten down the line.
   "src/auth/k8s.py",
 ]
+extraPaths = ["./src"]
 
 [tool.pdm]
 distribution = true
