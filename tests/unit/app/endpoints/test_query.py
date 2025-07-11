@@ -20,6 +20,8 @@ from models.requests import QueryRequest, Attachment
 from models.config import ModelContextProtocolServer
 from llama_stack_client.types import UserMessage  # type: ignore
 
+MOCK_AUTH = ("mock_user_id", "mock_username", "mock_token")
+
 
 @pytest.fixture(autouse=True)
 def setup_configuration():
@@ -128,7 +130,7 @@ def _test_query_endpoint_handler(mocker, store_transcript=False):
 
     query_request = QueryRequest(query=query)
 
-    response = query_endpoint_handler(query_request)
+    response = query_endpoint_handler(query_request, auth=MOCK_AUTH)
 
     # Assert the response is as expected
     assert response.response == llm_response
@@ -1131,3 +1133,33 @@ def test_get_agent_session_persistence_enabled(
         tool_parser=None,
         enable_session_persistence=True,
     )
+
+
+def test_auth_tuple_unpacking_in_query_endpoint_handler(mocker):
+    """Test that auth tuple is correctly unpacked in query endpoint handler."""
+    # Mock dependencies
+    mock_config = mocker.Mock()
+    mock_config.llama_stack_configuration = mocker.Mock()
+    mocker.patch("app.endpoints.query.configuration", mock_config)
+
+    mock_client = mocker.Mock()
+    mock_client.models.list.return_value = [
+        mocker.Mock(identifier="model1", model_type="llm", provider_id="provider1")
+    ]
+    mocker.patch("client.LlamaStackClientHolder.get_client", return_value=mock_client)
+
+    mock_retrieve_response = mocker.patch(
+        "app.endpoints.query.retrieve_response",
+        return_value=("test response", "test_conversation_id"),
+    )
+
+    mocker.patch("app.endpoints.query.select_model_id", return_value="test_model")
+    mocker.patch("app.endpoints.query.is_transcripts_enabled", return_value=False)
+
+    _ = query_endpoint_handler(
+        QueryRequest(query="test query"),
+        auth=("user123", "username", "auth_token_123"),
+        mcp_headers=None,
+    )
+
+    assert mock_retrieve_response.call_args[0][3] == "auth_token_123"
