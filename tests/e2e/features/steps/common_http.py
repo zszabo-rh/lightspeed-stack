@@ -3,7 +3,7 @@
 import json
 
 import requests
-from behave import given, then, when
+from behave import given, then, when  # pyright: ignore[reportAttributeAccessIssue]
 from behave.runner import Context
 from tests.e2e.utils.utils import normalize_endpoint, validate_json
 
@@ -37,6 +37,8 @@ def request_endpoint_with_json(
     # initial value
     context.response = None
 
+    assert context.text is not None, "Payload needs to be specified"
+
     # perform REST API call
     context.response = requests.get(
         f"http://{hostname}:{port}/{endpoint}",
@@ -53,6 +55,8 @@ def request_endpoint_with_url_params(
 ) -> None:
     """Perform a request to the server defined by URL to a given endpoint."""
     params = {}
+
+    assert context.table is not None, "Request parameters needs to be specified"
 
     for row in context.table:
         name = row["param"]
@@ -120,6 +124,7 @@ def check_content_type(context: Context, content_type: str) -> None:
 def check_response_body_schema(context: Context) -> None:
     """Check that response body is compliant with a given schema."""
     assert context.response is not None, "Request needs to be performed first"
+    assert context.text is not None, "Response does not contain any payload"
     schema = json.loads(context.text)
     body = context.response.json()
 
@@ -139,6 +144,7 @@ def check_response_body_contains(context: Context, substring: str) -> None:
 def check_prediction_result(context: Context) -> None:
     """Check the content of the response to be exactly the same."""
     assert context.response is not None, "Request needs to be performed first"
+    assert context.text is not None, "Response does not contain any payload"
     expected_body = json.loads(context.text)
     result = context.response.json()
 
@@ -150,6 +156,7 @@ def check_prediction_result(context: Context) -> None:
 def check_prediction_result_ignoring_field(context: Context, field: str) -> None:
     """Check the content of the response to be exactly the same."""
     assert context.response is not None, "Request needs to be performed first"
+    assert context.text is not None, "Response does not contain any payload"
     expected_body = json.loads(context.text).copy()
     result = context.response.json().copy()
 
@@ -217,6 +224,7 @@ def access_rest_api_endpoint_post(context: Context, endpoint: str) -> None:
     path = f"{context.api_prefix}/{endpoint}".replace("//", "/")
     url = base + path
 
+    assert context.text is not None, "Payload needs to be specified"
     data = json.loads(context.text)
     # initial value
     context.response = None
