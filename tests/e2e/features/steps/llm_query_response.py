@@ -1,7 +1,7 @@
 """LLM query and response steps."""
 
 import requests
-from behave import then, when
+from behave import then, when  # pyright: ignore[reportAttributeAccessIssue]
 from behave.runner import Context
 
 DEFAULT_LLM_TIMEOUT = 60
@@ -40,6 +40,8 @@ def check_fragments_in_response(context: Context) -> None:
     assert context.response is not None
     response_json = context.response.json()
     response = response_json["response"]
+
+    assert context.table is not None, "Fragments are not specified in table"
 
     for fragment in context.table:
         expected = fragment["Fragments in LLM response"]
