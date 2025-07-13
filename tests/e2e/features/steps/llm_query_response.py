@@ -36,7 +36,15 @@ def check_llm_response_not_truncated(context: Context) -> None:
 
 @then("The response should contain following fragments")
 def check_fragments_in_response(context: Context) -> None:
-    """Check if the LLM response contain list of fragments."""
+    """Check that all specified fragments are present in the LLM response.
+
+    First checks that the HTTP response exists and contains a
+    "response" field. For each fragment listed in the scenario's
+    table under "Fragments in LLM response", asserts that it
+    appears as a substring in the LLM's response. Raises an
+    assertion error if any fragment is missing or if the fragments
+    table is not provided.
+    """
     assert context.response is not None
     response_json = context.response.json()
     response = response_json["response"]
