@@ -2,12 +2,20 @@
 
 from typing import Optional
 
+<<<<<<< HEAD
 from pydantic import BaseModel, model_validator, FilePath, AnyHttpUrl, PositiveInt
+=======
+from pydantic import BaseModel, FilePath, PositiveInt, model_validator
+
+>>>>>>> 98fed29cf48b684298aa20626c53c84ee1f8954e
 from typing_extensions import Self
 
 import constants
 
+<<<<<<< HEAD
 from utils import checks
+=======
+>>>>>>> 98fed29cf48b684298aa20626c53c84ee1f8954e
 
 class TLSConfiguration(BaseModel):
     """TLS configuration."""
