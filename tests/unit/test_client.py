@@ -50,7 +50,7 @@ def test_get_llama_stack_wrong_configuration() -> None:
 
 
 async def test_get_async_llama_stack_library_client() -> None:
-    """Test the inicialization of asynchronous Llama Stack client in library mode."""
+    """Test the initialization of asynchronous Llama Stack client in library mode."""
     cfg = LLamaStackConfiguration(
         url=None,
         api_key=None,
@@ -63,7 +63,7 @@ async def test_get_async_llama_stack_library_client() -> None:
 
 
 async def test_get_async_llama_stack_remote_client() -> None:
-    """Test the inicialization of asynchronous Llama Stack client in server mode."""
+    """Test the initialization of asynchronous Llama Stack client in server mode."""
     cfg = LLamaStackConfiguration(
         url="http://localhost:8321",
         api_key=None,
