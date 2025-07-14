@@ -5,11 +5,11 @@ import pytest
 
 from pathlib import Path
 
-from constants import  (
-    AUTH_MOD_NOOP, 
-    AUTH_MOD_K8S, 
-    DATA_COLLECTOR_COLLECTION_INTERVAL, 
-    DATA_COLLECTOR_CONNECTION_TIMEOUT
+from constants import (
+    AUTH_MOD_NOOP,
+    AUTH_MOD_K8S,
+    DATA_COLLECTOR_COLLECTION_INTERVAL,
+    DATA_COLLECTOR_CONNECTION_TIMEOUT,
 )
 
 from models.config import (
