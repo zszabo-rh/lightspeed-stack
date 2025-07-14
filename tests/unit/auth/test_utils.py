@@ -1,7 +1,7 @@
 """Unit tests for functions defined in auth/utils.py"""
 
-from auth.utils import extract_user_token
 from fastapi import HTTPException
+from auth.utils import extract_user_token
 
 
 def test_extract_user_token():
