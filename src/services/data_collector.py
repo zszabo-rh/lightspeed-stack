@@ -176,8 +176,9 @@ class DataCollectorService:  # pylint: disable=too-few-public-methods
         if collector_config.ingress_server_url is None:
             raise ValueError("Ingress server URL is not configured")
 
+        # pylint: disable=line-too-long
         headers = {
-            "Content-Type": "application/vnd.redhat.lightspeed-stack.periodic+tar",
+            "Content-Type": f"application/vnd.redhat.{collector_config.ingress_content_service_name}.periodic+tar",
         }
 
         if collector_config.ingress_server_auth_token:

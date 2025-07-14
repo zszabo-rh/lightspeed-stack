@@ -90,6 +90,7 @@ class DataCollectorConfiguration(BaseModel):
     enabled: bool = False
     ingress_server_url: Optional[str] = None
     ingress_server_auth_token: Optional[str] = None
+    ingress_content_service_name: Optional[str] = None
     collection_interval: PositiveInt = constants.DATA_COLLECTOR_COLLECTION_INTERVAL
     cleanup_after_send: bool = True  # Remove local files after successful send
     connection_timeout: PositiveInt = constants.DATA_COLLECTOR_CONNECTION_TIMEOUT
@@ -100,6 +101,10 @@ class DataCollectorConfiguration(BaseModel):
         if self.enabled and self.ingress_server_url is None:
             raise ValueError(
                 "ingress_server_url is required when data collector is enabled"
+            )
+        if self.enabled and self.ingress_content_service_name is None:
+            raise ValueError(
+                "ingress_content_service_name is required when data collector is enabled"
             )
         return self
 
