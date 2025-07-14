@@ -139,6 +139,7 @@ def test_user_data_collection_data_collector_enabled() -> None:
             enabled=True,
             ingress_server_url="http://localhost:8080",
             ingress_server_auth_token="xyzzy",
+            ingress_content_service_name="lightspeed-core",
             collection_interval=60,
         )
     )
@@ -158,6 +159,20 @@ def test_user_data_collection_data_collector_wrong_configuration() -> None:
                 enabled=True,
                 ingress_server_url=None,
                 ingress_server_auth_token="xyzzy",
+                ingress_content_service_name="lightspeed-core",
+                collection_interval=60,
+            )
+        )
+    with pytest.raises(
+        ValueError,
+        match="ingress_content_service_name is required when data collector is enabled",
+    ):
+        UserDataCollection(
+            data_collector=DataCollectorConfiguration(
+                enabled=True,
+                ingress_server_url="http://localhost:8080",
+                ingress_server_auth_token="xyzzy",
+                ingress_content_service_name=None,
                 collection_interval=60,
             )
         )
@@ -399,6 +414,7 @@ def test_dump_configuration(tmp_path) -> None:
                     "enabled": False,
                     "ingress_server_url": None,
                     "ingress_server_auth_token": None,
+                    "ingress_content_service_name": None,
                     "collection_interval": constants.DATA_COLLECTOR_COLLECTION_INTERVAL,
                     "cleanup_after_send": True,
                     "connection_timeout": constants.DATA_COLLECTOR_CONNECTION_TIMEOUT,
@@ -467,6 +483,7 @@ def test_dump_configuration_with_one_mcp_server(tmp_path) -> None:
                     "enabled": False,
                     "ingress_server_url": None,
                     "ingress_server_auth_token": None,
+                    "ingress_content_service_name": None,
                     "collection_interval": constants.DATA_COLLECTOR_COLLECTION_INTERVAL,
                     "cleanup_after_send": True,
                     "connection_timeout": constants.DATA_COLLECTOR_CONNECTION_TIMEOUT,
@@ -549,6 +566,7 @@ def test_dump_configuration_with_more_mcp_servers(tmp_path) -> None:
                     "enabled": False,
                     "ingress_server_url": None,
                     "ingress_server_auth_token": None,
+                    "ingress_content_service_name": None,
                     "collection_interval": constants.DATA_COLLECTOR_COLLECTION_INTERVAL,
                     "cleanup_after_send": True,
                     "connection_timeout": constants.DATA_COLLECTOR_CONNECTION_TIMEOUT,

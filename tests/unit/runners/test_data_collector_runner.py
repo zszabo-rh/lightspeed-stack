@@ -12,6 +12,7 @@ def test_start_data_collector() -> None:
         enabled=True,
         ingress_server_url="http://localhost:8080",
         ingress_server_auth_token="xyzzy",
+        ingress_content_service_name="lightspeed-core",
         collection_interval=60,
     )
 
@@ -27,6 +28,7 @@ def test_start_data_collector_disabled() -> None:
         enabled=False,
         ingress_server_url="http://localhost:8080",
         ingress_server_auth_token="xyzzy",
+        ingress_content_service_name="lightspeed-core",
         collection_interval=60,
     )
 
@@ -42,6 +44,7 @@ def test_start_data_collector_exception() -> None:
         enabled=True,
         ingress_server_url="http://localhost:8080",
         ingress_server_auth_token="xyzzy",
+        ingress_content_service_name="lightspeed-core",
         collection_interval=60,
     )
 

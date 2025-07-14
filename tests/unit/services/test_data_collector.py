@@ -149,9 +149,11 @@ def test_perform_collection_no_files(mock_config) -> None:
     """Test _perform_collection when no files are found."""
     service = DataCollectorService()
 
-    with patch.object(service, "_collect_feedback_files", return_value=[]):
-        with patch.object(service, "_collect_transcript_files", return_value=[]):
-            service._perform_collection()
+    with (
+        patch.object(service, "_collect_feedback_files", return_value=[]),
+        patch.object(service, "_collect_transcript_files", return_value=[]),
+    ):
+        service._perform_collection()
 
 
 @patch("services.data_collector.configuration")
@@ -161,10 +163,12 @@ def test_perform_collection_with_files(mock_config) -> None:
 
     feedback_files = [Path("/tmp/feedback/file1.json")]
 
-    with patch.object(service, "_collect_feedback_files", return_value=feedback_files):
-        with patch.object(service, "_collect_transcript_files", return_value=[]):
-            with patch.object(service, "_create_and_send_tarball", return_value=1):
-                service._perform_collection()
+    with (
+        patch.object(service, "_collect_feedback_files", return_value=feedback_files),
+        patch.object(service, "_collect_transcript_files", return_value=[]),
+        patch.object(service, "_create_and_send_tarball", return_value=1),
+    ):
+        service._perform_collection()
 
 
 @patch("services.data_collector.configuration")
@@ -172,18 +176,20 @@ def test_perform_collection_with_exception(mock_config) -> None:
     """Test _perform_collection when an exception occurs."""
     service = DataCollectorService()
 
-    with patch.object(
-        service, "_collect_feedback_files", return_value=[Path("/tmp/test.json")]
+    with (
+        patch.object(
+            service, "_collect_feedback_files", return_value=[Path("/tmp/test.json")]
+        ),
+        patch.object(service, "_collect_transcript_files", return_value=[]),
+        patch.object(
+            service, "_create_and_send_tarball", side_effect=Exception("Test error")
+        ),
     ):
-        with patch.object(service, "_collect_transcript_files", return_value=[]):
-            with patch.object(
-                service, "_create_and_send_tarball", side_effect=Exception("Test error")
-            ):
-                try:
-                    service._perform_collection()
-                    assert False, "Expected exception"
-                except Exception as e:
-                    assert str(e) == "Test error"
+        try:
+            service._perform_collection()
+            assert False, "Expected exception"
+        except Exception as e:
+            assert str(e) == "Test error"
 
 
 @patch("services.data_collector.configuration")
@@ -206,15 +212,15 @@ def test_create_and_send_tarball_success(mock_config) -> None:
     files = [Path("/tmp/test/file1.json")]
     tarball_path = Path("/tmp/test_tarball.tar.gz")
 
-    with patch.object(service, "_create_tarball", return_value=tarball_path):
-        with patch.object(service, "_send_tarball"):
-            with patch.object(service, "_cleanup_files"):
-                with patch.object(service, "_cleanup_empty_directories"):
-                    with patch.object(service, "_cleanup_tarball"):
-                        result = service._create_and_send_tarball(
-                            files, "test", Path("/tmp")
-                        )
-                        assert result == 1
+    with (
+        patch.object(service, "_create_tarball", return_value=tarball_path),
+        patch.object(service, "_send_tarball"),
+        patch.object(service, "_cleanup_files"),
+        patch.object(service, "_cleanup_empty_directories"),
+        patch.object(service, "_cleanup_tarball"),
+    ):
+        result = service._create_and_send_tarball(files, "test", Path("/tmp"))
+        assert result == 1
 
 
 @patch("services.data_collector.configuration")
@@ -227,13 +233,13 @@ def test_create_and_send_tarball_no_cleanup(mock_config) -> None:
 
     files = [Path("/tmp/test/file1.json")]
 
-    with patch.object(
-        service, "_create_tarball", return_value=Path("/tmp/test.tar.gz")
+    with (
+        patch.object(service, "_create_tarball", return_value=Path("/tmp/test.tar.gz")),
+        patch.object(service, "_send_tarball"),
+        patch.object(service, "_cleanup_tarball"),
     ):
-        with patch.object(service, "_send_tarball"):
-            with patch.object(service, "_cleanup_tarball"):
-                result = service._create_and_send_tarball(files, "test", Path("/tmp"))
-                assert result == 1
+        result = service._create_and_send_tarball(files, "test", Path("/tmp"))
+        assert result == 1
 
 
 @patch("services.data_collector.datetime")
@@ -386,50 +392,56 @@ def test_perform_collection_with_specific_exceptions(mock_config) -> None:
     service = DataCollectorService()
 
     # Test with OSError
-    with patch.object(
-        service, "_collect_feedback_files", return_value=[Path("/tmp/test.json")]
+    with (
+        patch.object(
+            service, "_collect_feedback_files", return_value=[Path("/tmp/test.json")]
+        ),
+        patch.object(service, "_collect_transcript_files", return_value=[]),
+        patch.object(
+            service, "_create_and_send_tarball", side_effect=OSError("OS Error")
+        ),
     ):
-        with patch.object(service, "_collect_transcript_files", return_value=[]):
-            with patch.object(
-                service, "_create_and_send_tarball", side_effect=OSError("OS Error")
-            ):
-                try:
-                    service._perform_collection()
-                    assert False, "Expected OSError"
-                except OSError as e:
-                    assert str(e) == "OS Error"
+        try:
+            service._perform_collection()
+            assert False, "Expected OSError"
+        except OSError as e:
+            assert str(e) == "OS Error"
 
     # Test with requests.RequestException
-    with patch.object(
-        service, "_collect_feedback_files", return_value=[Path("/tmp/test.json")]
+    with (
+        patch.object(
+            service, "_collect_feedback_files", return_value=[Path("/tmp/test.json")]
+        ),
+        patch.object(service, "_collect_transcript_files", return_value=[]),
+        patch.object(
+            service,
+            "_create_and_send_tarball",
+            side_effect=requests.RequestException("Request Error"),
+        ),
     ):
-        with patch.object(service, "_collect_transcript_files", return_value=[]):
-            with patch.object(
-                service,
-                "_create_and_send_tarball",
-                side_effect=requests.RequestException("Request Error"),
-            ):
-                try:
-                    service._perform_collection()
-                    assert False, "Expected RequestException"
-                except requests.RequestException as e:
-                    assert str(e) == "Request Error"
+        try:
+            service._perform_collection()
+            assert False, "Expected RequestException"
+        except requests.RequestException as e:
+            assert str(e) == "Request Error"
 
     # Test with tarfile.TarError
-    with patch.object(
-        service, "_collect_feedback_files", return_value=[Path("/tmp/test.json")]
+    with (
+        patch.object(
+            service, "_collect_feedback_files", return_value=[Path("/tmp/test.json")]
+        ),
+        patch.object(service, "_collect_transcript_files", return_value=[]),
+        patch.object(
+            service,
+            "_create_and_send_tarball",
+            side_effect=tarfile.TarError("Tar Error"),
+        ),
     ):
-        with patch.object(service, "_collect_transcript_files", return_value=[]):
-            with patch.object(
-                service,
-                "_create_and_send_tarball",
-                side_effect=tarfile.TarError("Tar Error"),
-            ):
-                try:
-                    service._perform_collection()
-                    assert False, "Expected TarError"
-                except tarfile.TarError as e:
-                    assert str(e) == "Tar Error"
+        try:
+            service._perform_collection()
+            assert False, "Expected TarError"
+        except tarfile.TarError as e:
+            assert str(e) == "Tar Error"
 
 
 def test_cleanup_files_success() -> None:
@@ -565,9 +577,11 @@ def test_perform_collection_with_transcript_files(mock_config) -> None:
 
     transcript_files = [Path("/tmp/transcripts/file1.json")]
 
-    with patch.object(service, "_collect_feedback_files", return_value=[]):
-        with patch.object(
+    with (
+        patch.object(service, "_collect_feedback_files", return_value=[]),
+        patch.object(
             service, "_collect_transcript_files", return_value=transcript_files
-        ):
-            with patch.object(service, "_create_and_send_tarball", return_value=1):
-                service._perform_collection()
+        ),
+        patch.object(service, "_create_and_send_tarball", return_value=1),
+    ):
+        service._perform_collection()

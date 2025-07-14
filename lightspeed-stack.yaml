@@ -24,6 +24,7 @@ user_data_collection:
     enabled: false
     ingress_server_url: null
     ingress_server_auth_token: null
+    ingress_content_service_name: null
     collection_interval: 7200  # 2 hours in seconds
     cleanup_after_send: true
     connection_timeout_seconds: 30
