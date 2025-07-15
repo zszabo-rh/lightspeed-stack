@@ -1,9 +1,11 @@
 """Unit tests for functions defined in src/models/config.py."""
 
 import json
+from pathlib import Path
+
 import pytest
 
-from pathlib import Path
+from pydantic import ValidationError
 
 from constants import (
     AUTH_MOD_NOOP,
@@ -13,6 +15,7 @@ from constants import (
 )
 
 from models.config import (
+    AuthenticationConfiguration,
     Configuration,
     LLamaStackConfiguration,
     ServiceConfiguration,
@@ -93,10 +96,8 @@ def test_llama_stack_wrong_configuration_constructor_library_mode_off() -> None:
 
 def test_llama_stack_wrong_configuration_no_config_file() -> None:
     """Test the LLamaStackConfiguration constructor."""
-    with pytest.raises(
-        ValueError,
-        match="LLama stack library client mode is enabled but a configuration file path is not specified",
-    ):
+    m = "LLama stack library client mode is enabled but a configuration file path is not specified"
+    with pytest.raises(ValueError, match=m):
         LLamaStackConfiguration(use_as_library_client=True)
 
 
@@ -280,7 +281,6 @@ def test_model_context_protocol_server_custom_provider() -> None:
 
 def test_model_context_protocol_server_required_fields() -> None:
     """Test that ModelContextProtocolServer requires name and url."""
-    from pydantic import ValidationError
 
     with pytest.raises(ValidationError):
         ModelContextProtocolServer()
@@ -307,7 +307,7 @@ def test_configuration_empty_mcp_servers() -> None:
         customization=None,
     )
     assert cfg is not None
-    assert cfg.mcp_servers == []
+    assert not cfg.mcp_servers
 
 
 def test_configuration_single_mcp_server() -> None:
@@ -627,7 +627,6 @@ def test_dump_configuration_with_more_mcp_servers(tmp_path) -> None:
 
 def test_authentication_configuration() -> None:
     """Test the AuthenticationConfiguration constructor."""
-    from models.config import AuthenticationConfiguration
 
     auth_config = AuthenticationConfiguration(
         module=AUTH_MOD_NOOP,
@@ -644,8 +643,6 @@ def test_authentication_configuration() -> None:
 
 def test_authentication_configuration_supported() -> None:
     """Test the AuthenticationConfiguration constructor."""
-    from models.config import AuthenticationConfiguration
-
     auth_config = AuthenticationConfiguration(
         module=AUTH_MOD_K8S,
         skip_tls_verification=False,
@@ -661,9 +658,6 @@ def test_authentication_configuration_supported() -> None:
 
 def test_authentication_configuration_module_unsupported() -> None:
     """Test the AuthenticationConfiguration constructor with module as None."""
-    from models.config import AuthenticationConfiguration
-    from pydantic import ValidationError
-
     with pytest.raises(ValidationError, match="Unsupported authentication module"):
         AuthenticationConfiguration(
             module="non-existing-module",
