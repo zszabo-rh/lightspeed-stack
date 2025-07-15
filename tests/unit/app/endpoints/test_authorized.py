@@ -1,3 +1,5 @@
+"""Unit tests for the /authorized REST API endpoint."""
+
 from unittest.mock import AsyncMock
 
 import pytest

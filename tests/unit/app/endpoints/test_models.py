@@ -1,6 +1,9 @@
-import pytest
+"""Unit tests for the /models REST API endpoint."""
 
 from unittest.mock import Mock
+
+import pytest
+
 from fastapi import HTTPException, status
 
 from app.endpoints.models import models_endpoint_handler
@@ -62,7 +65,7 @@ def test_models_endpoint_handler_improper_llama_stack_configuration(mocker):
         assert e.detail["response"] == "LLama stack is not configured"
 
 
-def test_models_endpoint_handler_configuration_loaded(mocker):
+def test_models_endpoint_handler_configuration_loaded():
     """Test the models endpoint handler if configuration is loaded."""
     # configuration for tests
     config_dict = {

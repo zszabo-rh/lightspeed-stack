@@ -1,3 +1,5 @@
+"""Test the QueryRequest, Attachment, and FeedbackRequest models."""
+
 import pytest
 from pydantic import ValidationError
 from models.requests import QueryRequest, Attachment, FeedbackRequest
@@ -15,6 +17,18 @@ class TestAttachment:
         )
         assert a.attachment_type == "configuration"
         assert a.content_type == "application/yaml"
+        assert a.content == "kind: Pod\n metadata:\n name:    private-reg"
+
+    def test_constructor_unknown_attachment_type(self) -> None:
+        """Test the Attachment with custom values."""
+        # for now we allow any content type
+        a = Attachment(
+            attachment_type="configuration",
+            content_type="unknown/type",
+            content="kind: Pod\n metadata:\n name:    private-reg",
+        )
+        assert a.attachment_type == "configuration"
+        assert a.content_type == "unknown/type"
         assert a.content == "kind: Pod\n metadata:\n name:    private-reg"
 
 
@@ -52,6 +66,9 @@ class TestQueryRequest:
         )
         assert qr.attachments is not None
         assert len(qr.attachments) == 2
+
+        # the following warning is false positive
+        # pylint: disable=unsubscriptable-object
         assert qr.attachments[0].attachment_type == "log"
         assert qr.attachments[0].content_type == "text/plain"
         assert qr.attachments[0].content == "this is attachment"

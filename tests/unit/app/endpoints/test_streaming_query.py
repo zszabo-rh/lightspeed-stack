@@ -1,7 +1,16 @@
-import pytest
+"""Unit tests for the /streaming-query REST API endpoint."""
+
+# pylint: disable=too-many-lines
+
 import json
 
+import pytest
+
 from fastapi import HTTPException, status
+from fastapi.responses import StreamingResponse
+
+from llama_stack_client import APIConnectionError
+from llama_stack_client.types import UserMessage  # type: ignore
 from llama_stack_client.types.shared.interleaved_content_item import TextContentItem
 
 from configuration import AppConfig
@@ -13,10 +22,8 @@ from app.endpoints.streaming_query import (
     get_agent,
     _agent_cache,
 )
-from llama_stack_client import APIConnectionError
 from models.requests import QueryRequest, Attachment
 from models.config import ModelContextProtocolServer
-from llama_stack_client.types import UserMessage  # type: ignore
 
 MOCK_AUTH = ("mock_user_id", "mock_username", "mock_token")
 
@@ -47,8 +54,8 @@ Use them as supporting information only in answering this query.
 ]
 
 
-@pytest.fixture(autouse=True)
-def setup_configuration():
+@pytest.fixture(autouse=True, name="setup_configuration")
+def setup_configuration_fixture():
     """Set up configuration for tests."""
     config_dict = {
         "name": "test",
@@ -75,12 +82,13 @@ def setup_configuration():
     return cfg
 
 
-@pytest.fixture(autouse=True)
-def prepare_agent_mocks(mocker):
+@pytest.fixture(autouse=True, name="prepare_agent_mocks")
+def prepare_agent_mocks_fixture(mocker):
+    """Preparation for mock for the LLM agent."""
     mock_client = mocker.AsyncMock()
     mock_agent = mocker.AsyncMock()
-    """Cleanup agent cache after tests."""
     yield mock_client, mock_agent
+    # cleanup agent cache after tests
     _agent_cache.clear()
 
 
@@ -205,9 +213,7 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
         None, query_request, auth=MOCK_AUTH
     )
 
-    # Assert the response is a StreamingResponse
-    from fastapi.responses import StreamingResponse
-
+    # assert the response is a StreamingResponse
     assert isinstance(response, StreamingResponse)
 
     # Collect the streaming response content
@@ -288,7 +294,8 @@ async def test_retrieve_response_vector_db_available(prepare_agent_mocks, mocker
         mock_client, model_id, query_request, token
     )
 
-    # For streaming, the response should be the streaming object and conversation_id should be returned
+    # For streaming, the response should be the streaming object and
+    # conversation_id should be returned
     assert response is not None
     assert conversation_id == "test_conversation_id"
     mock_agent.create_turn.assert_called_once_with(
@@ -324,7 +331,8 @@ async def test_retrieve_response_no_available_shields(prepare_agent_mocks, mocke
         mock_client, model_id, query_request, token
     )
 
-    # For streaming, the response should be the streaming object and conversation_id should be returned
+    # For streaming, the response should be the streaming object and
+    # conversation_id should be returned
     assert response is not None
     assert conversation_id == "test_conversation_id"
     mock_agent.create_turn.assert_called_once_with(
@@ -340,11 +348,16 @@ async def test_retrieve_response_one_available_shield(prepare_agent_mocks, mocke
     """Test the retrieve_response function."""
 
     class MockShield:
+        """Mock for Llama Stack shield to be used."""
+
         def __init__(self, identifier):
             self.identifier = identifier
 
-        def identifier(self):
-            return self.identifier
+        def __str__(self):
+            return "MockShield"
+
+        def __repr__(self):
+            return "MockShield"
 
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -383,11 +396,16 @@ async def test_retrieve_response_two_available_shields(prepare_agent_mocks, mock
     """Test the retrieve_response function."""
 
     class MockShield:
+        """Mock for Llama Stack shield to be used."""
+
         def __init__(self, identifier):
             self.identifier = identifier
 
-        def identifier(self):
-            return self.identifier
+        def __str__(self):
+            return "MockShield"
+
+        def __repr__(self):
+            return "MockShield"
 
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
