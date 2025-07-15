@@ -29,7 +29,7 @@ from models.config import ModelContextProtocolServer
 MOCK_AUTH = ("mock_user_id", "mock_username", "mock_token")
 
 
-@pytest.fixture(autouse=True, name="setup_configuration")
+@pytest.fixture(name="setup_configuration")
 def setup_configuration_fixture():
     """Set up configuration for tests."""
     config_dict = {

@@ -19,7 +19,7 @@ class TestAttachment:
         assert a.content_type == "application/yaml"
         assert a.content == "kind: Pod\n metadata:\n name:    private-reg"
 
-    def test_constructor_unknown_attachmen_type(self) -> None:
+    def test_constructor_unknown_attachment_type(self) -> None:
         """Test the Attachment with custom values."""
         # for now we allow any content type
         a = Attachment(
