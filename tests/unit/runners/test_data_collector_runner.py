@@ -55,6 +55,6 @@ def test_start_data_collector_exception() -> None:
         try:
             start_data_collector(configuration)
             assert False, "Expected exception to be raised"
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             assert str(e) == "Test exception"
             mocked_run.assert_called_once()
