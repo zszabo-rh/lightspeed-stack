@@ -1,4 +1,4 @@
-"""Test module for utils/types.py."""
+"""Unit tests for functionns defined in utils/types.py."""
 
 from unittest.mock import Mock
 
@@ -6,6 +6,8 @@ from utils.types import GraniteToolParser
 
 
 class TestGraniteToolParser:
+    """Unit tests for functionns defined in utils/types.py."""
+
     def test_get_tool_parser_when_model_is_is_not_granite(self):
         """Test that the tool_parser is None when model_id is not a granite model."""
         assert (
@@ -29,12 +31,12 @@ class TestGraniteToolParser:
         assert tool_parser.get_tool_calls(None) == [], "get_tool_calls should return []"
 
     def test_get_tool_calls_from_completion_message_when_not_none(self):
-        """Test that get_tool_calls returns an empty array when CompletionMessage has no tool_calls."""
+        """Test that get_tool_calls returns an empty array when CompletionMessage has no tool_calls."""  # pylint: disable=line-too-long
         tool_parser = GraniteToolParser.get_parser("granite-3.3-8b-instruct")
         completion_message = Mock()
         completion_message.tool_calls = []
-        assert (
-            tool_parser.get_tool_calls(completion_message) == []
+        assert not tool_parser.get_tool_calls(
+            completion_message
         ), "get_tool_calls should return []"
 
     def test_get_tool_calls_from_completion_message_when_message_has_tool_calls(self):

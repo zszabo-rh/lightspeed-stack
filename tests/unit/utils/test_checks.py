@@ -1,16 +1,18 @@
-import os
-import pytest
+"""Unit tests for functions defined in utils/checks module."""
 
+import os
 from unittest.mock import patch
+
+import pytest
 
 from utils import checks
 
 
-@pytest.fixture
-def input_file(tmp_path):
+@pytest.fixture(name="input_file")
+def input_file_fixture(tmp_path):
     """Create file manually using the tmp_path fixture."""
     filename = os.path.join(tmp_path, "mydoc.csv")
-    with open(filename, "wt") as fout:
+    with open(filename, "wt", encoding="utf-8") as fout:
         fout.write("some content!")
     return filename
 
