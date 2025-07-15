@@ -14,17 +14,18 @@ from utils import endpoints
 CONFIGURED_SYSTEM_PROMPT = "This is a configured system prompt"
 
 
-@pytest.fixture
-def input_file(tmp_path):
+@pytest.fixture(name="input_file")
+def input_file_fixture(tmp_path):
     """Create file manually using the tmp_path fixture."""
     filename = os.path.join(tmp_path, "prompt.txt")
-    with open(filename, "wt") as fout:
+    with open(filename, "wt", encoding="utf-8") as fout:
         fout.write("this is prompt!")
     return filename
 
 
-@pytest.fixture
-def config_without_system_prompt():
+@pytest.fixture(name="config_without_system_prompt")
+def config_without_system_prompt_fixture():
+    """Configuration w/o custom system prompt set."""
     test_config = config_dict.copy()
 
     # no customization provided
@@ -36,8 +37,9 @@ def config_without_system_prompt():
     return cfg
 
 
-@pytest.fixture
-def config_with_custom_system_prompt():
+@pytest.fixture(name="config_with_custom_system_prompt")
+def config_with_custom_system_prompt_fixture():
+    """Configuration with custom system prompt set."""
     test_config = config_dict.copy()
 
     # system prompt is customized
@@ -50,8 +52,9 @@ def config_with_custom_system_prompt():
     return cfg
 
 
-@pytest.fixture
-def config_with_custom_system_prompt_and_disable_query_system_prompt():
+@pytest.fixture(name="config_with_custom_system_prompt_and_disable_query_system_prompt")
+def config_with_custom_system_prompt_and_disable_query_system_prompt_fixture():
+    """Configuration with custom system prompt and disabled query systme prompt set."""
     test_config = config_dict.copy()
 
     # system prompt is customized and query system prompt is disabled
@@ -65,14 +68,14 @@ def config_with_custom_system_prompt_and_disable_query_system_prompt():
     return cfg
 
 
-@pytest.fixture
-def query_request_without_system_prompt():
+@pytest.fixture(name="query_request_without_system_prompt")
+def query_request_without_system_prompt_fixture():
     """Fixture for query request without system prompt."""
     return QueryRequest(query="query", system_prompt=None)
 
 
-@pytest.fixture
-def query_request_with_system_prompt():
+@pytest.fixture(name="query_request_with_system_prompt")
+def query_request_with_system_prompt_fixture():
     """Fixture for query request with system prompt."""
     return QueryRequest(query="query", system_prompt="System prompt defined in query")
 

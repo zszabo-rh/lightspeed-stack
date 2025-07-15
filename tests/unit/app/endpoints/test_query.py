@@ -131,7 +131,8 @@ def _test_query_endpoint_handler(mocker, store_transcript_to_file=False):
     )
     mocker.patch("app.endpoints.query.select_model_id", return_value="fake_model_id")
     mocker.patch(
-        "app.endpoints.query.is_transcripts_enabled", return_value=store_transcript_to_file
+        "app.endpoints.query.is_transcripts_enabled",
+        return_value=store_transcript_to_file,
     )
     mock_transcript = mocker.patch("app.endpoints.query.store_transcript")
 
