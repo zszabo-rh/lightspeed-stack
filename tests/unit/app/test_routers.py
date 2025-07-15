@@ -29,9 +29,11 @@ class MockFastAPI:
         self.routers.append((router, prefix))
 
     def get_routers(self) -> list[Any]:
+        """Retrieve all routers defined in mocked REST API."""
         return [r[0] for r in self.routers]
 
     def get_router_prefix(self, router: Any) -> Optional[str]:
+        """Retrieve router prefix configured for mocked REST API."""
         return list(filter(lambda r: r[0] == router, self.routers))[0][1]
 
 
