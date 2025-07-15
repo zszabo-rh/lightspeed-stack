@@ -26,6 +26,7 @@ from utils.mcp_headers import mcp_headers_dependency, handle_mcp_headers_with_to
 from utils.suid import get_suid
 from utils.types import GraniteToolParser
 
+from app.endpoints.conversations import conversation_id_to_agent_id
 from app.endpoints.query import (
     get_rag_toolgroups,
     is_transcripts_enabled,
@@ -67,6 +68,7 @@ async def get_agent(
     )
     conversation_id = await agent.create_session(get_suid())
     _agent_cache[conversation_id] = agent
+    conversation_id_to_agent_id[conversation_id] = agent.agent_id
     return agent, conversation_id
 
 
