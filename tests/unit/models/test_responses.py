@@ -62,10 +62,10 @@ class TestAuthorizedResponse:
     def test_constructor_fields_required(self) -> None:
         """Test the AuthorizedResponse constructor."""
         with pytest.raises(ValidationError):
-            AuthorizedResponse(username="testuser")
+            AuthorizedResponse(username="testuser")  # pyright: ignore
 
         with pytest.raises(ValidationError):
-            AuthorizedResponse(user_id="123e4567-e89b-12d3-a456-426614174000")
+            AuthorizedResponse(user_id="123e4567-e89b-12d3-a456-426614174000")  # pyright: ignore
 
 
 class TestUnauthorizedResponse:
@@ -81,4 +81,4 @@ class TestUnauthorizedResponse:
     def test_constructor_fields_required(self) -> None:
         """Test the UnauthorizedResponse constructor."""
         with pytest.raises(Exception):
-            UnauthorizedResponse()
+            UnauthorizedResponse()  # pyright: ignore
