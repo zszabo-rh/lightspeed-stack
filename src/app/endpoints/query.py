@@ -12,7 +12,7 @@ from cachetools import TTLCache  # type: ignore
 from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client import APIConnectionError
 from llama_stack_client import LlamaStackClient  # type: ignore
-from llama_stack_client.types import UserMessage  # type: ignore
+from llama_stack_client.types import UserMessage, Shield  # type: ignore
 from llama_stack_client.types.agents.turn_create_params import (
     ToolgroupAgentToolGroupWithArgs,
     Toolgroup,
@@ -72,11 +72,12 @@ def is_transcripts_enabled() -> bool:
     return not configuration.user_data_collection_configuration.transcripts_disabled
 
 
-def get_agent(
+def get_agent(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     client: LlamaStackClient,
     model_id: str,
     system_prompt: str,
-    available_shields: list[str],
+    available_input_shields: list[str],
+    available_output_shields: list[str],
     conversation_id: str | None,
 ) -> tuple[Agent, str]:
     """Get existing agent or create a new one with session persistence."""
@@ -92,7 +93,8 @@ def get_agent(
         client,
         model=model_id,
         instructions=system_prompt,
-        input_shields=available_shields if available_shields else [],
+        input_shields=available_input_shields if available_input_shields else [],
+        output_shields=available_output_shields if available_output_shields else [],
         tool_parser=GraniteToolParser.get_parser(model_id),
         enable_session_persistence=True,
     )
@@ -202,6 +204,20 @@ def select_model_id(models: ModelListResponse, query_request: QueryRequest) -> s
     return model_id
 
 
+def _is_inout_shield(shield: Shield) -> bool:
+    return shield.identifier.startswith("inout_")
+
+
+def is_output_shield(shield: Shield) -> bool:
+    """Determine if the shield is for monitoring output."""
+    return _is_inout_shield(shield) or shield.identifier.startswith("output_")
+
+
+def is_input_shield(shield: Shield) -> bool:
+    """Determine if the shield is for monitoring input."""
+    return _is_inout_shield(shield) or not is_output_shield(shield)
+
+
 def retrieve_response(
     client: LlamaStackClient,
     model_id: str,
@@ -210,11 +226,21 @@ def retrieve_response(
     mcp_headers: dict[str, dict[str, str]] | None = None,
 ) -> tuple[str, str]:
     """Retrieve response from LLMs and agents."""
-    available_shields = [shield.identifier for shield in client.shields.list()]
-    if not available_shields:
-        logger.info("No available shields. Disabling safety")
+    available_input_shields = [
+        shield.identifier for shield in filter(is_input_shield, client.shields.list())
+    ]
+    if not available_input_shields:
+        logger.info("No available input shields.")
     else:
-        logger.info("Available shields found: %s", available_shields)
+        logger.info("Available input shields found: %s", available_input_shields)
+
+    available_output_shields = [
+        shield.identifier for shield in filter(is_output_shield, client.shields.list())
+    ]
+    if not available_output_shields:
+        logger.info("No available output shields.")
+    else:
+        logger.info("Available output shields found: %s", available_output_shields)
 
     # use system prompt from request or default one
     system_prompt = get_system_prompt(query_request, configuration)
@@ -229,7 +255,8 @@ def retrieve_response(
         client,
         model_id,
         system_prompt,
-        available_shields,
+        available_input_shields,
+        available_output_shields,
         query_request.conversation_id,
     )
 

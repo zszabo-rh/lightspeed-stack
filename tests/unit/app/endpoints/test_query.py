@@ -469,6 +469,69 @@ def test_retrieve_response_two_available_shields(prepare_agent_mocks, mocker):
     )
 
 
+def test_retrieve_response_four_available_shields(prepare_agent_mocks, mocker):
+    """Test the retrieve_response function."""
+
+    class MockShield:
+        """Mock for Llama Stack shield to be used."""
+
+        def __init__(self, identifier):
+            self.identifier = identifier
+
+        def __str__(self):
+            return "MockShield"
+
+        def __repr__(self):
+            return "MockShield"
+
+    mock_client, mock_agent = prepare_agent_mocks
+    mock_agent.create_turn.return_value.output_message.content = "LLM answer"
+    mock_client.shields.list.return_value = [
+        MockShield("shield1"),
+        MockShield("input_shield2"),
+        MockShield("output_shield3"),
+        MockShield("inout_shield4"),
+    ]
+    mock_client.vector_dbs.list.return_value = []
+
+    # Mock configuration with empty MCP servers
+    mock_config = mocker.Mock()
+    mock_config.mcp_servers = []
+    mocker.patch("app.endpoints.query.configuration", mock_config)
+    mock_get_agent = mocker.patch(
+        "app.endpoints.query.get_agent", return_value=(mock_agent, "fake_session_id")
+    )
+
+    query_request = QueryRequest(query="What is OpenStack?")
+    model_id = "fake_model_id"
+    access_token = "test_token"
+
+    response, conversation_id = retrieve_response(
+        mock_client, model_id, query_request, access_token
+    )
+
+    assert response == "LLM answer"
+    assert conversation_id == "fake_session_id"
+
+    # Verify get_agent was called with the correct parameters
+    mock_get_agent.assert_called_once_with(
+        mock_client,
+        model_id,
+        mocker.ANY,  # system_prompt
+        ["shield1", "input_shield2", "inout_shield4"],  # available_input_shields
+        ["output_shield3", "inout_shield4"],  # available_output_shields
+        None,  # conversation_id
+    )
+
+    mock_agent.create_turn.assert_called_once_with(
+        messages=[UserMessage(content="What is OpenStack?", role="user")],
+        session_id="fake_session_id",
+        documents=[],
+        stream=False,
+        toolgroups=None,
+    )
+
+
 def test_retrieve_response_with_one_attachment(prepare_agent_mocks, mocker):
     """Test the retrieve_response function."""
     mock_client, mock_agent = prepare_agent_mocks
@@ -613,7 +676,8 @@ def test_retrieve_response_with_mcp_servers(prepare_agent_mocks, mocker):
         mock_client,
         model_id,
         mocker.ANY,  # system_prompt
-        [],  # available_shields
+        [],  # available_input_shields
+        [],  # available_output_shields
         None,  # conversation_id
     )
 
@@ -676,7 +740,8 @@ def test_retrieve_response_with_mcp_servers_empty_token(prepare_agent_mocks, moc
         mock_client,
         model_id,
         mocker.ANY,  # system_prompt
-        [],  # available_shields
+        [],  # available_input_shields
+        [],  # available_output_shields
         None,  # conversation_id
     )
 
@@ -746,7 +811,8 @@ def test_retrieve_response_with_mcp_servers_and_mcp_headers(mocker):
         mock_client,
         model_id,
         mocker.ANY,  # system_prompt
-        [],  # available_shields
+        [],  # available_input_shields
+        [],  # available_output_shields
         None,  # conversation_id
     )
 
@@ -900,7 +966,8 @@ def test_get_agent_cache_hit(prepare_agent_mocks):
         client=mock_client,
         model_id="test_model",
         system_prompt="test_prompt",
-        available_shields=["shield1"],
+        available_input_shields=["shield1"],
+        available_output_shields=["output_shield2"],
         conversation_id=conversation_id,
     )
 
@@ -940,7 +1007,8 @@ def test_get_agent_cache_miss_with_conversation_id(
         client=mock_client,
         model_id="test_model",
         system_prompt="test_prompt",
-        available_shields=["shield1"],
+        available_input_shields=["shield1"],
+        available_output_shields=["output_shield2"],
         conversation_id="non_existent_conversation_id",
     )
 
@@ -954,6 +1022,7 @@ def test_get_agent_cache_miss_with_conversation_id(
         model="test_model",
         instructions="test_prompt",
         input_shields=["shield1"],
+        output_shields=["output_shield2"],
         tool_parser=None,
         enable_session_persistence=True,
     )
@@ -991,7 +1060,8 @@ def test_get_agent_no_conversation_id(setup_configuration, prepare_agent_mocks, 
         client=mock_client,
         model_id="test_model",
         system_prompt="test_prompt",
-        available_shields=["shield1"],
+        available_input_shields=["shield1"],
+        available_output_shields=["output_shield2"],
         conversation_id=None,
     )
 
@@ -1005,6 +1075,7 @@ def test_get_agent_no_conversation_id(setup_configuration, prepare_agent_mocks, 
         model="test_model",
         instructions="test_prompt",
         input_shields=["shield1"],
+        output_shields=["output_shield2"],
         tool_parser=None,
         enable_session_persistence=True,
     )
@@ -1042,7 +1113,8 @@ def test_get_agent_empty_shields(setup_configuration, prepare_agent_mocks, mocke
         client=mock_client,
         model_id="test_model",
         system_prompt="test_prompt",
-        available_shields=[],
+        available_input_shields=[],
+        available_output_shields=[],
         conversation_id=None,
     )
 
@@ -1056,6 +1128,7 @@ def test_get_agent_empty_shields(setup_configuration, prepare_agent_mocks, mocke
         model="test_model",
         instructions="test_prompt",
         input_shields=[],
+        output_shields=[],
         tool_parser=None,
         enable_session_persistence=True,
     )
@@ -1094,7 +1167,8 @@ def test_get_agent_multiple_mcp_servers(
         client=mock_client,
         model_id="test_model",
         system_prompt="test_prompt",
-        available_shields=["shield1", "shield2"],
+        available_input_shields=["shield1", "shield2"],
+        available_output_shields=["output_shield3", "output_shield4"],
         conversation_id=None,
     )
 
@@ -1108,6 +1182,7 @@ def test_get_agent_multiple_mcp_servers(
         model="test_model",
         instructions="test_prompt",
         input_shields=["shield1", "shield2"],
+        output_shields=["output_shield3", "output_shield4"],
         tool_parser=None,
         enable_session_persistence=True,
     )
@@ -1144,7 +1219,8 @@ def test_get_agent_session_persistence_enabled(
         client=mock_client,
         model_id="test_model",
         system_prompt="test_prompt",
-        available_shields=["shield1"],
+        available_input_shields=["shield1"],
+        available_output_shields=["output_shield2"],
         conversation_id=None,
     )
 
@@ -1154,6 +1230,7 @@ def test_get_agent_session_persistence_enabled(
         model="test_model",
         instructions="test_prompt",
         input_shields=["shield1"],
+        output_shields=["output_shield2"],
         tool_parser=None,
         enable_session_persistence=True,
     )
