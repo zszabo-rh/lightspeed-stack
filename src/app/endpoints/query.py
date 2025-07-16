@@ -23,6 +23,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 
 from client import LlamaStackClientHolder
 from configuration import configuration
+from app.endpoints.conversations import conversation_id_to_agent_id
 from models.responses import QueryResponse, UnauthorizedResponse, ForbiddenResponse
 from models.requests import QueryRequest, Attachment
 import constants
@@ -97,6 +98,8 @@ def get_agent(
     )
     conversation_id = agent.create_session(get_suid())
     _agent_cache[conversation_id] = agent
+    conversation_id_to_agent_id[conversation_id] = agent.agent_id
+
     return agent, conversation_id
 
 

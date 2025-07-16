@@ -5,6 +5,7 @@ from typing import Any, Optional
 from app.routers import include_routers  # noqa:E402
 
 from app.endpoints import (
+    conversations,
     root,
     info,
     models,
@@ -43,7 +44,7 @@ def test_include_routers() -> None:
     include_routers(app)
 
     # are all routers added?
-    assert len(app.routers) == 9
+    assert len(app.routers) == 10
     assert root.router in app.get_routers()
     assert info.router in app.get_routers()
     assert models.router in app.get_routers()
@@ -53,6 +54,7 @@ def test_include_routers() -> None:
     assert feedback.router in app.get_routers()
     assert health.router in app.get_routers()
     assert authorized.router in app.get_routers()
+    assert conversations.router in app.get_routers()
 
 
 def test_check_prefixes() -> None:
@@ -61,7 +63,7 @@ def test_check_prefixes() -> None:
     include_routers(app)
 
     # are all routers added?
-    assert len(app.routers) == 9
+    assert len(app.routers) == 10
     assert app.get_router_prefix(root.router) is None
     assert app.get_router_prefix(info.router) == "/v1"
     assert app.get_router_prefix(models.router) == "/v1"
@@ -71,3 +73,4 @@ def test_check_prefixes() -> None:
     assert app.get_router_prefix(feedback.router) == "/v1"
     assert app.get_router_prefix(health.router) is None
     assert app.get_router_prefix(authorized.router) is None
+    assert app.get_router_prefix(conversations.router) == "/v1"

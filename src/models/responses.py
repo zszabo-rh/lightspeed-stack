@@ -298,3 +298,89 @@ class ForbiddenResponse(UnauthorizedResponse):
             ]
         }
     }
+
+
+class ConversationResponse(BaseModel):
+    """Model representing a response for retrieving a conversation.
+
+    Attributes:
+        conversation_id: The conversation ID (UUID).
+        chat_history: The simplified chat history as a list of conversation turns.
+
+    Example:
+        ```python
+        conversation_response = ConversationResponse(
+            conversation_id="123e4567-e89b-12d3-a456-426614174000",
+            chat_history=[
+                {
+                    "messages": [
+                        {"content": "Hello", "type": "user"},
+                        {"content": "Hi there!", "type": "assistant"}
+                    ],
+                    "started_at": "2024-01-01T00:01:00Z",
+                    "completed_at": "2024-01-01T00:01:05Z"
+                }
+            ]
+        )
+        ```
+    """
+
+    conversation_id: str
+    chat_history: list[dict[str, Any]]
+
+    # provides examples for /docs endpoint
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
+                    "chat_history": [
+                        {
+                            "messages": [
+                                {"content": "Hello", "type": "user"},
+                                {"content": "Hi there!", "type": "assistant"},
+                            ],
+                            "started_at": "2024-01-01T00:01:00Z",
+                            "completed_at": "2024-01-01T00:01:05Z",
+                        }
+                    ],
+                }
+            ]
+        }
+    }
+
+
+class ConversationDeleteResponse(BaseModel):
+    """Model representing a response for deleting a conversation.
+
+    Attributes:
+        conversation_id: The conversation ID (UUID) that was deleted.
+        success: Whether the deletion was successful.
+        response: A message about the deletion result.
+
+    Example:
+        ```python
+        delete_response = ConversationDeleteResponse(
+            conversation_id="123e4567-e89b-12d3-a456-426614174000",
+            success=True,
+            response="Conversation deleted successfully"
+        )
+        ```
+    """
+
+    conversation_id: str
+    success: bool
+    response: str
+
+    # provides examples for /docs endpoint
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
+                    "success": True,
+                    "response": "Conversation deleted successfully",
+                }
+            ]
+        }
+    }
