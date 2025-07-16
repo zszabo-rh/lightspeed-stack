@@ -65,7 +65,9 @@ class TestAuthorizedResponse:
             AuthorizedResponse(username="testuser")  # pyright: ignore
 
         with pytest.raises(ValidationError):
-            AuthorizedResponse(user_id="123e4567-e89b-12d3-a456-426614174000")  # pyright: ignore
+            AuthorizedResponse(
+                user_id="123e4567-e89b-12d3-a456-426614174000"
+            )  # pyright: ignore
 
 
 class TestUnauthorizedResponse:
