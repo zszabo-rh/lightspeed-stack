@@ -229,19 +229,17 @@ def retrieve_response(
     available_input_shields = [
         shield.identifier for shield in filter(is_input_shield, client.shields.list())
     ]
-    if not available_input_shields:
-        logger.info("No available input shields.")
-    else:
-        logger.info("Available input shields found: %s", available_input_shields)
-
     available_output_shields = [
         shield.identifier for shield in filter(is_output_shield, client.shields.list())
     ]
-    if not available_output_shields:
-        logger.info("No available output shields.")
+    if not available_input_shields and not available_output_shields:
+        logger.info("No available shields. Disabling safety")
     else:
-        logger.info("Available output shields found: %s", available_output_shields)
-
+        logger.info(
+            "Available input shields: %s, output shields: %s",
+            available_input_shields,
+            available_output_shields,
+        )
     # use system prompt from request or default one
     system_prompt = get_system_prompt(query_request, configuration)
     logger.debug("Using system prompt: %s", system_prompt)
