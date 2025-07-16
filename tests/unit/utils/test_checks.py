@@ -1,6 +1,7 @@
 """Unit tests for functions defined in utils/checks module."""
 
 import os
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -69,7 +70,7 @@ def test_file_check_existing_file(input_file):
 def test_file_check_non_existing_file():
     """Test the function file_check for non existing file."""
     with pytest.raises(checks.InvalidConfigurationError):
-        checks.file_check("does-not-exists", "description")
+        checks.file_check(Path("does-not-exists"), "description")
 
 
 def test_file_check_not_readable_file(input_file):
