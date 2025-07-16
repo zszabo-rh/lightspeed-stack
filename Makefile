@@ -60,7 +60,7 @@ black:
 	uv run black --check .
 
 pylint:
-	uv run pylint src
+	uv run pylint src tests
 
 pyright:
 	uv run pyright src

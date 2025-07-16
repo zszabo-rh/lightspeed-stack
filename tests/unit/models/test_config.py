@@ -187,9 +187,9 @@ def test_user_data_collection_data_collector_wrong_configuration() -> None:
 def test_tls_configuration() -> None:
     """Test the TLS configuration."""
     cfg = TLSConfiguration(
-        tls_certificate_path="tests/configuration/server.crt",
-        tls_key_path="tests/configuration/server.key",
-        tls_key_password="tests/configuration/password",
+        tls_certificate_path=Path("tests/configuration/server.crt"),
+        tls_key_path=Path("tests/configuration/server.key"),
+        tls_key_password=Path("tests/configuration/password"),
     )
     assert cfg is not None
     assert cfg.tls_certificate_path == Path("tests/configuration/server.crt")
@@ -201,9 +201,9 @@ def test_tls_configuration_wrong_certificate_path() -> None:
     """Test the TLS configuration loading when some path is broken."""
     with pytest.raises(ValueError, match="Path does not point to a file"):
         TLSConfiguration(
-            tls_certificate_path="this-is-wrong",
-            tls_key_path="tests/configuration/server.key",
-            tls_key_password="tests/configuration/password",
+            tls_certificate_path=Path("this-is-wrong"),
+            tls_key_path=Path("tests/configuration/server.key"),
+            tls_key_password=Path("tests/configuration/password"),
         )
 
 
@@ -211,9 +211,9 @@ def test_tls_configuration_wrong_key_path() -> None:
     """Test the TLS configuration loading when some path is broken."""
     with pytest.raises(ValueError, match="Path does not point to a file"):
         TLSConfiguration(
-            tls_certificate_path="tests/configurationserver.crt",
-            tls_key_path="this-is-wrong",
-            tls_key_password="tests/configuration/password",
+            tls_certificate_path=Path("tests/configurationserver.crt"),
+            tls_key_path=Path("this-is-wrong"),
+            tls_key_password=Path("tests/configuration/password"),
         )
 
 
@@ -221,9 +221,9 @@ def test_tls_configuration_wrong_password_path() -> None:
     """Test the TLS configuration loading when some path is broken."""
     with pytest.raises(ValueError, match="Path does not point to a file"):
         TLSConfiguration(
-            tls_certificate_path="tests/configurationserver.crt",
-            tls_key_path="tests/configuration/server.key",
-            tls_key_password="this-is-wrong",
+            tls_certificate_path=Path("tests/configurationserver.crt"),
+            tls_key_path=Path("tests/configuration/server.key"),
+            tls_key_password=Path("this-is-wrong"),
         )
 
 
@@ -231,9 +231,9 @@ def test_tls_configuration_certificate_path_to_directory() -> None:
     """Test the TLS configuration loading when some path points to a directory."""
     with pytest.raises(ValueError, match="Path does not point to a file"):
         TLSConfiguration(
-            tls_certificate_path="tests/",
-            tls_key_path="tests/configuration/server.key",
-            tls_key_password="tests/configuration/password",
+            tls_certificate_path=Path("tests/"),
+            tls_key_path=Path("tests/configuration/server.key"),
+            tls_key_password=Path("tests/configuration/password"),
         )
 
 
@@ -241,9 +241,9 @@ def test_tls_configuration_key_path_to_directory() -> None:
     """Test the TLS configuration loading when some path points to a directory."""
     with pytest.raises(ValueError, match="Path does not point to a file"):
         TLSConfiguration(
-            tls_certificate_path="tests/configurationserver.crt",
-            tls_key_path="tests/",
-            tls_key_password="tests/configuration/password",
+            tls_certificate_path=Path("tests/configurationserver.crt"),
+            tls_key_path=Path("tests/"),
+            tls_key_password=Path("tests/configuration/password"),
         )
 
 
@@ -251,9 +251,9 @@ def test_tls_configuration_password_path_to_directory() -> None:
     """Test the TLS configuration loading when some path points to a directory."""
     with pytest.raises(ValueError, match="Path does not point to a file"):
         TLSConfiguration(
-            tls_certificate_path="tests/configurationserver.crt",
-            tls_key_path="tests/configuration/server.key",
-            tls_key_password="tests/",
+            tls_certificate_path=Path("tests/configurationserver.crt"),
+            tls_key_path=Path("tests/configuration/server.key"),
+            tls_key_password=Path("tests/"),
         )
 
 
@@ -283,13 +283,13 @@ def test_model_context_protocol_server_required_fields() -> None:
     """Test that ModelContextProtocolServer requires name and url."""
 
     with pytest.raises(ValidationError):
-        ModelContextProtocolServer()
+        ModelContextProtocolServer()  # pyright: ignore
 
     with pytest.raises(ValidationError):
-        ModelContextProtocolServer(name="test-server")
+        ModelContextProtocolServer(name="test-server")  # pyright: ignore
 
     with pytest.raises(ValidationError):
-        ModelContextProtocolServer(url="http://localhost:8080")
+        ModelContextProtocolServer(url="http://localhost:8080")  # pyright: ignore
 
 
 def test_configuration_empty_mcp_servers() -> None:
