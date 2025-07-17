@@ -1,6 +1,6 @@
-# Lightspeed Core Stack installation on MacOS
+# Lightspeed Core Stack installation on macOS
 
-## Prerequisities
+## Prerequisites
 
 - brew
 - git

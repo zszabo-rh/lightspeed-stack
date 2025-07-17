@@ -6,12 +6,14 @@
 [![License](https://img.shields.io/badge/license-Apache-blue)](https://github.com/lightspeed-core/lightspeed-stack/blob/main/LICENSE)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
 
-Lightspeed Core Stack (LCS) is an AI powered assistant that provides answers to product questions using backend LLM services, agents, and RAG databases.
+Lightspeed Core Stack (LCS) is an AI-powered assistant that provides answers to product questions using backend LLM services, agents, and RAG databases.
 
 
 <!-- vim-markdown-toc GFM -->
 
-* [Prerequisities](#prerequisities)
+* [Architecture](#architecture)
+    * [Integration with Llama Stack](#integration-with-llama-stack)
+* [Prerequisites](#prerequisites)
 * [Installation](#installation)
 * [Configuration](#configuration)
     * [Llama Stack as separate server](#llama-stack-as-separate-server)
@@ -33,10 +35,30 @@ Lightspeed Core Stack (LCS) is an AI powered assistant that provides answers to 
     * [Utility to generate OpenAPI schema](#utility-to-generate-openapi-schema)
         * [Path](#path)
         * [Usage](#usage-1)
+    * [Data Collector Service](#data-collector-service)
+        * [Features](#features)
+        * [Configuration](#configuration-1)
+        * [Running the Service](#running-the-service)
 
 <!-- vim-markdown-toc -->
 
-# Prerequisities
+
+
+# Architecture
+
+Overall architecture with all main parts is displayed below:
+
+![Architecture diagram](docs/architecture.png)
+
+Lightspeed Core Stack is based on the FastAPI framework (Uvicorn). The service is split into several parts described below.
+
+## Integration with Llama Stack
+
+![Integration with Llama Stack](docs/core2llama-stack_interface.png)
+
+
+
+# Prerequisites
 
 * Python 3.12, or 3.13
     - please note that currently Python 3.14 is not officially supported
@@ -194,7 +216,13 @@ Container images are built for the following platforms:
 1. `linux/amd64` - main platform for deployment
 1. `linux/arm64`- Mac users with M1/M2/M3 CPUs
 
+
+
 # Endpoints
+
+## OpenAPI specification
+
+* [Generated OpenAPI specification](docs/openapi.json).
 
 The service provides health check endpoints that can be used for monitoring, load balancing, and orchestration systems like Kubernetes.
 
