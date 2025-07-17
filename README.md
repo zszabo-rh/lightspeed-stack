@@ -12,10 +12,10 @@ Lightspeed Core Stack (LCS) is an AI-powered assistant that provides answers to 
 <!-- vim-markdown-toc GFM -->
 
 * [Architecture](#architecture)
-    * [Integration with Llama Stack](#integration-with-llama-stack)
 * [Prerequisites](#prerequisites)
 * [Installation](#installation)
 * [Configuration](#configuration)
+    * [Integration with Llama Stack](#integration-with-llama-stack)
     * [Llama Stack as separate server](#llama-stack-as-separate-server)
     * [Llama Stack as client library](#llama-stack-as-client-library)
     * [System prompt](#system-prompt)
@@ -23,6 +23,7 @@ Lightspeed Core Stack (LCS) is an AI-powered assistant that provides answers to 
     * [Make targets](#make-targets)
     * [Running Linux container image](#running-linux-container-image)
 * [Endpoints](#endpoints)
+    * [OpenAPI specification](#openapi-specification)
     * [Readiness Endpoint](#readiness-endpoint)
     * [Liveness Endpoint](#liveness-endpoint)
 * [Publish the service as Python package on PyPI](#publish-the-service-as-python-package-on-pypi)
@@ -30,6 +31,7 @@ Lightspeed Core Stack (LCS) is an AI-powered assistant that provides answers to 
     * [Upload distribution archives into selected Python registry](#upload-distribution-archives-into-selected-python-registry)
     * [Packages on PyPI and Test PyPI](#packages-on-pypi-and-test-pypi)
 * [Contributing](#contributing)
+* [Testing](#testing)
 * [License](#license)
 * [Additional tools](#additional-tools)
     * [Utility to generate OpenAPI schema](#utility-to-generate-openapi-schema)
@@ -52,12 +54,6 @@ Overall architecture with all main parts is displayed below:
 
 Lightspeed Core Stack is based on the FastAPI framework (Uvicorn). The service is split into several parts described below.
 
-## Integration with Llama Stack
-
-![Integration with Llama Stack](docs/core2llama-stack_interface.png)
-
-
-
 # Prerequisites
 
 * Python 3.12, or 3.13
@@ -73,8 +69,9 @@ Installation steps depends on operation system. Please look at instructions for 
 - [macOS installation](https://lightspeed-core.github.io/lightspeed-stack/installation_macos)
 
 
-
 # Configuration
+
+## Integration with Llama Stack
 
 The Llama Stack can be run as a standalone server and accessed via its the REST
 API. However, instead of direct communication via the REST API (and JSON
@@ -82,6 +79,8 @@ format), there is an even better alternative. It is based on the so-called
 Llama Stack Client. It is a library available for Python, Swift, Node.js or
 Kotlin, which "wraps" the REST API stack in a suitable way, which is easier for
 many applications.
+
+![Integration with Llama Stack](docs/core2llama-stack_interface.png)
 
 ## Llama Stack as separate server
 
@@ -311,9 +310,18 @@ If this configuration file does not exist, you will be prompted to specify API t
 * https://test.pypi.org/project/lightspeed-stack/0.1.0/
 
 
+
 # Contributing
 
 * See [contributors](CONTRIBUTING.md) guide.
+
+
+
+# Testing
+
+* See [testing](docs/testing.md) guide.
+
+
 
 # License
 
