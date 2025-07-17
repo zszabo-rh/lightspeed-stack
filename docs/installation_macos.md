@@ -13,11 +13,6 @@
 1. `uv --version` -- should return no error
 1. Clone the repo to the current dir:
 `git clone https://github.com/lightspeed-core/lightspeed-stack`
-1. `cd service`
-1. `uv info` -- should return no error
-1. `uv install` -- if it fails (for example because you ran `uv install` before changing `pyproject.toml`) run:
-```sh
-uv update
-uv install
-```
+1. `cd lightspeed-stack`
+1. `uv sync`
 
