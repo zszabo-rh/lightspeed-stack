@@ -175,9 +175,10 @@ def stream_build_event(chunk: Any, chunk_id: int, metadata_map: dict) -> str | N
                                     meta = json.loads(match.replace("'", '"'))
                                     metadata_map[meta["document_id"]] = meta
                                 except JSONDecodeError:
-                                    pass
-                                finally:
-                                    pass
+                                    logger.debug(
+                                        "JSONDecodeError was thrown in processing %s",
+                                        match,
+                                    )
             if chunk.event.payload.step_details.tool_calls:
                 tool_name = str(
                     chunk.event.payload.step_details.tool_calls[0].tool_name
