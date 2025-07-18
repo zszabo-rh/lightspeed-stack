@@ -154,6 +154,16 @@ customization:
   disable_query_system_prompt: true
 ```
 
+## Safety Shields
+
+A single Llama Stack configuration file can include multiple safety shields, which are utilized in agent
+configurations to monitor input and/or output streams. LCS uses the following naming convention to specify how each safety shield is
+utilized:
+
+1. If the `shield_id` starts with `input_`, it will be used for input only.
+1. If the `shield_id` starts with `output_`, it will be used for output only.
+1. If the `shield_id` starts with `inout_`, it will be used both for input and output.
+1. Otherwise, it will be used for input only.
 
 # Usage
 

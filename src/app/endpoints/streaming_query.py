@@ -3,6 +3,7 @@
 import json
 import logging
 import re
+from json import JSONDecodeError
 from typing import Any, AsyncIterator
 
 from cachetools import TTLCache  # type: ignore
@@ -29,6 +30,8 @@ from utils.types import GraniteToolParser
 from app.endpoints.conversations import conversation_id_to_agent_id
 from app.endpoints.query import (
     get_rag_toolgroups,
+    is_input_shield,
+    is_output_shield,
     is_transcripts_enabled,
     store_transcript,
     select_model_id,
@@ -43,11 +46,12 @@ auth_dependency = get_auth_dependency()
 _agent_cache: TTLCache[str, AsyncAgent] = TTLCache(maxsize=1000, ttl=3600)
 
 
-async def get_agent(
+async def get_agent(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     client: AsyncLlamaStackClient,
     model_id: str,
     system_prompt: str,
-    available_shields: list[str],
+    available_input_shields: list[str],
+    available_output_shields: list[str],
     conversation_id: str | None,
 ) -> tuple[AsyncAgent, str]:
     """Get existing agent or create a new one with session persistence."""
@@ -62,7 +66,8 @@ async def get_agent(
         client,  # type: ignore[arg-type]
         model=model_id,
         instructions=system_prompt,
-        input_shields=available_shields if available_shields else [],
+        input_shields=available_input_shields if available_input_shields else [],
+        output_shields=available_output_shields if available_output_shields else [],
         tool_parser=GraniteToolParser.get_parser(model_id),
         enable_session_persistence=True,
     )
@@ -166,8 +171,14 @@ def stream_build_event(chunk: Any, chunk_id: int, metadata_map: dict) -> str | N
                             for match in METADATA_PATTERN.findall(
                                 text_content_item.text
                             ):
-                                meta = json.loads(match.replace("'", '"'))
-                                metadata_map[meta["document_id"]] = meta
+                                try:
+                                    meta = json.loads(match.replace("'", '"'))
+                                    metadata_map[meta["document_id"]] = meta
+                                except JSONDecodeError:
+                                    logger.debug(
+                                        "JSONDecodeError was thrown in processing %s",
+                                        match,
+                                    )
             if chunk.event.payload.step_details.tool_calls:
                 tool_name = str(
                     chunk.event.payload.step_details.tool_calls[0].tool_name
@@ -268,12 +279,22 @@ async def retrieve_response(
     mcp_headers: dict[str, dict[str, str]] | None = None,
 ) -> tuple[Any, str]:
     """Retrieve response from LLMs and agents."""
-    available_shields = [shield.identifier for shield in await client.shields.list()]
-    if not available_shields:
+    available_input_shields = [
+        shield.identifier
+        for shield in filter(is_input_shield, await client.shields.list())
+    ]
+    available_output_shields = [
+        shield.identifier
+        for shield in filter(is_output_shield, await client.shields.list())
+    ]
+    if not available_input_shields and not available_output_shields:
         logger.info("No available shields. Disabling safety")
     else:
-        logger.info("Available shields found: %s", available_shields)
-
+        logger.info(
+            "Available input shields: %s, output shields: %s",
+            available_input_shields,
+            available_output_shields,
+        )
     # use system prompt from request or default one
     system_prompt = get_system_prompt(query_request, configuration)
     logger.debug("Using system prompt: %s", system_prompt)
@@ -287,7 +308,8 @@ async def retrieve_response(
         client,
         model_id,
         system_prompt,
-        available_shields,
+        available_input_shields,
+        available_output_shields,
         query_request.conversation_id,
     )
 
