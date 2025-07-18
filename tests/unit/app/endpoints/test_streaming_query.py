@@ -222,7 +222,8 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
         return_value=(mock_streaming_response, "test_conversation_id"),
     )
     mocker.patch(
-        "app.endpoints.streaming_query.select_model_id", return_value="fake_model_id"
+        "app.endpoints.streaming_query.select_model_and_provider_id",
+        return_value=("fake_model_id", "fake_provider_id"),
     )
     mocker.patch(
         "app.endpoints.streaming_query.is_transcripts_enabled",
@@ -732,8 +733,11 @@ def test_stream_build_event_turn_complete():
     assert '"id": 0' in result
 
 
-def test_stream_build_event_shield_call_step_complete_no_violation():
+def test_stream_build_event_shield_call_step_complete_no_violation(mocker):
     """Test stream_build_event function with shield_call_step_complete event type."""
+    # Mock the metric for validation errors
+    mock_metric = mocker.patch("metrics.llm_calls_validation_errors_total")
+
     # Create a properly nested chunk structure
     # We cannot use 'mock' as 'hasattr(mock, "xxx")' adds the missing
     # attribute and therefore makes checks to see whether it is missing fail.
@@ -760,10 +764,15 @@ def test_stream_build_event_shield_call_step_complete_no_violation():
     assert '"token": "No Violation"' in result
     assert '"role": "shield_call"' in result
     assert '"id": 0' in result
+    # Assert that the metric for validation errors is NOT incremented
+    mock_metric.inc.assert_not_called()
 
 
-def test_stream_build_event_shield_call_step_complete_with_violation():
+def test_stream_build_event_shield_call_step_complete_with_violation(mocker):
     """Test stream_build_event function with shield_call_step_complete event type with violation."""
+    # Mock the metric for validation errors
+    mock_metric = mocker.patch("metrics.llm_calls_validation_errors_total")
+
     # Create a properly nested chunk structure
     # We cannot use 'mock' as 'hasattr(mock, "xxx")' adds the missing
     # attribute and therefore makes checks to see whether it is missing fail.
@@ -798,6 +807,8 @@ def test_stream_build_event_shield_call_step_complete_with_violation():
     )
     assert '"role": "shield_call"' in result
     assert '"id": 0' in result
+    # Assert that the metric for validation errors is incremented
+    mock_metric.inc.assert_called_once()
 
 
 def test_stream_build_event_step_progress():
@@ -1527,7 +1538,8 @@ async def test_auth_tuple_unpacking_in_streaming_query_endpoint_handler(mocker):
     )
 
     mocker.patch(
-        "app.endpoints.streaming_query.select_model_id", return_value="test_model"
+        "app.endpoints.streaming_query.select_model_and_provider_id",
+        return_value=("test_model", "test_provider"),
     )
     mocker.patch(
         "app.endpoints.streaming_query.is_transcripts_enabled", return_value=False
