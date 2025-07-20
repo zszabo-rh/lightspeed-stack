@@ -3,12 +3,12 @@
 import pytest
 
 from client import LlamaStackClientHolder, AsyncLlamaStackClientHolder
-from models.config import LLamaStackConfiguration
+from models.config import LlamaStackConfiguration
 
 
 def test_get_llama_stack_library_client() -> None:
     """Test if Llama Stack can be initialized in library client mode."""
-    cfg = LLamaStackConfiguration(
+    cfg = LlamaStackConfiguration(
         url=None,
         api_key=None,
         use_as_library_client=True,
@@ -21,7 +21,7 @@ def test_get_llama_stack_library_client() -> None:
 
 def test_get_llama_stack_remote_client() -> None:
     """Test if Llama Stack can be initialized in remove client (server) mode."""
-    cfg = LLamaStackConfiguration(
+    cfg = LlamaStackConfiguration(
         url="http://localhost:8321",
         api_key=None,
         use_as_library_client=False,
@@ -34,7 +34,7 @@ def test_get_llama_stack_remote_client() -> None:
 
 def test_get_llama_stack_wrong_configuration() -> None:
     """Test if configuration is checked before Llama Stack is initialized."""
-    cfg = LLamaStackConfiguration(
+    cfg = LlamaStackConfiguration(
         url=None,
         api_key=None,
         use_as_library_client=True,
@@ -51,7 +51,7 @@ def test_get_llama_stack_wrong_configuration() -> None:
 
 async def test_get_async_llama_stack_library_client() -> None:
     """Test the initialization of asynchronous Llama Stack client in library mode."""
-    cfg = LLamaStackConfiguration(
+    cfg = LlamaStackConfiguration(
         url=None,
         api_key=None,
         use_as_library_client=True,
@@ -64,7 +64,7 @@ async def test_get_async_llama_stack_library_client() -> None:
 
 async def test_get_async_llama_stack_remote_client() -> None:
     """Test the initialization of asynchronous Llama Stack client in server mode."""
-    cfg = LLamaStackConfiguration(
+    cfg = LlamaStackConfiguration(
         url="http://localhost:8321",
         api_key=None,
         use_as_library_client=False,
@@ -77,7 +77,7 @@ async def test_get_async_llama_stack_remote_client() -> None:
 
 async def test_get_async_llama_stack_wrong_configuration() -> None:
     """Test if configuration is checked before Llama Stack is initialized."""
-    cfg = LLamaStackConfiguration(
+    cfg = LlamaStackConfiguration(
         url=None,
         api_key=None,
         use_as_library_client=True,

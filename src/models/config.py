@@ -54,7 +54,7 @@ class ModelContextProtocolServer(BaseModel):
     url: str
 
 
-class LLamaStackConfiguration(BaseModel):
+class LlamaStackConfiguration(BaseModel):
     """Llama stack configuration."""
 
     url: Optional[str] = None
@@ -174,7 +174,7 @@ class Configuration(BaseModel):
 
     name: str
     service: ServiceConfiguration
-    llama_stack: LLamaStackConfiguration
+    llama_stack: LlamaStackConfiguration
     user_data_collection: UserDataCollection
     mcp_servers: list[ModelContextProtocolServer] = []
     authentication: Optional[AuthenticationConfiguration] = (

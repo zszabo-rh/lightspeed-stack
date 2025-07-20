@@ -17,7 +17,7 @@ from constants import (
 from models.config import (
     AuthenticationConfiguration,
     Configuration,
-    LLamaStackConfiguration,
+    LlamaStackConfiguration,
     ServiceConfiguration,
     UserDataCollection,
     TLSConfiguration,
@@ -57,20 +57,20 @@ def test_service_configuration_workers_value() -> None:
 
 def test_llama_stack_configuration_constructor() -> None:
     """Test the LLamaStackConfiguration constructor."""
-    llama_stack_configuration = LLamaStackConfiguration(
+    llama_stack_configuration = LlamaStackConfiguration(
         use_as_library_client=True, library_client_config_path="foo"
     )
     assert llama_stack_configuration is not None
 
-    llama_stack_configuration = LLamaStackConfiguration(
+    llama_stack_configuration = LlamaStackConfiguration(
         use_as_library_client=False, url="http://localhost"
     )
     assert llama_stack_configuration is not None
 
-    llama_stack_configuration = LLamaStackConfiguration(url="http://localhost")
+    llama_stack_configuration = LlamaStackConfiguration(url="http://localhost")
     assert llama_stack_configuration is not None
 
-    llama_stack_configuration = LLamaStackConfiguration(
+    llama_stack_configuration = LlamaStackConfiguration(
         use_as_library_client=False, url="http://localhost", api_key="foo"
     )
     assert llama_stack_configuration is not None
@@ -82,7 +82,7 @@ def test_llama_stack_wrong_configuration_constructor_no_url() -> None:
         ValueError,
         match="LLama stack URL is not specified and library client mode is not specified",
     ):
-        LLamaStackConfiguration()
+        LlamaStackConfiguration()
 
 
 def test_llama_stack_wrong_configuration_constructor_library_mode_off() -> None:
@@ -91,14 +91,14 @@ def test_llama_stack_wrong_configuration_constructor_library_mode_off() -> None:
         ValueError,
         match="LLama stack URL is not specified and library client mode is not enabled",
     ):
-        LLamaStackConfiguration(use_as_library_client=False)
+        LlamaStackConfiguration(use_as_library_client=False)
 
 
 def test_llama_stack_wrong_configuration_no_config_file() -> None:
     """Test the LLamaStackConfiguration constructor."""
     m = "LLama stack library client mode is enabled but a configuration file path is not specified"
     with pytest.raises(ValueError, match=m):
-        LLamaStackConfiguration(use_as_library_client=True)
+        LlamaStackConfiguration(use_as_library_client=True)
 
 
 def test_user_data_collection_feedback_enabled() -> None:
@@ -297,7 +297,7 @@ def test_configuration_empty_mcp_servers() -> None:
     cfg = Configuration(
         name="test_name",
         service=ServiceConfiguration(),
-        llama_stack=LLamaStackConfiguration(
+        llama_stack=LlamaStackConfiguration(
             use_as_library_client=True, library_client_config_path="foo"
         ),
         user_data_collection=UserDataCollection(
@@ -318,7 +318,7 @@ def test_configuration_single_mcp_server() -> None:
     cfg = Configuration(
         name="test_name",
         service=ServiceConfiguration(),
-        llama_stack=LLamaStackConfiguration(
+        llama_stack=LlamaStackConfiguration(
             use_as_library_client=True, library_client_config_path="foo"
         ),
         user_data_collection=UserDataCollection(
@@ -345,7 +345,7 @@ def test_configuration_multiple_mcp_servers() -> None:
     cfg = Configuration(
         name="test_name",
         service=ServiceConfiguration(),
-        llama_stack=LLamaStackConfiguration(
+        llama_stack=LlamaStackConfiguration(
             use_as_library_client=True, library_client_config_path="foo"
         ),
         user_data_collection=UserDataCollection(
@@ -367,7 +367,7 @@ def test_dump_configuration(tmp_path) -> None:
     cfg = Configuration(
         name="test_name",
         service=ServiceConfiguration(),
-        llama_stack=LLamaStackConfiguration(
+        llama_stack=LlamaStackConfiguration(
             use_as_library_client=True, library_client_config_path="foo"
         ),
         user_data_collection=UserDataCollection(
@@ -449,7 +449,7 @@ def test_dump_configuration_with_one_mcp_server(tmp_path) -> None:
     cfg = Configuration(
         name="test_name",
         service=ServiceConfiguration(),
-        llama_stack=LLamaStackConfiguration(
+        llama_stack=LlamaStackConfiguration(
             use_as_library_client=True, library_client_config_path="foo"
         ),
         user_data_collection=UserDataCollection(
@@ -534,7 +534,7 @@ def test_dump_configuration_with_more_mcp_servers(tmp_path) -> None:
     cfg = Configuration(
         name="test_name",
         service=ServiceConfiguration(),
-        llama_stack=LLamaStackConfiguration(
+        llama_stack=LlamaStackConfiguration(
             use_as_library_client=True, library_client_config_path="foo"
         ),
         user_data_collection=UserDataCollection(

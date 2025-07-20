@@ -7,7 +7,7 @@ import yaml
 from models.config import (
     Configuration,
     Customization,
-    LLamaStackConfiguration,
+    LlamaStackConfiguration,
     UserDataCollection,
     ServiceConfiguration,
     ModelContextProtocolServer,
@@ -60,7 +60,7 @@ class AppConfig:
         return self._configuration.service
 
     @property
-    def llama_stack_configuration(self) -> LLamaStackConfiguration:
+    def llama_stack_configuration(self) -> LlamaStackConfiguration:
         """Return Llama stack configuration."""
         assert (
             self._configuration is not None

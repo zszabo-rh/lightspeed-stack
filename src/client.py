@@ -9,7 +9,7 @@ from llama_stack.distribution.library_client import (
     LlamaStackAsLibraryClient,  # type: ignore
 )
 from llama_stack_client import AsyncLlamaStackClient, LlamaStackClient  # type: ignore
-from models.config import LLamaStackConfiguration
+from models.config import LlamaStackConfiguration
 from utils.types import Singleton
 
 
@@ -21,7 +21,7 @@ class LlamaStackClientHolder(metaclass=Singleton):
 
     _lsc: Optional[LlamaStackClient] = None
 
-    def load(self, llama_stack_config: LLamaStackConfiguration) -> None:
+    def load(self, llama_stack_config: LlamaStackConfiguration) -> None:
         """Retrieve Llama stack client according to configuration."""
         if llama_stack_config.use_as_library_client is True:
             if llama_stack_config.library_client_config_path is not None:
@@ -57,7 +57,7 @@ class AsyncLlamaStackClientHolder(metaclass=Singleton):
 
     _lsc: Optional[AsyncLlamaStackClient] = None
 
-    async def load(self, llama_stack_config: LLamaStackConfiguration) -> None:
+    async def load(self, llama_stack_config: LlamaStackConfiguration) -> None:
         """Retrieve Async Llama stack client according to configuration."""
         if llama_stack_config.use_as_library_client is True:
             if llama_stack_config.library_client_config_path is not None:
