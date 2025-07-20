@@ -12,7 +12,7 @@ from utils.common import (
 from models.config import (
     Configuration,
     ServiceConfiguration,
-    LLamaStackConfiguration,
+    LlamaStackConfiguration,
     UserDataCollection,
     ModelContextProtocolServer,
 )
@@ -38,7 +38,7 @@ async def test_register_mcp_servers_empty_list(mocker):
     config = Configuration(
         name="test",
         service=ServiceConfiguration(),
-        llama_stack=LLamaStackConfiguration(
+        llama_stack=LlamaStackConfiguration(
             use_as_library_client=False, url="http://localhost:8321"
         ),
         user_data_collection=UserDataCollection(feedback_disabled=True),
@@ -78,7 +78,7 @@ async def test_register_mcp_servers_single_server_not_registered(mocker):
     config = Configuration(
         name="test",
         service=ServiceConfiguration(),
-        llama_stack=LLamaStackConfiguration(
+        llama_stack=LlamaStackConfiguration(
             use_as_library_client=False, url="http://localhost:8321"
         ),
         user_data_collection=UserDataCollection(feedback_disabled=True),
@@ -122,7 +122,7 @@ async def test_register_mcp_servers_single_server_already_registered(mocker):
     config = Configuration(
         name="test",
         service=ServiceConfiguration(),
-        llama_stack=LLamaStackConfiguration(
+        llama_stack=LlamaStackConfiguration(
             use_as_library_client=False, url="http://localhost:8321"
         ),
         user_data_collection=UserDataCollection(feedback_disabled=True),
@@ -169,7 +169,7 @@ async def test_register_mcp_servers_multiple_servers_mixed_registration(mocker):
     config = Configuration(
         name="test",
         service=ServiceConfiguration(),
-        llama_stack=LLamaStackConfiguration(
+        llama_stack=LlamaStackConfiguration(
             use_as_library_client=False, url="http://localhost:8321"
         ),
         user_data_collection=UserDataCollection(feedback_disabled=True),
@@ -223,7 +223,7 @@ async def test_register_mcp_servers_with_custom_provider(mocker):
     config = Configuration(
         name="test",
         service=ServiceConfiguration(),
-        llama_stack=LLamaStackConfiguration(
+        llama_stack=LlamaStackConfiguration(
             use_as_library_client=False, url="http://localhost:8321"
         ),
         user_data_collection=UserDataCollection(feedback_disabled=True),
@@ -267,7 +267,7 @@ async def test_register_mcp_servers_async_with_library_client(mocker):
     config = Configuration(
         name="test",
         service=ServiceConfiguration(),
-        llama_stack=LLamaStackConfiguration(
+        llama_stack=LlamaStackConfiguration(
             use_as_library_client=True,
             library_client_config_path="/path/to/config.yaml",
         ),
