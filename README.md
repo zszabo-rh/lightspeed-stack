@@ -231,7 +231,8 @@ Container images are built for the following platforms:
 
 ## OpenAPI specification
 
-* [Generated OpenAPI specification](docs/openapi.json).
+* [Generated OpenAPI specification](docs/openapi.json)
+* [OpenAPI documentation](docs/openapi.md)
 
 The service provides health check endpoints that can be used for monitoring, load balancing, and orchestration systems like Kubernetes.
 
