@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, Request
 
+from configuration import configuration
 from version import __version__
 from models.responses import InfoResponse
 
@@ -23,4 +24,4 @@ get_into_responses: dict[int | str, dict[str, Any]] = {
 @router.get("/info", responses=get_into_responses)
 def info_endpoint_handler(_request: Request) -> InfoResponse:
     """Handle request to the /info endpoint."""
-    return InfoResponse(name="foo", version=__version__)
+    return InfoResponse(name=configuration.configuration.name, version=__version__)
