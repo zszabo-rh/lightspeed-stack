@@ -367,6 +367,127 @@
                 }
             }
         },
+        "/v1/conversations/{conversation_id}": {
+            "get": {
+                "tags": [
+                    "conversations"
+                ],
+                "summary": "Get Conversation Endpoint Handler",
+                "description": "Handle request to retrieve a conversation by ID.",
+                "operationId": "get_conversation_endpoint_handler_v1_conversations__conversation_id__get",
+                "parameters": [
+                    {
+                        "name": "conversation_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Conversation Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ConversationResponse"
+                                }
+                            }
+                        },
+                        "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
+                        "session_data": {
+                            "session_id": "123e4567-e89b-12d3-a456-426614174000",
+                            "turns": [],
+                            "started_at": "2024-01-01T00:00:00Z"
+                        }
+                    },
+                    "404": {
+                        "detail": {
+                            "response": "Conversation not found",
+                            "cause": "The specified conversation ID does not exist."
+                        },
+                        "description": "Not Found"
+                    },
+                    "503": {
+                        "detail": {
+                            "response": "Unable to connect to Llama Stack",
+                            "cause": "Connection error."
+                        },
+                        "description": "Service Unavailable"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "conversations"
+                ],
+                "summary": "Delete Conversation Endpoint Handler",
+                "description": "Handle request to delete a conversation by ID.",
+                "operationId": "delete_conversation_endpoint_handler_v1_conversations__conversation_id__delete",
+                "parameters": [
+                    {
+                        "name": "conversation_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Conversation Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ConversationDeleteResponse"
+                                }
+                            }
+                        },
+                        "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
+                        "success": true,
+                        "message": "Conversation deleted successfully"
+                    },
+                    "404": {
+                        "detail": {
+                            "response": "Conversation not found",
+                            "cause": "The specified conversation ID does not exist."
+                        },
+                        "description": "Not Found"
+                    },
+                    "503": {
+                        "detail": {
+                            "response": "Unable to connect to Llama Stack",
+                            "cause": "Connection error."
+                        },
+                        "description": "Service Unavailable"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/readiness": {
             "get": {
                 "tags": [
@@ -641,6 +762,81 @@
                 ],
                 "title": "Configuration",
                 "description": "Global service configuration."
+            },
+            "ConversationDeleteResponse": {
+                "properties": {
+                    "conversation_id": {
+                        "type": "string",
+                        "title": "Conversation Id"
+                    },
+                    "success": {
+                        "type": "boolean",
+                        "title": "Success"
+                    },
+                    "response": {
+                        "type": "string",
+                        "title": "Response"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "conversation_id",
+                    "success",
+                    "response"
+                ],
+                "title": "ConversationDeleteResponse",
+                "description": "Model representing a response for deleting a conversation.\n\nAttributes:\n    conversation_id: The conversation ID (UUID) that was deleted.\n    success: Whether the deletion was successful.\n    response: A message about the deletion result.\n\nExample:\n    ```python\n    delete_response = ConversationDeleteResponse(\n        conversation_id=\"123e4567-e89b-12d3-a456-426614174000\",\n        success=True,\n        response=\"Conversation deleted successfully\"\n    )\n    ```",
+                "examples": [
+                    {
+                        "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
+                        "response": "Conversation deleted successfully",
+                        "success": true
+                    }
+                ]
+            },
+            "ConversationResponse": {
+                "properties": {
+                    "conversation_id": {
+                        "type": "string",
+                        "title": "Conversation Id"
+                    },
+                    "chat_history": {
+                        "items": {
+                            "additionalProperties": true,
+                            "type": "object"
+                        },
+                        "type": "array",
+                        "title": "Chat History"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "conversation_id",
+                    "chat_history"
+                ],
+                "title": "ConversationResponse",
+                "description": "Model representing a response for retrieving a conversation.\n\nAttributes:\n    conversation_id: The conversation ID (UUID).\n    chat_history: The simplified chat history as a list of conversation turns.\n\nExample:\n    ```python\n    conversation_response = ConversationResponse(\n        conversation_id=\"123e4567-e89b-12d3-a456-426614174000\",\n        chat_history=[\n            {\n                \"messages\": [\n                    {\"content\": \"Hello\", \"type\": \"user\"},\n                    {\"content\": \"Hi there!\", \"type\": \"assistant\"}\n                ],\n                \"started_at\": \"2024-01-01T00:01:00Z\",\n                \"completed_at\": \"2024-01-01T00:01:05Z\"\n            }\n        ]\n    )\n    ```",
+                "examples": [
+                    {
+                        "chat_history": [
+                            {
+                                "completed_at": "2024-01-01T00:01:05Z",
+                                "messages": [
+                                    {
+                                        "content": "Hello",
+                                        "type": "user"
+                                    },
+                                    {
+                                        "content": "Hi there!",
+                                        "type": "assistant"
+                                    }
+                                ],
+                                "started_at": "2024-01-01T00:01:00Z"
+                            }
+                        ],
+                        "conversation_id": "123e4567-e89b-12d3-a456-426614174000"
+                    }
+                ]
             },
             "Customization": {
                 "properties": {
@@ -1080,6 +1276,17 @@
                             }
                         ],
                         "title": "Attachments"
+                    },
+                    "media_type": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Media Type"
                     }
                 },
                 "additionalProperties": false,
