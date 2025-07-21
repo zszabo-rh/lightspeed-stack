@@ -1,5 +1,23 @@
 # Testing
 
+<!-- vim-markdown-toc GFM -->
+
+* [Running tests](#running-tests)
+    * [Run all tests](#run-all-tests)
+    * [Select one group of tests](#select-one-group-of-tests)
+    * [Select individual test or group of tests to be run](#select-individual-test-or-group-of-tests-to-be-run)
+* [Unit tests](#unit-tests)
+    * [Unit tests structure](#unit-tests-structure)
+* [Integration tests](#integration-tests)
+* [End to end tests](#end-to-end-tests)
+* [Tips and hints](#tips-and-hints)
+    * [Developing unit tests](#developing-unit-tests)
+        * [Patching](#patching)
+        * [Verifying that some exception is thrown](#verifying-that-some-exception-is-thrown)
+        * [Checking what was printed and logged to stdout or stderr by the tested code](#checking-what-was-printed-and-logged-to-stdout-or-stderr-by-the-tested-code)
+
+<!-- vim-markdown-toc -->
+
 Three groups of software tests are used in this repository, each group from the test suite having different granularity. These groups are designed to represent three layers:
 
 1. Unit Tests
@@ -10,20 +28,37 @@ Three groups of software tests are used in this repository, each group from the 
 
 ## Running tests
 
+### Run all tests
+
 Unit tests followed by integration and end to end tests can be started by using the following command:
 
-```
+```bash
 make test
 ```
 
+### Select one group of tests
+
 It is also possible to run just one selected group of tests:
 
-```
+```bash
 make test-unit                 Run the unit tests
 make test-integration          Run integration tests tests
 make test-e2e                  Run end to end tests
 ```
 
+
+
+### Select individual test or group of tests to be run
+
+```bash
+uv run python -m pytest -vv tests/unit/utils/
+```
+
+Or, if you prefer to see coverage information, use following command:
+
+```bash
+uv run python -m pytest -vv tests/unit/utils/ --cov=src/utils/ --cov-report term-missing
+```
 
 
 ## Unit tests
@@ -33,6 +68,8 @@ Unit tests are based on the [Pytest framework](https://docs.pytest.org/en/) and 
 Currently code coverage threshold for integration tests is set to 60%. This value is specified directly in Makefile, because the coverage threshold is different from threshold required for unit tests.
 
 As specified in Definition of Done, new changes need to be covered by tests.
+
+
 
 ### Unit tests structure
 

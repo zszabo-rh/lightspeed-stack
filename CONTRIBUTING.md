@@ -4,7 +4,7 @@
 <!-- vim-markdown-toc GFM -->
 
 * [TLDR;](#tldr)
-* [Prerequisities](#prerequisities)
+* [Prerequisites](#prerequisites)
     * [Tooling installation](#tooling-installation)
 * [Setting up your development environment](#setting-up-your-development-environment)
 * [Definition of Done](#definition-of-done)
@@ -15,11 +15,6 @@
     * [Type hints checks](#type-hints-checks)
     * [Linters](#linters)
     * [Security checks](#security-checks)
-* [Testing](#testing)
-    * [Tips and hints for developing unit tests](#tips-and-hints-for-developing-unit-tests)
-        * [Patching](#patching)
-        * [Verifying that some exception is thrown](#verifying-that-some-exception-is-thrown)
-        * [Checking what was printed and logged to stdout or stderr by the tested code](#checking-what-was-printed-and-logged-to-stdout-or-stderr-by-the-tested-code)
 * [Code style](#code-style)
     * [Docstrings style](#docstrings-style)
 
@@ -34,7 +29,7 @@
 5. Submit PR from your fork to main branch of the project repo
 
 
-## Prerequisities
+## Prerequisites
 
 - git
 - Python 3.12 or 3.13
