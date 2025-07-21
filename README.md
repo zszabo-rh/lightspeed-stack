@@ -71,6 +71,8 @@ Installation steps depends on operation system. Please look at instructions for 
 
 # Configuration
 
+
+
 ## Integration with Llama Stack
 
 The Llama Stack can be run as a standalone server and accessed via its the REST
@@ -82,9 +84,11 @@ many applications.
 
 ![Integration with Llama Stack](docs/core2llama-stack_interface.png)
 
+
+
 ## Llama Stack as separate server
 
-If Llama Stack runs as a separate server, the Lightspeed service needs to be configured to be able to access it. For example, if server runs on localhost:8321, the service configuration should look like:
+If Llama Stack runs as a separate server, the Lightspeed service needs to be configured to be able to access it. For example, if server runs on localhost:8321, the service configuration stored in file `llama-stack.yaml` should look like:
 
 ```yaml
 name: foo bar baz
@@ -104,6 +108,60 @@ user_data_collection:
   transcripts_disabled: false
   transcripts_storage: "/tmp/data/transcripts"
 ```
+
+### Llama Stack project and configuration
+
+To run Llama Stack in separate process, you need to have all dependencies installed. The easiest way how to do it is to create a separate repository with Llama Stack project file `pyproject.toml` and Llama Stack configuration file `run.yaml`. The project file might look like:
+
+```toml
+[project]
+name = "llama-stack-runner"
+version = "0.1.0"
+description = "Llama Stack runner"
+authors = []
+dependencies = [
+    "llama-stack==0.2.14",
+    "fastapi>=0.115.12",
+    "opentelemetry-sdk>=1.34.0",
+    "opentelemetry-exporter-otlp>=1.34.0",
+    "opentelemetry-instrumentation>=0.55b0",
+    "aiosqlite>=0.21.0",
+    "litellm>=1.72.1",
+    "uvicorn>=0.34.3",
+    "blobfile>=3.0.0",
+    "datasets>=3.6.0",
+    "sqlalchemy>=2.0.41",
+    "faiss-cpu>=1.11.0",
+    "mcp>=1.9.4",
+    "autoevals>=0.0.129",
+    "psutil>=7.0.0",
+    "torch>=2.7.1",
+    "peft>=0.15.2",
+    "trl>=0.18.2"]
+requires-python = "==3.12.*"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false
+```
+
+To run Llama Stack perform these two commands:
+
+```
+export OPENAI_API_KEY="sk-{YOUR-KEY}"
+
+uv run llama stack run run.yaml
+```
+
+### Check connection to Llama Stack
+
+```
+curl -X 'GET' localhost:8321/openapi.json | jq .
+```
+
+
 
 ## Llama Stack as client library
 
