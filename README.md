@@ -469,3 +469,6 @@ make run-data-collector
 
 ![Configuration classes](docs/config.png)
 
+## REST API
+
+![REST API](docs/rest_api.png)
