@@ -17,8 +17,11 @@ Lightspeed Core Stack (LCS) is an AI-powered assistant that provides answers to 
 * [Configuration](#configuration)
     * [Integration with Llama Stack](#integration-with-llama-stack)
     * [Llama Stack as separate server](#llama-stack-as-separate-server)
+        * [Llama Stack project and configuration](#llama-stack-project-and-configuration)
+        * [Check connection to Llama Stack](#check-connection-to-llama-stack)
     * [Llama Stack as client library](#llama-stack-as-client-library)
     * [System prompt](#system-prompt)
+    * [Safety Shields](#safety-shields)
 * [Usage](#usage)
     * [Make targets](#make-targets)
     * [Running Linux container image](#running-linux-container-image)
@@ -457,3 +460,12 @@ uv run src/lightspeed_stack.py --data-collector
 # Using Make target
 make run-data-collector
 ```
+
+
+
+# Project structure
+
+## Configuration classes
+
+![Configuration classes](docs/config.png)
+
