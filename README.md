@@ -150,6 +150,8 @@ license = {text = "MIT"}
 distribution = false
 ```
 
+A simple example of a `run.yaml` file can be found [here](examples/run.yaml)
+
 To run Llama Stack perform these two commands:
 
 ```
