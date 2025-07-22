@@ -82,6 +82,8 @@ class LlamaStackConfiguration(BaseModel):
                 raise ValueError(
                     "LLama stack library client mode is enabled but a configuration file path is not specified"  # noqa: C0301
                 )
+            # the configuration file must exists and be regular readable file
+            checks.file_check(self.library_client_config_path, "Llama Stack configuration file")
         return self
 
 
