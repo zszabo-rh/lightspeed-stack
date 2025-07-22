@@ -89,7 +89,7 @@ providers:
     provider_type: inline::braintrust
   telemetry:
   - config:
-      service_name: ''
+      service_name: 'lightspeed-stack'
       sinks: sqlite
       sqlite_db_path: .llama/distributions/ollama/trace_store.db
     provider_id: meta-reference
