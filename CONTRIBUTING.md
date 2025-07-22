@@ -56,15 +56,15 @@ git clone https://github.com/YOUR-GIT-PROFILE/lightspeed-stack.git
 cd lightspeed-stack
 
 # setup your devel environment with uv
-uv install -G dev
+uv sync --group dev
 
-# Now you can run test commands trough make targets, or prefix the rest of commands with `uv run`, eg. `uv run make test`
+# Now you can run test commands trough make targets, or prefix the rest of commands with `uv run`, eg. `uv run make test` or do `uv venv`, which creates virtual environment and prints activation command, and run commands inside venv.
 
 # run unit tests
-make unit-tests
+make test-unit
 
 # run integration tests
-make integration-tests
+make test-integration
 
 # code formatting
 # (this is also run automatically as part of pre-commit hook if configured)
