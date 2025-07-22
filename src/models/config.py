@@ -1,5 +1,6 @@
 """Model with service configuration."""
 
+from pathlib import Path
 from typing import Optional
 
 from pydantic import BaseModel, model_validator, FilePath, AnyHttpUrl, PositiveInt
@@ -82,6 +83,10 @@ class LlamaStackConfiguration(BaseModel):
                 raise ValueError(
                     "LLama stack library client mode is enabled but a configuration file path is not specified"  # noqa: C0301
                 )
+            # the configuration file must exists and be regular readable file
+            checks.file_check(
+                Path(self.library_client_config_path), "Llama Stack configuration file"
+            )
         return self
 
 

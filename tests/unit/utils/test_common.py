@@ -269,7 +269,7 @@ async def test_register_mcp_servers_async_with_library_client(mocker):
         service=ServiceConfiguration(),
         llama_stack=LlamaStackConfiguration(
             use_as_library_client=True,
-            library_client_config_path="/path/to/config.yaml",
+            library_client_config_path="tests/configuration/run.yaml",
         ),
         user_data_collection=UserDataCollection(feedback_disabled=True),
         mcp_servers=[mcp_server],
