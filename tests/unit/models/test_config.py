@@ -25,6 +25,8 @@ from models.config import (
     DataCollectorConfiguration,
 )
 
+from utils.checks import InvalidConfigurationError
+
 
 def test_service_configuration_constructor() -> None:
     """Test the ServiceConfiguration constructor."""
@@ -58,7 +60,8 @@ def test_service_configuration_workers_value() -> None:
 def test_llama_stack_configuration_constructor() -> None:
     """Test the LLamaStackConfiguration constructor."""
     llama_stack_configuration = LlamaStackConfiguration(
-        use_as_library_client=True, library_client_config_path="foo"
+        use_as_library_client=True,
+        library_client_config_path="tests/configuration/run.yaml",
     )
     assert llama_stack_configuration is not None
 
@@ -74,6 +77,18 @@ def test_llama_stack_configuration_constructor() -> None:
         use_as_library_client=False, url="http://localhost", api_key="foo"
     )
     assert llama_stack_configuration is not None
+
+
+def test_llama_stack_configuration_no_run_yaml() -> None:
+    """Test the LLamaStackConfiguration constructor when run.yaml file is not a file."""
+    with pytest.raises(
+        InvalidConfigurationError,
+        match="Llama Stack configuration file 'not a file' is not a file",
+    ):
+        LlamaStackConfiguration(
+            use_as_library_client=True,
+            library_client_config_path="not a file",
+        )
 
 
 def test_llama_stack_wrong_configuration_constructor_no_url() -> None:
@@ -298,7 +313,8 @@ def test_configuration_empty_mcp_servers() -> None:
         name="test_name",
         service=ServiceConfiguration(),
         llama_stack=LlamaStackConfiguration(
-            use_as_library_client=True, library_client_config_path="foo"
+            use_as_library_client=True,
+            library_client_config_path="tests/configuration/run.yaml",
         ),
         user_data_collection=UserDataCollection(
             feedback_disabled=True, feedback_storage=None
@@ -319,7 +335,8 @@ def test_configuration_single_mcp_server() -> None:
         name="test_name",
         service=ServiceConfiguration(),
         llama_stack=LlamaStackConfiguration(
-            use_as_library_client=True, library_client_config_path="foo"
+            use_as_library_client=True,
+            library_client_config_path="tests/configuration/run.yaml",
         ),
         user_data_collection=UserDataCollection(
             feedback_disabled=True, feedback_storage=None
@@ -346,7 +363,8 @@ def test_configuration_multiple_mcp_servers() -> None:
         name="test_name",
         service=ServiceConfiguration(),
         llama_stack=LlamaStackConfiguration(
-            use_as_library_client=True, library_client_config_path="foo"
+            use_as_library_client=True,
+            library_client_config_path="tests/configuration/run.yaml",
         ),
         user_data_collection=UserDataCollection(
             feedback_disabled=True, feedback_storage=None
@@ -368,7 +386,8 @@ def test_dump_configuration(tmp_path) -> None:
         name="test_name",
         service=ServiceConfiguration(),
         llama_stack=LlamaStackConfiguration(
-            use_as_library_client=True, library_client_config_path="foo"
+            use_as_library_client=True,
+            library_client_config_path="tests/configuration/run.yaml",
         ),
         user_data_collection=UserDataCollection(
             feedback_disabled=True, feedback_storage=None
@@ -413,7 +432,7 @@ def test_dump_configuration(tmp_path) -> None:
                 "url": None,
                 "api_key": None,
                 "use_as_library_client": True,
-                "library_client_config_path": "foo",
+                "library_client_config_path": "tests/configuration/run.yaml",
             },
             "user_data_collection": {
                 "feedback_disabled": True,
@@ -450,7 +469,8 @@ def test_dump_configuration_with_one_mcp_server(tmp_path) -> None:
         name="test_name",
         service=ServiceConfiguration(),
         llama_stack=LlamaStackConfiguration(
-            use_as_library_client=True, library_client_config_path="foo"
+            use_as_library_client=True,
+            library_client_config_path="tests/configuration/run.yaml",
         ),
         user_data_collection=UserDataCollection(
             feedback_disabled=True, feedback_storage=None
@@ -490,7 +510,7 @@ def test_dump_configuration_with_one_mcp_server(tmp_path) -> None:
                 "url": None,
                 "api_key": None,
                 "use_as_library_client": True,
-                "library_client_config_path": "foo",
+                "library_client_config_path": "tests/configuration/run.yaml",
             },
             "user_data_collection": {
                 "feedback_disabled": True,
@@ -535,7 +555,8 @@ def test_dump_configuration_with_more_mcp_servers(tmp_path) -> None:
         name="test_name",
         service=ServiceConfiguration(),
         llama_stack=LlamaStackConfiguration(
-            use_as_library_client=True, library_client_config_path="foo"
+            use_as_library_client=True,
+            library_client_config_path="tests/configuration/run.yaml",
         ),
         user_data_collection=UserDataCollection(
             feedback_disabled=True, feedback_storage=None
@@ -581,7 +602,7 @@ def test_dump_configuration_with_more_mcp_servers(tmp_path) -> None:
                 "url": None,
                 "api_key": None,
                 "use_as_library_client": True,
-                "library_client_config_path": "foo",
+                "library_client_config_path": "tests/configuration/run.yaml",
             },
             "user_data_collection": {
                 "feedback_disabled": True,
