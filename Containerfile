@@ -1,11 +1,7 @@
 # vim: set filetype=dockerfile
-FROM registry.access.redhat.com/ubi9/ubi-minimal AS builder
+FROM registry.access.redhat.com/ubi9/python-312-minimal AS builder
 
 ARG APP_ROOT=/app-root
-
-# Install Python
-RUN microdnf install -y --nodocs --setopt=keepcache=0 --setopt=tsflags=nodocs \
-    python3.12 python3.12-devel python3.12-pip
 
 # UV_PYTHON_DOWNLOADS=0 : Disable Python interpreter downloads and use the system interpreter.
 ENV UV_COMPILE_BYTECODE=0 \
@@ -26,9 +22,8 @@ RUN uv sync --locked --no-install-project --no-dev
 
 
 # Final image without uv package manager
-FROM registry.access.redhat.com/ubi9/ubi-minimal
+FROM registry.access.redhat.com/ubi9/python-312-minimal
 ARG APP_ROOT=/app-root
-RUN microdnf install -y --nodocs --setopt=keepcache=0 --setopt=tsflags=nodocs python3.12 python3.12-pip
 WORKDIR /app-root
 
 # PYTHONDONTWRITEBYTECODE 1 : disable the generation of .pyc
