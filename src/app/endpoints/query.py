@@ -85,8 +85,11 @@ def get_agent(  # pylint: disable=too-many-arguments,too-many-positional-argumen
     if conversation_id is not None:
         agent = _agent_cache.get(conversation_id)
         if agent:
-            logger.debug("Reusing existing agent with key: %s", conversation_id)
+            logger.debug(
+                "Reusing existing agent with conversation_id: %s", conversation_id
+            )
             return agent, conversation_id
+        logger.debug("No existing agent found for conversation_id: %s", conversation_id)
 
     logger.debug("Creating new agent")
     # TODO(lucasagomes): move to ReActAgent
@@ -100,6 +103,7 @@ def get_agent(  # pylint: disable=too-many-arguments,too-many-positional-argumen
         enable_session_persistence=True,
     )
     conversation_id = agent.create_session(get_suid())
+    logger.debug("Created new agent and conversation_id: %s", conversation_id)
     _agent_cache[conversation_id] = agent
     conversation_id_to_agent_id[conversation_id] = agent.agent_id
 
