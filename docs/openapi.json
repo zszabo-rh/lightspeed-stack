@@ -593,6 +593,28 @@
                     }
                 }
             }
+        },
+        "/metrics": {
+            "get": {
+                "tags": [
+                    "metrics"
+                ],
+                "summary": "Metrics Endpoint Handler",
+                "description": "Handle request to the /metrics endpoint.",
+                "operationId": "metrics_endpoint_handler_metrics_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -715,7 +737,7 @@
                         "$ref": "#/components/schemas/ServiceConfiguration"
                     },
                     "llama_stack": {
-                        "$ref": "#/components/schemas/LLamaStackConfiguration"
+                        "$ref": "#/components/schemas/LlamaStackConfiguration"
                     },
                     "user_data_collection": {
                         "$ref": "#/components/schemas/UserDataCollection"
@@ -1071,7 +1093,26 @@
                     }
                 ]
             },
-            "LLamaStackConfiguration": {
+            "LivenessResponse": {
+                "properties": {
+                    "alive": {
+                        "type": "boolean",
+                        "title": "Alive"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "alive"
+                ],
+                "title": "LivenessResponse",
+                "description": "Model representing a response to a liveness request.\n\nAttributes:\n    alive: If app is alive.\n\nExample:\n    ```python\n    liveness_response = LivenessResponse(alive=True)\n    ```",
+                "examples": [
+                    {
+                        "alive": true
+                    }
+                ]
+            },
+            "LlamaStackConfiguration": {
                 "properties": {
                     "url": {
                         "anyOf": [
@@ -1119,27 +1160,8 @@
                     }
                 },
                 "type": "object",
-                "title": "LLamaStackConfiguration",
+                "title": "LlamaStackConfiguration",
                 "description": "Llama stack configuration."
-            },
-            "LivenessResponse": {
-                "properties": {
-                    "alive": {
-                        "type": "boolean",
-                        "title": "Alive"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "alive"
-                ],
-                "title": "LivenessResponse",
-                "description": "Model representing a response to a liveness request.\n\nAttributes:\n    alive: If app is alive.\n\nExample:\n    ```python\n    liveness_response = LivenessResponse(alive=True)\n    ```",
-                "examples": [
-                    {
-                        "alive": true
-                    }
-                ]
             },
             "ModelContextProtocolServer": {
                 "properties": {
