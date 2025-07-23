@@ -66,7 +66,7 @@ class LlamaStackConfiguration(BaseModel):
     @model_validator(mode="after")
     def check_llama_stack_model(self) -> Self:
         """
-        Validates the Llama stack configuration after model initialization.
+        Validate the Llama stack configuration after model initialization.
 
         Ensures that either a URL is provided for server mode or library client
         mode is explicitly enabled. If library client mode is enabled, verifies
