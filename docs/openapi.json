@@ -251,9 +251,9 @@
                             "use_as_library_client": false
                         },
                         "user_data_collection": {
-                            "feedback_disabled": false,
+                            "feedback_enabled": false,
                             "feedback_storage": "/tmp/data/feedback",
-                            "transcripts_disabled": true
+                            "transcripts_enabled": true
                         },
                         "mcp_servers": [
                             {
@@ -1543,7 +1543,7 @@
             },
             "UserDataCollection": {
                 "properties": {
-                    "feedback_disabled": {
+                    "feedback_enabled": {
                         "type": "boolean",
                         "title": "Feedback Disabled",
                         "default": true
@@ -1559,7 +1559,7 @@
                         ],
                         "title": "Feedback Storage"
                     },
-                    "transcripts_disabled": {
+                    "transcripts_enabled": {
                         "type": "boolean",
                         "title": "Transcripts Disabled",
                         "default": true
