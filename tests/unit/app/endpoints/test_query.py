@@ -12,7 +12,7 @@ from llama_stack_client.types import UserMessage  # type: ignore
 from configuration import AppConfig
 from app.endpoints.query import (
     query_endpoint_handler,
-    select_model_id,
+    select_model_and_provider_id,
     retrieve_response,
     validate_attachments_metadata,
     is_transcripts_enabled,
@@ -63,6 +63,7 @@ def prepare_agent_mocks_fixture(mocker):
     """Fixture that yields mock agent when called."""
     mock_client = mocker.Mock()
     mock_agent = mocker.Mock()
+    mock_agent.create_turn.return_value.steps = []
     yield mock_client, mock_agent
     # cleanup agent cache after tests
     _agent_cache.clear()
@@ -107,6 +108,7 @@ def test_is_transcripts_disabled(setup_configuration, mocker):
 
 def _test_query_endpoint_handler(mocker, store_transcript_to_file=False):
     """Test the query endpoint handler."""
+    mock_metric = mocker.patch("metrics.llm_calls_total")
     mock_client = mocker.Mock()
     mock_lsc = mocker.patch("client.LlamaStackClientHolder.get_client")
     mock_lsc.return_value = mock_client
@@ -129,7 +131,10 @@ def _test_query_endpoint_handler(mocker, store_transcript_to_file=False):
         "app.endpoints.query.retrieve_response",
         return_value=(llm_response, conversation_id),
     )
-    mocker.patch("app.endpoints.query.select_model_id", return_value="fake_model_id")
+    mocker.patch(
+        "app.endpoints.query.select_model_and_provider_id",
+        return_value=("fake_model_id", "fake_provider_id"),
+    )
     mocker.patch(
         "app.endpoints.query.is_transcripts_enabled",
         return_value=store_transcript_to_file,
@@ -143,6 +148,9 @@ def _test_query_endpoint_handler(mocker, store_transcript_to_file=False):
     # Assert the response is as expected
     assert response.response == llm_response
     assert response.conversation_id == conversation_id
+
+    # Assert the metric for successful LLM calls is incremented
+    mock_metric.labels("fake_provider_id", "fake_model_id").inc.assert_called_once()
 
     # Assert the store_transcript function is called if transcripts are enabled
     if store_transcript_to_file:
@@ -171,8 +179,8 @@ def test_query_endpoint_handler_store_transcript(mocker):
     _test_query_endpoint_handler(mocker, store_transcript_to_file=True)
 
 
-def test_select_model_id(mocker):
-    """Test the select_model_id function."""
+def test_select_model_and_provider_id(mocker):
+    """Test the select_model_and_provider_id function."""
     mock_client = mocker.Mock()
     mock_client.models.list.return_value = [
         mocker.Mock(identifier="model1", model_type="llm", provider_id="provider1"),
@@ -183,13 +191,16 @@ def test_select_model_id(mocker):
         query="What is OpenStack?", model="model1", provider="provider1"
     )
 
-    model_id = select_model_id(mock_client.models.list(), query_request)
+    model_id, provider_id = select_model_and_provider_id(
+        mock_client.models.list(), query_request
+    )
 
     assert model_id == "model1"
+    assert provider_id == "provider1"
 
 
-def test_select_model_id_no_model(mocker):
-    """Test the select_model_id function when no model is specified."""
+def test_select_model_and_provider_id_no_model(mocker):
+    """Test the select_model_and_provider_id function when no model is specified."""
     mock_client = mocker.Mock()
     mock_client.models.list.return_value = [
         mocker.Mock(
@@ -205,14 +216,17 @@ def test_select_model_id_no_model(mocker):
 
     query_request = QueryRequest(query="What is OpenStack?")
 
-    model_id = select_model_id(mock_client.models.list(), query_request)
+    model_id, provider_id = select_model_and_provider_id(
+        mock_client.models.list(), query_request
+    )
 
     # Assert return the first available LLM model
     assert model_id == "first_model"
+    assert provider_id == "provider1"
 
 
-def test_select_model_id_invalid_model(mocker):
-    """Test the select_model_id function with an invalid model."""
+def test_select_model_and_provider_id_invalid_model(mocker):
+    """Test the select_model_and_provider_id function with an invalid model."""
     mock_client = mocker.Mock()
     mock_client.models.list.return_value = [
         mocker.Mock(identifier="model1", model_type="llm", provider_id="provider1"),
@@ -222,8 +236,8 @@ def test_select_model_id_invalid_model(mocker):
         query="What is OpenStack?", model="invalid_model", provider="provider1"
     )
 
-    with pytest.raises(Exception) as exc_info:
-        select_model_id(mock_client.models.list(), query_request)
+    with pytest.raises(HTTPException) as exc_info:
+        select_model_and_provider_id(mock_client.models.list(), query_request)
 
     assert (
         "Model invalid_model from provider provider1 not found in available models"
@@ -231,16 +245,16 @@ def test_select_model_id_invalid_model(mocker):
     )
 
 
-def test_no_available_models(mocker):
-    """Test the select_model_id function with an invalid model."""
+def test_select_model_and_provider_id_no_available_models(mocker):
+    """Test the select_model_and_provider_id function with no available models."""
     mock_client = mocker.Mock()
     # empty list of models
     mock_client.models.list.return_value = []
 
     query_request = QueryRequest(query="What is OpenStack?", model=None, provider=None)
 
-    with pytest.raises(Exception) as exc_info:
-        select_model_id(mock_client.models.list(), query_request)
+    with pytest.raises(HTTPException) as exc_info:
+        select_model_and_provider_id(mock_client.models.list(), query_request)
 
     assert "No LLM model found in available models" in str(exc_info.value)
 
@@ -304,6 +318,7 @@ def test_validate_attachments_metadata_invalid_content_type():
 
 def test_retrieve_response_vector_db_available(prepare_agent_mocks, mocker):
     """Test the retrieve_response function."""
+    mock_metric = mocker.patch("metrics.llm_calls_validation_errors_total")
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
     mock_client.shields.list.return_value = []
@@ -327,6 +342,8 @@ def test_retrieve_response_vector_db_available(prepare_agent_mocks, mocker):
         mock_client, model_id, query_request, access_token
     )
 
+    # Assert that the metric for validation errors is NOT incremented
+    mock_metric.inc.assert_not_called()
     assert response == "LLM answer"
     assert conversation_id == "fake_session_id"
     mock_agent.create_turn.assert_called_once_with(
@@ -755,11 +772,12 @@ def test_retrieve_response_with_mcp_servers_empty_token(prepare_agent_mocks, moc
     )
 
 
-def test_retrieve_response_with_mcp_servers_and_mcp_headers(mocker):
+def test_retrieve_response_with_mcp_servers_and_mcp_headers(
+    prepare_agent_mocks, mocker
+):
     """Test the retrieve_response function with MCP servers configured."""
-    mock_agent = mocker.Mock()
+    mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
-    mock_client = mocker.Mock()
     mock_client.shields.list.return_value = []
     mock_client.vector_dbs.list.return_value = []
 
@@ -843,6 +861,50 @@ def test_retrieve_response_with_mcp_servers_and_mcp_headers(mocker):
         documents=[],
         stream=False,
         toolgroups=[mcp_server.name for mcp_server in mcp_servers],
+    )
+
+
+def test_retrieve_response_shield_violation(prepare_agent_mocks, mocker):
+    """Test the retrieve_response function."""
+    mock_metric = mocker.patch("metrics.llm_calls_validation_errors_total")
+    mock_client, mock_agent = prepare_agent_mocks
+    # Mock the agent's create_turn method to return a response with a shield violation
+    steps = [
+        mocker.Mock(
+            step_type="shield_call",
+            violation=True,
+        ),
+    ]
+    mock_agent.create_turn.return_value.steps = steps
+    mock_client.shields.list.return_value = []
+    mock_vector_db = mocker.Mock()
+    mock_vector_db.identifier = "VectorDB-1"
+    mock_client.vector_dbs.list.return_value = [mock_vector_db]
+
+    # Mock configuration with empty MCP servers
+    mock_config = mocker.Mock()
+    mock_config.mcp_servers = []
+    mocker.patch("app.endpoints.query.configuration", mock_config)
+    mocker.patch(
+        "app.endpoints.query.get_agent", return_value=(mock_agent, "fake_session_id")
+    )
+
+    query_request = QueryRequest(query="What is OpenStack?")
+
+    _, conversation_id = retrieve_response(
+        mock_client, "fake_model_id", query_request, "test_token"
+    )
+
+    # Assert that the metric for validation errors is incremented
+    mock_metric.inc.assert_called_once()
+
+    assert conversation_id == "fake_session_id"
+    mock_agent.create_turn.assert_called_once_with(
+        messages=[UserMessage(content="What is OpenStack?", role="user")],
+        session_id="fake_session_id",
+        documents=[],
+        stream=False,
+        toolgroups=get_rag_toolgroups(["VectorDB-1"]),
     )
 
 
@@ -937,21 +999,25 @@ def test_get_rag_toolgroups():
 
 def test_query_endpoint_handler_on_connection_error(mocker):
     """Test the query endpoint handler."""
+    mock_metric = mocker.patch("metrics.llm_calls_failures_total")
+
     mocker.patch(
         "app.endpoints.query.configuration",
         return_value=mocker.Mock(),
     )
 
-    # construct mocked query
-    query = "What is OpenStack?"
-    query_request = QueryRequest(query=query)
+    query_request = QueryRequest(query="What is OpenStack?")
 
     # simulate situation when it is not possible to connect to Llama Stack
-    mock_lsc = mocker.Mock()
-    mock_lsc.get_client.side_effect = APIConnectionError(request=query_request)
+    mock_get_client = mocker.patch("client.LlamaStackClientHolder.get_client")
+    mock_get_client.side_effect = APIConnectionError(request=query_request)
 
-    with pytest.raises(Exception):
-        query_endpoint_handler(query_request)
+    with pytest.raises(HTTPException) as exc_info:
+        query_endpoint_handler(query_request, auth=MOCK_AUTH)
+
+    assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert "Unable to connect to Llama Stack" in str(exc_info.value.detail)
+    mock_metric.inc.assert_called_once()
 
 
 def test_get_agent_cache_hit(prepare_agent_mocks):
@@ -1254,7 +1320,10 @@ def test_auth_tuple_unpacking_in_query_endpoint_handler(mocker):
         return_value=("test response", "test_conversation_id"),
     )
 
-    mocker.patch("app.endpoints.query.select_model_id", return_value="test_model")
+    mocker.patch(
+        "app.endpoints.query.select_model_and_provider_id",
+        return_value=("test_model", "test_provider"),
+    )
     mocker.patch("app.endpoints.query.is_transcripts_enabled", return_value=False)
 
     _ = query_endpoint_handler(
