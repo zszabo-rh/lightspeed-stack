@@ -12,8 +12,8 @@ from configuration import AppConfig
 logger = logging.getLogger("app.endpoints.dependencies")
 
 
-async def mcp_headers_dependency(_request: Request) -> dict[str, dict[str, str]]:
-    """Get the mcp headers dependency to passed to mcp servers.
+async def mcp_headers_dependency(request: Request) -> dict[str, dict[str, str]]:
+    """Get the MCP headers dependency to passed to mcp servers.
 
     mcp headers is a json dictionary or mcp url paths and their respective headers
 
@@ -23,7 +23,7 @@ async def mcp_headers_dependency(_request: Request) -> dict[str, dict[str, str]]
     Returns:
         The mcp headers dictionary, or empty dictionary if not found or on json decoding error
     """
-    return extract_mcp_headers(_request)
+    return extract_mcp_headers(request)
 
 
 def extract_mcp_headers(request: Request) -> dict[str, dict[str, str]]:
