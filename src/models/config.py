@@ -185,6 +185,26 @@ class Customization(BaseModel):
         return self
 
 
+class InferenceConfiguration(BaseModel):
+    """Inference configuration."""
+
+    default_model: Optional[str] = None
+    default_provider: Optional[str] = None
+
+    @model_validator(mode="after")
+    def check_default_model_and_provider(self) -> Self:
+        """Check default model and provider."""
+        if self.default_model is None and self.default_provider is not None:
+            raise ValueError(
+                "Default model must be specified when default provider is set"
+            )
+        if self.default_model is not None and self.default_provider is None:
+            raise ValueError(
+                "Default provider must be specified when default model is set"
+            )
+        return self
+
+
 class Configuration(BaseModel):
     """Global service configuration."""
 
@@ -197,6 +217,7 @@ class Configuration(BaseModel):
         AuthenticationConfiguration()
     )
     customization: Optional[Customization] = None
+    inference: Optional[InferenceConfiguration] = InferenceConfiguration()
 
     def dump(self, filename: str = "configuration.json") -> None:
         """Dump actual configuration into JSON file."""
