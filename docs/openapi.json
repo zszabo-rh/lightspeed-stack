@@ -251,9 +251,9 @@
                             "use_as_library_client": false
                         },
                         "user_data_collection": {
-                            "feedback_enabled": false,
+                            "feedback_enabled": true,
                             "feedback_storage": "/tmp/data/feedback",
-                            "transcripts_enabled": true
+                            "transcripts_enabled": false
                         },
                         "mcp_servers": [
                             {
@@ -1545,8 +1545,8 @@
                 "properties": {
                     "feedback_enabled": {
                         "type": "boolean",
-                        "title": "Feedback Disabled",
-                        "default": true
+                        "title": "Feedback Enabled",
+                        "default": false
                     },
                     "feedback_storage": {
                         "anyOf": [
@@ -1561,8 +1561,8 @@
                     },
                     "transcripts_enabled": {
                         "type": "boolean",
-                        "title": "Transcripts Disabled",
-                        "default": true
+                        "title": "Transcripts Enabled",
+                        "default": false
                     },
                     "transcripts_storage": {
                         "anyOf": [
