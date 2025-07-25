@@ -23,6 +23,7 @@ from models.config import (
     TLSConfiguration,
     ModelContextProtocolServer,
     DataCollectorConfiguration,
+    InferenceConfiguration,
 )
 
 from utils.checks import InvalidConfigurationError
@@ -129,6 +130,53 @@ def test_llama_stack_wrong_configuration_no_config_file() -> None:
     m = "LLama stack library client mode is enabled but a configuration file path is not specified"
     with pytest.raises(ValueError, match=m):
         LlamaStackConfiguration(use_as_library_client=True)
+
+
+def test_inference_constructor() -> None:
+    """
+    Test the InferenceConfiguration constructor with valid
+    parameters.
+    """
+    # Test with no default provider or model, as they are optional
+    inference_config = InferenceConfiguration()
+    assert inference_config is not None
+    assert inference_config.default_provider is None
+    assert inference_config.default_model is None
+
+    # Test with default provider and model
+    inference_config = InferenceConfiguration(
+        default_provider="default_provider",
+        default_model="default_model",
+    )
+    assert inference_config is not None
+    assert inference_config.default_provider == "default_provider"
+    assert inference_config.default_model == "default_model"
+
+
+def test_inference_default_model_missing() -> None:
+    """
+    Test case where only default provider is set, should fail
+    """
+    with pytest.raises(
+        ValueError,
+        match="Default model must be specified when default provider is set",
+    ):
+        InferenceConfiguration(
+            default_provider="default_provider",
+        )
+
+
+def test_inference_default_provider_missing() -> None:
+    """
+    Test case where only default model is set, should fail
+    """
+    with pytest.raises(
+        ValueError,
+        match="Default provider must be specified when default model is set",
+    ):
+        InferenceConfiguration(
+            default_model="default_model",
+        )
 
 
 def test_user_data_collection_feedback_enabled() -> None:
@@ -426,6 +474,10 @@ def test_dump_configuration(tmp_path) -> None:
         ),
         mcp_servers=[],
         customization=None,
+        inference=InferenceConfiguration(
+            default_provider="default_provider",
+            default_model="default_model",
+        ),
     )
     assert cfg is not None
     dump_file = tmp_path / "test.json"
@@ -443,6 +495,8 @@ def test_dump_configuration(tmp_path) -> None:
         assert "user_data_collection" in content
         assert "mcp_servers" in content
         assert "authentication" in content
+        assert "customization" in content
+        assert "inference" in content
 
         # check the whole deserialized JSON file content
         assert content == {
@@ -489,6 +543,10 @@ def test_dump_configuration(tmp_path) -> None:
                 "k8s_cluster_api": None,
             },
             "customization": None,
+            "inference": {
+                "default_provider": "default_provider",
+                "default_model": "default_model",
+            },
         }
 
 
@@ -516,6 +574,10 @@ def test_dump_configuration_with_one_mcp_server(tmp_path) -> None:
         ),
         mcp_servers=mcp_servers,
         customization=None,
+        inference=InferenceConfiguration(
+            default_provider="default_provider",
+            default_model="default_model",
+        ),
     )
     dump_file = tmp_path / "test.json"
     cfg.dump(dump_file)
@@ -580,6 +642,10 @@ def test_dump_configuration_with_one_mcp_server(tmp_path) -> None:
                 "k8s_cluster_api": None,
             },
             "customization": None,
+            "inference": {
+                "default_provider": "default_provider",
+                "default_model": "default_model",
+            },
         }
 
 
@@ -610,6 +676,10 @@ def test_dump_configuration_with_more_mcp_servers(tmp_path) -> None:
         ),
         mcp_servers=mcp_servers,
         customization=None,
+        inference=InferenceConfiguration(
+            default_provider="default_provider",
+            default_model="default_model",
+        ),
     )
     dump_file = tmp_path / "test.json"
     cfg.dump(dump_file)
@@ -690,6 +760,10 @@ def test_dump_configuration_with_more_mcp_servers(tmp_path) -> None:
                 "k8s_cluster_api": None,
             },
             "customization": None,
+            "inference": {
+                "default_provider": "default_provider",
+                "default_model": "default_model",
+            },
         }
 
 
