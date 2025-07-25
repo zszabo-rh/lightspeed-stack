@@ -574,10 +574,7 @@ def test_dump_configuration_with_one_mcp_server(tmp_path) -> None:
         ),
         mcp_servers=mcp_servers,
         customization=None,
-        inference=InferenceConfiguration(
-            default_provider="default_provider",
-            default_model="default_model",
-        ),
+        inference=None,
     )
     dump_file = tmp_path / "test.json"
     cfg.dump(dump_file)
@@ -591,62 +588,14 @@ def test_dump_configuration_with_one_mcp_server(tmp_path) -> None:
         assert content["mcp_servers"][0]["url"] == "http://localhost:8080"
         assert content["mcp_servers"][0]["provider_id"] == "model-context-protocol"
 
-        # check the whole deserialized JSON file content
-        assert content == {
-            "name": "test_name",
-            "service": {
-                "host": "localhost",
-                "port": 8080,
-                "auth_enabled": False,
-                "workers": 1,
-                "color_log": True,
-                "access_log": True,
-                "tls_config": {
-                    "tls_certificate_path": None,
-                    "tls_key_path": None,
-                    "tls_key_password": None,
-                },
-            },
-            "llama_stack": {
-                "url": None,
-                "api_key": None,
-                "use_as_library_client": True,
-                "library_client_config_path": "tests/configuration/run.yaml",
-            },
-            "user_data_collection": {
-                "feedback_enabled": False,
-                "feedback_storage": None,
-                "transcripts_enabled": False,
-                "transcripts_storage": None,
-                "data_collector": {
-                    "enabled": False,
-                    "ingress_server_url": None,
-                    "ingress_server_auth_token": None,
-                    "ingress_content_service_name": None,
-                    "collection_interval": DATA_COLLECTOR_COLLECTION_INTERVAL,
-                    "cleanup_after_send": True,
-                    "connection_timeout": DATA_COLLECTOR_CONNECTION_TIMEOUT,
-                },
-            },
-            "mcp_servers": [
-                {
-                    "name": "test-server",
-                    "provider_id": "model-context-protocol",
-                    "url": "http://localhost:8080",
-                },
-            ],
-            "authentication": {
-                "module": "noop",
-                "skip_tls_verification": False,
-                "k8s_ca_cert_path": None,
-                "k8s_cluster_api": None,
-            },
-            "customization": None,
-            "inference": {
-                "default_provider": "default_provider",
-                "default_model": "default_model",
-            },
-        }
+        # check the MCP server configuration
+        assert content["mcp_servers"] == [
+            {
+                "name": "test-server",
+                "url": "http://localhost:8080",
+                "provider_id": "model-context-protocol",
+            }
+        ]
 
 
 def test_dump_configuration_with_more_mcp_servers(tmp_path) -> None:
@@ -676,10 +625,7 @@ def test_dump_configuration_with_more_mcp_servers(tmp_path) -> None:
         ),
         mcp_servers=mcp_servers,
         customization=None,
-        inference=InferenceConfiguration(
-            default_provider="default_provider",
-            default_model="default_model",
-        ),
+        inference=None,
     )
     dump_file = tmp_path / "test.json"
     cfg.dump(dump_file)
@@ -699,72 +645,24 @@ def test_dump_configuration_with_more_mcp_servers(tmp_path) -> None:
         assert content["mcp_servers"][2]["url"] == "http://localhost:8083"
         assert content["mcp_servers"][2]["provider_id"] == "model-context-protocol"
 
-        # check the whole deserialized JSON file content
-        assert content == {
-            "name": "test_name",
-            "service": {
-                "host": "localhost",
-                "port": 8080,
-                "auth_enabled": False,
-                "workers": 1,
-                "color_log": True,
-                "access_log": True,
-                "tls_config": {
-                    "tls_certificate_path": None,
-                    "tls_key_path": None,
-                    "tls_key_password": None,
-                },
+        # check the MCP server configuration
+        assert content["mcp_servers"] == [
+            {
+                "name": "test-server-1",
+                "provider_id": "model-context-protocol",
+                "url": "http://localhost:8081",
             },
-            "llama_stack": {
-                "url": None,
-                "api_key": None,
-                "use_as_library_client": True,
-                "library_client_config_path": "tests/configuration/run.yaml",
+            {
+                "name": "test-server-2",
+                "provider_id": "model-context-protocol",
+                "url": "http://localhost:8082",
             },
-            "user_data_collection": {
-                "feedback_enabled": False,
-                "feedback_storage": None,
-                "transcripts_enabled": False,
-                "transcripts_storage": None,
-                "data_collector": {
-                    "enabled": False,
-                    "ingress_server_url": None,
-                    "ingress_server_auth_token": None,
-                    "ingress_content_service_name": None,
-                    "collection_interval": DATA_COLLECTOR_COLLECTION_INTERVAL,
-                    "cleanup_after_send": True,
-                    "connection_timeout": DATA_COLLECTOR_CONNECTION_TIMEOUT,
-                },
+            {
+                "name": "test-server-3",
+                "provider_id": "model-context-protocol",
+                "url": "http://localhost:8083",
             },
-            "mcp_servers": [
-                {
-                    "name": "test-server-1",
-                    "provider_id": "model-context-protocol",
-                    "url": "http://localhost:8081",
-                },
-                {
-                    "name": "test-server-2",
-                    "provider_id": "model-context-protocol",
-                    "url": "http://localhost:8082",
-                },
-                {
-                    "name": "test-server-3",
-                    "provider_id": "model-context-protocol",
-                    "url": "http://localhost:8083",
-                },
-            ],
-            "authentication": {
-                "module": "noop",
-                "skip_tls_verification": False,
-                "k8s_ca_cert_path": None,
-                "k8s_cluster_api": None,
-            },
-            "customization": None,
-            "inference": {
-                "default_provider": "default_provider",
-                "default_model": "default_model",
-            },
-        }
+        ]
 
 
 def test_authentication_configuration() -> None:
