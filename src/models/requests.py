@@ -267,9 +267,6 @@ class FeedbackRequest(BaseModel):
         if value is None:
             return value
 
-        if not isinstance(value, list):
-            raise ValueError("Categories must be a list")
-
         if len(value) == 0:
             return None  # Convert empty list to None for consistency
 
