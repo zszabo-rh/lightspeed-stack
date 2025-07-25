@@ -24,7 +24,10 @@ def test_async_client_get_client_method() -> None:
 
     with pytest.raises(
         RuntimeError,
-        match="AsyncLlamaStackClient has not been initialised. Ensure 'load\\(..\\)' has been called.",
+        match=(
+            "AsyncLlamaStackClient has not been initialised. "
+            "Ensure 'load\\(..\\)' has been called."
+        ),
     ):
         client.get_client()
 
