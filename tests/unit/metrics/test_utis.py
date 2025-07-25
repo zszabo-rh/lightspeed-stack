@@ -3,7 +3,7 @@
 from metrics.utils import setup_model_metrics
 
 
-def test_setup_model_metrics(mocker):
+async def test_setup_model_metrics(mocker):
     """Test the setup_model_metrics function."""
 
     # Mock the LlamaStackAsLibraryClient
@@ -51,7 +51,7 @@ def test_setup_model_metrics(mocker):
         model_1,
     ]
 
-    setup_model_metrics()
+    await setup_model_metrics()
 
     # Check that the provider_model_configuration metric was set correctly
     # The default model should have a value of 1, others should be 0

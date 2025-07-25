@@ -1,19 +1,24 @@
 """Utility functions for metrics handling."""
 
 from configuration import configuration
-from client import LlamaStackClientHolder
+from client import LlamaStackClientHolder, AsyncLlamaStackClientHolder
 from log import get_logger
 import metrics
 
 logger = get_logger(__name__)
 
 
-def setup_model_metrics() -> None:
+async def setup_model_metrics() -> None:
     """Perform setup of all metrics related to LLM model and provider."""
-    client = LlamaStackClientHolder().get_client()
+    model_list = []
+    if configuration.llama_stack_configuration.use_as_library_client:
+        model_list = await AsyncLlamaStackClientHolder().get_client().models.list()
+    else:
+        model_list = LlamaStackClientHolder().get_client().models.list()
+
     models = [
         model
-        for model in client.models.list()
+        for model in model_list
         if model.model_type == "llm"  # pyright: ignore[reportAttributeAccessIssue]
     ]
 
