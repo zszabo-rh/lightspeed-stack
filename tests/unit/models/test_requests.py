@@ -122,6 +122,16 @@ class TestQueryRequest:
         assert documents[1]["content"] == "kind: Pod\n metadata:\n name:    private-reg"
         assert documents[1]["mime_type"] == "application/yaml"
 
+    def test_get_documents_no_attachments(self) -> None:
+        """Test the get_documents method."""
+        attachments = []
+        qr = QueryRequest(
+            query="Tell me about Kubernetes",
+            attachments=attachments,
+        )
+        documents = qr.get_documents()
+        assert len(documents) == 0
+
     def test_validate_provider_and_model(self) -> None:
         """Test the validate_provider_and_model method."""
         qr = QueryRequest(
