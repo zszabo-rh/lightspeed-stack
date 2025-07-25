@@ -541,6 +541,7 @@ def test_dump_configuration(tmp_path) -> None:
                 "skip_tls_verification": False,
                 "k8s_ca_cert_path": None,
                 "k8s_cluster_api": None,
+                "jwk_config": None,
             },
             "customization": None,
             "inference": {
