@@ -1,6 +1,8 @@
 @startuml classes
 set namespaceSeparator none
 class "AuthenticationConfiguration" as src.models.config.AuthenticationConfiguration {
+  jwk_config : Optional[JwkConfiguration]
+  jwk_configuration
   k8s_ca_cert_path : Optional[FilePath]
   k8s_cluster_api : Optional[AnyHttpUrl]
   module : str
@@ -10,6 +12,7 @@ class "AuthenticationConfiguration" as src.models.config.AuthenticationConfigura
 class "Configuration" as src.models.config.Configuration {
   authentication : Optional[AuthenticationConfiguration]
   customization : Optional[Customization]
+  inference : Optional[InferenceConfiguration]
   llama_stack
   mcp_servers : list[ModelContextProtocolServer]
   name : str
@@ -32,6 +35,19 @@ class "DataCollectorConfiguration" as src.models.config.DataCollectorConfigurati
   ingress_server_auth_token : Optional[str]
   ingress_server_url : Optional[str]
   check_data_collector_configuration() -> Self
+}
+class "InferenceConfiguration" as src.models.config.InferenceConfiguration {
+  default_model : Optional[str]
+  default_provider : Optional[str]
+  check_default_model_and_provider() -> Self
+}
+class "JwkConfiguration" as src.models.config.JwkConfiguration {
+  jwt_configuration
+  url : AnyHttpUrl
+}
+class "JwtConfiguration" as src.models.config.JwtConfiguration {
+  user_id_claim : str
+  username_claim : str
 }
 class "LlamaStackConfiguration" as src.models.config.LlamaStackConfiguration {
   api_key : Optional[str]
@@ -70,6 +86,7 @@ class "UserDataCollection" as src.models.config.UserDataCollection {
   check_storage_location_is_set_when_needed() -> Self
 }
 src.models.config.DataCollectorConfiguration --* src.models.config.UserDataCollection : data_collector
+src.models.config.JwtConfiguration --* src.models.config.JwkConfiguration : jwt_configuration
 src.models.config.LlamaStackConfiguration --* src.models.config.Configuration : llama_stack
 src.models.config.ServiceConfiguration --* src.models.config.Configuration : service
 src.models.config.TLSConfiguration --* src.models.config.ServiceConfiguration : tls_config
