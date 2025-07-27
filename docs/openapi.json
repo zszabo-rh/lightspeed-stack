@@ -696,6 +696,16 @@
                             }
                         ],
                         "title": "K8S Ca Cert Path"
+                    },
+                    "jwk_config": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/JwkConfiguration"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
                     }
                 },
                 "type": "object",
@@ -773,6 +783,17 @@
                                 "type": "null"
                             }
                         ]
+                    },
+                    "inference": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/InferenceConfiguration"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "default": {}
                     }
                 },
                 "type": "object",
@@ -967,16 +988,8 @@
                     "unsafe",
                     "other"
                 ],
-                "x-enum-varnames": [
-                    "INCORRECT",
-                    "NOT_RELEVANT",
-                    "INCOMPLETE",
-                    "OUTDATED_INFORMATION",
-                    "UNSAFE",
-                    "OTHER"
-                ],
                 "title": "FeedbackCategory",
-                "description": "Enum representing predefined feedback categories for AI responses.\n\nThese categories help provide structured feedback about AI inference quality when users provide negative feedback (thumbs down). Multiple categories can be selected to provide comprehensive feedback about response issues."
+                "description": "Enum representing predefined feedback categories for AI responses.\n\nThese categories help provide structured feedback about AI inference quality\nwhen users provide negative feedback (thumbs down). Multiple categories can\nbe selected to provide comprehensive feedback about response issues."
             },
             "FeedbackRequest": {
                 "properties": {
@@ -1032,7 +1045,7 @@
                             }
                         ],
                         "title": "Categories",
-                        "description": "List of feedback categories that apply to the LLM response.",
+                        "description": "List of feedback categories that describe issues with the LLM response (for negative feedback).",
                         "examples": [
                             [
                                 "incorrect",
@@ -1048,14 +1061,23 @@
                     "llm_response"
                 ],
                 "title": "FeedbackRequest",
-                "description": "Model representing a feedback request.\n\nAttributes:\n    conversation_id: The required conversation ID (UUID).\n    user_question: The required user question.\n    llm_response: The required LLM response.\n    sentiment: The optional sentiment.\n    user_feedback: The optional user feedback.\n    categories: The optional list of feedback categories (multi-select).\n\nExample:\n    ```python\n    feedback_request = FeedbackRequest(\n        conversation_id=\"12345678-abcd-0000-0123-456789abcdef\",\n        user_question=\"what are you doing?\",\n        user_feedback=\"Great service!\",\n        llm_response=\"I don't know\",\n        sentiment=-1,\n        categories=[FeedbackCategory.INCOMPLETE, FeedbackCategory.UNSAFE]\n    )\n    ```",
+                "description": "Model representing a feedback request.\n\nAttributes:\n    conversation_id: The required conversation ID (UUID).\n    user_question: The required user question.\n    llm_response: The required LLM response.\n    sentiment: The optional sentiment.\n    user_feedback: The optional user feedback.\n    categories: The optional list of feedback categories (multi-select for negative feedback).\n\nExample:\n    ```python\n    feedback_request = FeedbackRequest(\n        conversation_id=\"12345678-abcd-0000-0123-456789abcdef\",\n        user_question=\"what are you doing?\",\n        user_feedback=\"This response is not helpful\",\n        llm_response=\"I don't know\",\n        sentiment=-1,\n        categories=[FeedbackCategory.INCORRECT, FeedbackCategory.INCOMPLETE]\n    )\n    ```",
                 "examples": [
                     {
                         "conversation_id": "12345678-abcd-0000-0123-456789abcdef",
                         "llm_response": "bar",
-                        "sentiment": 1,
-                        "user_feedback": "Great service!",
+                        "sentiment": -1,
+                        "user_feedback": "Not satisfied with the response quality.",
                         "user_question": "foo"
+                    },
+                    {
+                        "categories": [
+                            "incorrect"
+                        ],
+                        "conversation_id": "12345678-abcd-0000-0123-456789abcdef",
+                        "llm_response": "The capital of France is Berlin.",
+                        "sentiment": -1,
+                        "user_question": "What is the capital of France?"
                     },
                     {
                         "categories": [
@@ -1063,7 +1085,7 @@
                             "not_relevant"
                         ],
                         "conversation_id": "12345678-abcd-0000-0123-456789abcdef",
-                        "llm_response": "You need to use Docker and Kubernetes for everything.",
+                        "llm_response": "Use Docker.",
                         "sentiment": -1,
                         "user_feedback": "This response is too general and doesn't provide specific steps.",
                         "user_question": "How do I deploy a web app?"
@@ -1121,6 +1143,35 @@
                 "type": "object",
                 "title": "HTTPValidationError"
             },
+            "InferenceConfiguration": {
+                "properties": {
+                    "default_model": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Default Model"
+                    },
+                    "default_provider": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Default Provider"
+                    }
+                },
+                "type": "object",
+                "title": "InferenceConfiguration",
+                "description": "Inference configuration."
+            },
             "InfoResponse": {
                 "properties": {
                     "name": {
@@ -1145,6 +1196,46 @@
                         "version": "1.0.0"
                     }
                 ]
+            },
+            "JwkConfiguration": {
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "minLength": 1,
+                        "format": "uri",
+                        "title": "Url"
+                    },
+                    "jwt_configuration": {
+                        "$ref": "#/components/schemas/JwtConfiguration",
+                        "default": {
+                            "user_id_claim": "user_id",
+                            "username_claim": "username"
+                        }
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "url"
+                ],
+                "title": "JwkConfiguration",
+                "description": "JWK configuration."
+            },
+            "JwtConfiguration": {
+                "properties": {
+                    "user_id_claim": {
+                        "type": "string",
+                        "title": "User Id Claim",
+                        "default": "user_id"
+                    },
+                    "username_claim": {
+                        "type": "string",
+                        "title": "Username Claim",
+                        "default": "username"
+                    }
+                },
+                "type": "object",
+                "title": "JwtConfiguration",
+                "description": "JWT configuration."
             },
             "LivenessResponse": {
                 "properties": {

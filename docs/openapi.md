@@ -286,6 +286,22 @@ Handle request to the /authorized endpoint.
  |
 | 403 | User is not authorized | [ForbiddenResponse](#forbiddenresponse)
  |
+## GET `/metrics`
+
+> **Metrics Endpoint Handler**
+
+Handle request to the /metrics endpoint.
+
+
+
+
+
+### ✅ Responses
+
+| Status Code | Description | Component |
+|-------------|-------------|-----------|
+| 200 | Successful Response | string
+ |
 ---
 
 # 📋 Components
@@ -332,6 +348,7 @@ Authentication configuration.
 | skip_tls_verification | boolean |  |
 | k8s_cluster_api |  |  |
 | k8s_ca_cert_path |  |  |
+| jwk_config |  |  |
 
 
 ## AuthorizedResponse
@@ -365,6 +382,7 @@ Global service configuration.
 | mcp_servers | array |  |
 | authentication |  |  |
 | customization |  |  |
+| inference |  |  |
 
 
 ## ConversationDeleteResponse
@@ -462,8 +480,10 @@ Data collector configuration for sending data to ingress server.
 
 Enum representing predefined feedback categories for AI responses.
 
-These categories help provide structured feedback about AI inference quality.
-Multiple categories can be selected to provide comprehensive feedback.
+These categories help provide structured feedback about AI inference quality
+when users provide negative feedback (thumbs down). Multiple categories can
+be selected to provide comprehensive feedback about response issues.
+
 
 | Value | Description |
 |-------|-------------|
@@ -486,7 +506,7 @@ Attributes:
     llm_response: The required LLM response.
     sentiment: The optional sentiment.
     user_feedback: The optional user feedback.
-    categories: The optional list of feedback categories (multi-select).
+    categories: The optional list of feedback categories (multi-select for negative feedback).
 
 Examples:
     ```python
@@ -560,6 +580,18 @@ Model representing response for forbidden access.
 | detail | array |  |
 
 
+## InferenceConfiguration
+
+
+Inference configuration.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| default_model |  |  |
+| default_provider |  |  |
+
+
 ## InfoResponse
 
 
@@ -584,18 +616,28 @@ Example:
 | version | string |  |
 
 
-## LLamaStackConfiguration
+## JwkConfiguration
 
 
-Llama stack configuration.
+JWK configuration.
 
 
 | Field | Type | Description |
 |-------|------|-------------|
-| url |  |  |
-| api_key |  |  |
-| use_as_library_client |  |  |
-| library_client_config_path |  |  |
+| url | string |  |
+| jwt_configuration |  |  |
+
+
+## JwtConfiguration
+
+
+JWT configuration.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| user_id_claim | string |  |
+| username_claim | string |  |
 
 
 ## LivenessResponse
@@ -615,6 +657,20 @@ Example:
 | Field | Type | Description |
 |-------|------|-------------|
 | alive | boolean |  |
+
+
+## LlamaStackConfiguration
+
+
+Llama stack configuration.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| url |  |  |
+| api_key |  |  |
+| use_as_library_client |  |  |
+| library_client_config_path |  |  |
 
 
 ## ModelContextProtocolServer
