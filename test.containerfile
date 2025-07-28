@@ -1,5 +1,5 @@
 # vim: set filetype=dockerfile
-FROM registry.access.redhat.com/ubi9/ubi
+FROM registry.access.redhat.com/ubi9/ubi-minimal
 
 ARG APP_ROOT=/app-root
 
@@ -9,7 +9,7 @@ WORKDIR ${APP_ROOT}
 COPY run.yaml ./
 
 
-RUN dnf install -y --nodocs --setopt=keepcache=0 --setopt=tsflags=nodocs \
+RUN microdnf install -y --nodocs --setopt=keepcache=0 --setopt=tsflags=nodocs \
     python3.12 python3.12-devel python3.12-pip git tar
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
