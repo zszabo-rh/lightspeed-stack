@@ -11,6 +11,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - uses: 1arp/create-a-file-action@0.4.5
         env: 
@@ -125,7 +127,7 @@ jobs:
                 - provider_id: openai
                   provider_type: remote::openai
                   config:
-                    api_key: ${{ secrets.OPENAI_API_KEY }}
+                    api_key: ${{ env.OPENAI_API_KEY }}
               post_training:
               - config:
                   checkpoint_format: huggingface

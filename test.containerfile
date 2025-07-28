@@ -1,11 +1,13 @@
 # vim: set filetype=dockerfile
-FROM registry.access.redhat.com/ubi9/ubi-minimal
+FROM registry.access.redhat.com/ubi9/ubi
 
 ARG APP_ROOT=/app-root
 
 ENV PATH="$PATH:/root/.local/bin"
 
-ADD run.yaml ./
+WORKDIR ${APP_ROOT}
+COPY run.yaml ./
+
 
 RUN microdnf install -y --nodocs --setopt=keepcache=0 --setopt=tsflags=nodocs \
     python3.12 python3.12-devel python3.12-pip git tar
