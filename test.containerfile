@@ -9,7 +9,7 @@ WORKDIR ${APP_ROOT}
 COPY run.yaml ./
 
 
-RUN microdnf install -y --nodocs --setopt=keepcache=0 --setopt=tsflags=nodocs \
+RUN dnf install -y --nodocs --setopt=keepcache=0 --setopt=tsflags=nodocs \
     python3.12 python3.12-devel python3.12-pip git tar
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
