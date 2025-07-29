@@ -1,4 +1,4 @@
-name: foo bar baz
+name: Lightspeed Core Service (LCS)
 service:
   host: localhost
   port: 8080

@@ -1,6 +1,6 @@
-# foo bar baz service - OpenAPI
+# Lightspeed Core Service (LCS) service - OpenAPI
 
-foo bar baz service API specification.
+Lightspeed Core Service (LCS) service API specification.
 
 ## 🌍 Base URL
 
