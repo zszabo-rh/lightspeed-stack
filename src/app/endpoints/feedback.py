@@ -125,7 +125,7 @@ def store_feedback(user_id: str, feedback: dict) -> None:
     with open(feedback_file_path, "w", encoding="utf-8") as feedback_file:
         json.dump(data_to_store, feedback_file)
 
-    logger.info("Feedback stored sucessfully at %s", feedback_file_path)
+    logger.info("Feedback stored successfully at %s", feedback_file_path)
 
 
 @router.get("/status")

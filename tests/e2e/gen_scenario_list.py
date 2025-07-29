@@ -42,7 +42,7 @@ print()
 print("# List of scenarios")
 print()
 
-# generage list of scenarios
+# generate list of scenarios
 
 # files within one subdirectory needs to be sorted so the
 # resulting scenario list will have stable structure across versions
