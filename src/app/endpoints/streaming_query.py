@@ -1,9 +1,9 @@
 """Handler for REST API call to provide answer to streaming query."""
 
+import ast
 import json
-import logging
 import re
-from json import JSONDecodeError
+import logging
 from typing import Any, AsyncIterator, Iterator
 
 from cachetools import TTLCache  # type: ignore
@@ -362,12 +362,12 @@ def _handle_tool_execution_event(
                                 summary = summary[:newline_pos]
                         for match in METADATA_PATTERN.findall(text_content_item.text):
                             try:
-                                meta = json.loads(match.replace("'", '"'))
+                                meta = ast.literal_eval(match)
                                 if "document_id" in meta:
                                     metadata_map[meta["document_id"]] = meta
-                            except JSONDecodeError:
+                            except Exception:  # pylint: disable=broad-except
                                 logger.debug(
-                                    "JSONDecodeError was thrown in processing %s",
+                                    "An exception was thrown in processing %s",
                                     match,
                                 )
 

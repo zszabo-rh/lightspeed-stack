@@ -55,11 +55,13 @@ BEGIN of knowledge_search tool results.
 """,
     """Result 1
 Content: ABC
-Metadata: {'docs_url': 'https://example.com/doc1', 'title': 'Doc1', 'document_id': 'doc-1'}
+Metadata: {'docs_url': 'https://example.com/doc1', 'title': 'Doc1', 'document_id': 'doc-1', \
+'source': None}
 """,
     """Result 2
 Content: ABC
-Metadata: {'docs_url': 'https://example.com/doc2', 'title': 'Doc2', 'document_id': 'doc-2'}
+Metadata: {'docs_url': 'https://example.com/doc2', 'title': 'Doc2', 'document_id': 'doc-2', \
+'source': None}
 """,
     """END of knowledge_search tool results.
 """,
@@ -67,7 +69,8 @@ Metadata: {'docs_url': 'https://example.com/doc2', 'title': 'Doc2', 'document_id
     # and it is not picked as a referenced document.
     """Result 3
 Content: ABC
-Metadata: {'docs_url': 'https://example.com/doc3', 'Title': 'Doc3', 'document_id': 'doc-3'}
+Metadata: {'docs_url': 'https://example.com/doc3', 'Title': 'Doc3', 'document_id': 'doc-3', \
+'source': None}
 """,
     """The above results were retrieved to help answer the user\'s query: "Sample Query".
 Use them as supporting information only in answering this query.
