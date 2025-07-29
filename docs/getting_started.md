@@ -2,26 +2,91 @@
 
 <!-- vim-markdown-toc GFM -->
 
-* [Foobar](#foobar)
+* [Preface](#preface)
+* [Deployment methods](#deployment-methods)
+* [Integration with Llama Stack framework](#integration-with-llama-stack-framework)
+    * [Llama Stack as a library](#llama-stack-as-a-library)
+    * [Llama Stack as a server](#llama-stack-as-a-server)
+* [Local deployment](#local-deployment)
+    * [Llama Stack used as a library](#llama-stack-used-as-a-library)
+    * [Llama Stack used as a separate process](#llama-stack-used-as-a-separate-process)
+* [Running from container](#running-from-container)
+    * [Llama Stack used as a library](#llama-stack-used-as-a-library-1)
+    * [Llama Stack used as a separate process in container](#llama-stack-used-as-a-separate-process-in-container)
+    * [Llama Stack configuration](#llama-stack-configuration)
 
 <!-- vim-markdown-toc -->
 
+## Preface
+
+In this document, you will learn how to install and run a service called *Lightspeed Core Stack (LCS)*. It is a service that allows users to communicate with large language models (LLMs), access to RAG databases, call so called agents, process conversation history, ensure that the conversation is only about permitted topics, etc.
+
+
+
 ## Deployment methods
 
+*Lightspeed Core Stack (LCS)* is built on the Llama Stack framework, which can be run in several modes. Additionally, it is possible to run *LCS* locally (as a regular Python application) or from within a container. This means that it is possible to leverage multiple deployment methods:
+
+* Local deployment
+    - Llama Stack framework is used as a library
+    - Llama Stack framework is used as a separate process (deployed locally)
+* Running from a container
+    - Llama Stack framework is used as a library
+    - Llama Stack framework is used as a separate process in a container
+
+All those deployments methods will be covered later.
+
+
+
+## Integration with Llama Stack framework
+
+The Llama Stack framework can be run as a standalone server and accessed via its the REST API. However, instead of direct communication via the REST API (and JSON format), there is an even better alternative. It is based on the so-called Llama Stack Client. It is a library available for Python, Swift, Node.js or Kotlin, which "wraps" the REST API stack in a suitable way, which is easier for many applications.
+
+
+
+### Llama Stack as a library
+
+When this mode is selected, Llama Stack is used as a regular Python library. This means that the library must be installed in the system Python environment, a user-level environment, or a virtual environment. All calls to Llama Stack are performed via standard function or method calls:
+
 ![Llama Stack as library](./llama_stack_as_library.svg)
+
+[!NOTE]
+Even when Llama Stack is used as a library, it still requires the configuration file `run.yaml` to be presented. This configuration file is loaded during initialization phase.
+
+
+
+### Llama Stack as a server
+
+When this mode is selected, Llama Stack is started as a separate REST API service. All communication with Llama Stack is performed via REST API calls, which means that Llama Stack can run on a separate machine if needed.
+
 ![Llama Stack as service](./llama_stack_as_service.svg)
+
+[!NOTE]
+The REST API schema and semantics can change at any time, especially before version 1.0.0 is released. By using *Lightspeed Core Service*, developers, users, and customers stay isolated from these incompatibilities.
+
+
 
 ## Local deployment
 
-### Llama Stack used as a library
+In this chapter it will be shown how to run LCS locally. This mode is especially useful for developers, as it is possible to work with the latest versions of source codes, including locally made changes and improvements. And last but not least, it is possible to trace, monitor and debug the entire system from within integrated development environment etc.
+
+
 
 ### Llama Stack used as a separate process
 
-## Running from container
+The easiest option is to run Llama Stack in a separate process. This means that there will at least be two running processes involved:
+
+1. Llama Stack framework with open port 8321 (can be easily changed if needed)
+1. LCS with open port 8080 (can be easily changed if needed)
 
 ### Llama Stack used as a library
 
+## Running from container
+
 ### Llama Stack used as a separate process in container
+
+### Llama Stack used as a library
+
 
 
 
