@@ -1,4 +1,4 @@
-"""Unit tests for functionns defined in utils/types.py."""
+"""Unit tests for functions defined in utils/types.py."""
 
 from unittest.mock import Mock
 
@@ -6,7 +6,7 @@ from utils.types import GraniteToolParser
 
 
 class TestGraniteToolParser:
-    """Unit tests for functionns defined in utils/types.py."""
+    """Unit tests for functions defined in utils/types.py."""
 
     def test_get_tool_parser_when_model_is_is_not_granite(self):
         """Test that the tool_parser is None when model_id is not a granite model."""

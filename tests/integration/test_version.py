@@ -1,4 +1,4 @@
-"""Test if version is handled correcty."""
+"""Test if version is handled correctly."""
 
 import subprocess
 

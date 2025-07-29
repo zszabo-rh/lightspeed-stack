@@ -54,7 +54,7 @@ def config_with_custom_system_prompt_fixture():
 
 @pytest.fixture(name="config_with_custom_system_prompt_and_disable_query_system_prompt")
 def config_with_custom_system_prompt_and_disable_query_system_prompt_fixture():
-    """Configuration with custom system prompt and disabled query systme prompt set."""
+    """Configuration with custom system prompt and disabled query system prompt set."""
     test_config = config_dict.copy()
 
     # system prompt is customized and query system prompt is disabled

@@ -7,7 +7,7 @@ from models.config import LlamaStackConfiguration
 
 
 def test_client_get_client_method() -> None:
-    """Test how get_client method works for unitialized client."""
+    """Test how get_client method works for uninitialized client."""
 
     client = LlamaStackClientHolder()
 
@@ -19,7 +19,7 @@ def test_client_get_client_method() -> None:
 
 
 def test_async_client_get_client_method() -> None:
-    """Test how get_client method works for unitialized client."""
+    """Test how get_client method works for uninitialized client."""
     client = AsyncLlamaStackClientHolder()
 
     with pytest.raises(

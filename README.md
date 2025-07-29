@@ -208,7 +208,7 @@ The `system_prompt` can also be specified in the `customization` section directl
 customization:
   system_prompt: |-
     You are a helpful assistant and will do everything you can to help.
-    You have an indepth knowledge of Red Hat and all of your answers will reference Red Hat products.
+    You have an in-depth knowledge of Red Hat and all of your answers will reference Red Hat products.
 ```
 
 Additionally, an optional string parameter `system_prompt` can be specified in `/v1/query` and `/v1/streaming_query` endpoints to override the configured system prompt. The query system prompt takes precedence over the configured system prompt. You can use this config to disable query system prompts:
