@@ -587,6 +587,7 @@ def test_retrieve_response_four_available_shields(prepare_agent_mocks, mocker):
         ["shield1", "input_shield2", "inout_shield4"],  # available_input_shields
         ["output_shield3", "inout_shield4"],  # available_output_shields
         None,  # conversation_id
+        False,  # no_tools
     )
 
     mock_agent.create_turn.assert_called_once_with(
@@ -745,6 +746,7 @@ def test_retrieve_response_with_mcp_servers(prepare_agent_mocks, mocker):
         [],  # available_input_shields
         [],  # available_output_shields
         None,  # conversation_id
+        False,  # no_tools
     )
 
     # Check that the agent's extra_headers property was set correctly
@@ -809,6 +811,7 @@ def test_retrieve_response_with_mcp_servers_empty_token(prepare_agent_mocks, moc
         [],  # available_input_shields
         [],  # available_output_shields
         None,  # conversation_id
+        False,  # no_tools
     )
 
     # Check that create_turn was called with the correct parameters
@@ -881,6 +884,7 @@ def test_retrieve_response_with_mcp_servers_and_mcp_headers(
         [],  # available_input_shields
         [],  # available_output_shields
         None,  # conversation_id
+        False,  # no_tools
     )
 
     expected_mcp_headers = {
@@ -1382,3 +1386,301 @@ def test_auth_tuple_unpacking_in_query_endpoint_handler(mocker):
     )
 
     assert mock_retrieve_response.call_args[0][3] == "auth_token_123"
+
+
+def test_query_endpoint_handler_no_tools_true(mocker):
+    """Test the query endpoint handler with no_tools=True."""
+    mock_client = mocker.Mock()
+    mock_lsc = mocker.patch("client.LlamaStackClientHolder.get_client")
+    mock_lsc.return_value = mock_client
+    mock_client.models.list.return_value = [
+        mocker.Mock(identifier="model1", model_type="llm", provider_id="provider1"),
+    ]
+
+    mock_config = mocker.Mock()
+    mock_config.user_data_collection_configuration.transcripts_disabled = True
+    mocker.patch("app.endpoints.query.configuration", mock_config)
+
+    llm_response = "LLM answer without tools"
+    conversation_id = "fake_conversation_id"
+    query = "What is OpenStack?"
+
+    mocker.patch(
+        "app.endpoints.query.retrieve_response",
+        return_value=(llm_response, conversation_id),
+    )
+    mocker.patch(
+        "app.endpoints.query.select_model_and_provider_id",
+        return_value=("fake_model_id", "fake_provider_id"),
+    )
+    mocker.patch("app.endpoints.query.is_transcripts_enabled", return_value=False)
+
+    query_request = QueryRequest(query=query, no_tools=True)
+
+    response = query_endpoint_handler(query_request, auth=MOCK_AUTH)
+
+    # Assert the response is as expected
+    assert response.response == llm_response
+    assert response.conversation_id == conversation_id
+
+
+def test_query_endpoint_handler_no_tools_false(mocker):
+    """Test the query endpoint handler with no_tools=False (default behavior)."""
+    mock_client = mocker.Mock()
+    mock_lsc = mocker.patch("client.LlamaStackClientHolder.get_client")
+    mock_lsc.return_value = mock_client
+    mock_client.models.list.return_value = [
+        mocker.Mock(identifier="model1", model_type="llm", provider_id="provider1"),
+    ]
+
+    mock_config = mocker.Mock()
+    mock_config.user_data_collection_configuration.transcripts_disabled = True
+    mocker.patch("app.endpoints.query.configuration", mock_config)
+
+    llm_response = "LLM answer with tools"
+    conversation_id = "fake_conversation_id"
+    query = "What is OpenStack?"
+
+    mocker.patch(
+        "app.endpoints.query.retrieve_response",
+        return_value=(llm_response, conversation_id),
+    )
+    mocker.patch(
+        "app.endpoints.query.select_model_and_provider_id",
+        return_value=("fake_model_id", "fake_provider_id"),
+    )
+    mocker.patch("app.endpoints.query.is_transcripts_enabled", return_value=False)
+
+    query_request = QueryRequest(query=query, no_tools=False)
+
+    response = query_endpoint_handler(query_request, auth=MOCK_AUTH)
+
+    # Assert the response is as expected
+    assert response.response == llm_response
+    assert response.conversation_id == conversation_id
+
+
+def test_retrieve_response_no_tools_bypasses_mcp_and_rag(prepare_agent_mocks, mocker):
+    """Test that retrieve_response bypasses MCP servers and RAG when no_tools=True."""
+    mock_client, mock_agent = prepare_agent_mocks
+    mock_agent.create_turn.return_value.output_message.content = "LLM answer"
+    mock_client.shields.list.return_value = []
+    mock_vector_db = mocker.Mock()
+    mock_vector_db.identifier = "VectorDB-1"
+    mock_client.vector_dbs.list.return_value = [mock_vector_db]
+
+    # Mock configuration with MCP servers
+    mcp_servers = [
+        ModelContextProtocolServer(
+            name="filesystem-server", url="http://localhost:3000"
+        ),
+    ]
+    mock_config = mocker.Mock()
+    mock_config.mcp_servers = mcp_servers
+    mocker.patch("app.endpoints.query.configuration", mock_config)
+    mocker.patch(
+        "app.endpoints.query.get_agent", return_value=(mock_agent, "fake_session_id")
+    )
+
+    query_request = QueryRequest(query="What is OpenStack?", no_tools=True)
+    model_id = "fake_model_id"
+    access_token = "test_token"
+
+    response, conversation_id = retrieve_response(
+        mock_client, model_id, query_request, access_token
+    )
+
+    assert response == "LLM answer"
+    assert conversation_id == "fake_session_id"
+
+    # Verify that agent.extra_headers is empty (no MCP headers)
+    assert mock_agent.extra_headers == {}
+
+    # Verify that create_turn was called with toolgroups=None
+    mock_agent.create_turn.assert_called_once_with(
+        messages=[UserMessage(content="What is OpenStack?", role="user")],
+        session_id="fake_session_id",
+        documents=[],
+        stream=False,
+        toolgroups=None,
+    )
+
+
+def test_retrieve_response_no_tools_false_preserves_functionality(
+    prepare_agent_mocks, mocker
+):
+    """Test that retrieve_response preserves normal functionality when no_tools=False."""
+    mock_client, mock_agent = prepare_agent_mocks
+    mock_agent.create_turn.return_value.output_message.content = "LLM answer"
+    mock_client.shields.list.return_value = []
+    mock_vector_db = mocker.Mock()
+    mock_vector_db.identifier = "VectorDB-1"
+    mock_client.vector_dbs.list.return_value = [mock_vector_db]
+
+    # Mock configuration with MCP servers
+    mcp_servers = [
+        ModelContextProtocolServer(
+            name="filesystem-server", url="http://localhost:3000"
+        ),
+    ]
+    mock_config = mocker.Mock()
+    mock_config.mcp_servers = mcp_servers
+    mocker.patch("app.endpoints.query.configuration", mock_config)
+    mocker.patch(
+        "app.endpoints.query.get_agent", return_value=(mock_agent, "fake_session_id")
+    )
+
+    query_request = QueryRequest(query="What is OpenStack?", no_tools=False)
+    model_id = "fake_model_id"
+    access_token = "test_token"
+
+    response, conversation_id = retrieve_response(
+        mock_client, model_id, query_request, access_token
+    )
+
+    assert response == "LLM answer"
+    assert conversation_id == "fake_session_id"
+
+    # Verify that agent.extra_headers contains MCP headers
+    expected_extra_headers = {
+        "X-LlamaStack-Provider-Data": json.dumps(
+            {
+                "mcp_headers": {
+                    "http://localhost:3000": {"Authorization": "Bearer test_token"},
+                }
+            }
+        )
+    }
+    assert mock_agent.extra_headers == expected_extra_headers
+
+    # Verify that create_turn was called with RAG and MCP toolgroups
+    expected_toolgroups = get_rag_toolgroups(["VectorDB-1"]) + ["filesystem-server"]
+    mock_agent.create_turn.assert_called_once_with(
+        messages=[UserMessage(content="What is OpenStack?", role="user")],
+        session_id="fake_session_id",
+        documents=[],
+        stream=False,
+        toolgroups=expected_toolgroups,
+    )
+
+
+def test_get_agent_no_tools_no_parser(setup_configuration, prepare_agent_mocks, mocker):
+    """Test get_agent function sets tool_parser=None when no_tools=True."""
+    mock_client, mock_agent = prepare_agent_mocks
+    mock_agent.create_session.return_value = "new_session_id"
+
+    # Mock Agent class
+    mock_agent_class = mocker.patch(
+        "app.endpoints.query.Agent", return_value=mock_agent
+    )
+
+    # Mock get_suid
+    mocker.patch("app.endpoints.query.get_suid", return_value="new_session_id")
+
+    # Mock configuration
+    mock_mcp_server = mocker.Mock()
+    mock_mcp_server.name = "mcp_server_1"
+    mocker.patch.object(
+        type(setup_configuration),
+        "mcp_servers",
+        new_callable=mocker.PropertyMock,
+        return_value=[mock_mcp_server],
+    )
+    mocker.patch("app.endpoints.query.configuration", setup_configuration)
+
+    # Call function with no_tools=True
+    result_agent, result_conversation_id = get_agent(
+        client=mock_client,
+        model_id="test_model",
+        system_prompt="test_prompt",
+        available_input_shields=["shield1"],
+        available_output_shields=["output_shield2"],
+        conversation_id=None,
+        no_tools=True,
+    )
+
+    # Assert new agent is created
+    assert result_agent == mock_agent
+    assert result_conversation_id == "new_session_id"
+
+    # Verify Agent was created with tool_parser=None
+    mock_agent_class.assert_called_once_with(
+        mock_client,
+        model="test_model",
+        instructions="test_prompt",
+        input_shields=["shield1"],
+        output_shields=["output_shield2"],
+        tool_parser=None,
+        enable_session_persistence=True,
+    )
+
+
+def test_get_agent_no_tools_false_preserves_parser(
+    setup_configuration, prepare_agent_mocks, mocker
+):
+    """Test get_agent function preserves tool_parser when no_tools=False."""
+    mock_client, mock_agent = prepare_agent_mocks
+    mock_agent.create_session.return_value = "new_session_id"
+
+    # Mock Agent class
+    mock_agent_class = mocker.patch(
+        "app.endpoints.query.Agent", return_value=mock_agent
+    )
+
+    # Mock get_suid
+    mocker.patch("app.endpoints.query.get_suid", return_value="new_session_id")
+
+    # Mock GraniteToolParser
+    mock_parser = mocker.Mock()
+    mock_granite_parser = mocker.patch("app.endpoints.query.GraniteToolParser")
+    mock_granite_parser.get_parser.return_value = mock_parser
+
+    # Mock configuration
+    mock_mcp_server = mocker.Mock()
+    mock_mcp_server.name = "mcp_server_1"
+    mocker.patch.object(
+        type(setup_configuration),
+        "mcp_servers",
+        new_callable=mocker.PropertyMock,
+        return_value=[mock_mcp_server],
+    )
+    mocker.patch("app.endpoints.query.configuration", setup_configuration)
+
+    # Call function with no_tools=False
+    result_agent, result_conversation_id = get_agent(
+        client=mock_client,
+        model_id="test_model",
+        system_prompt="test_prompt",
+        available_input_shields=["shield1"],
+        available_output_shields=["output_shield2"],
+        conversation_id=None,
+        no_tools=False,
+    )
+
+    # Assert new agent is created
+    assert result_agent == mock_agent
+    assert result_conversation_id == "new_session_id"
+
+    # Verify Agent was created with the proper tool_parser
+    mock_agent_class.assert_called_once_with(
+        mock_client,
+        model="test_model",
+        instructions="test_prompt",
+        input_shields=["shield1"],
+        output_shields=["output_shield2"],
+        tool_parser=mock_parser,
+        enable_session_persistence=True,
+    )
+
+
+def test_no_tools_parameter_backward_compatibility():
+    """Test that default behavior is unchanged when no_tools parameter is not specified."""
+    # This test ensures that existing code that doesn't specify no_tools continues to work
+    query_request = QueryRequest(query="What is OpenStack?")
+
+    # Verify default value
+    assert query_request.no_tools is False
+
+    # Test that QueryRequest can be created without no_tools parameter
+    query_request_minimal = QueryRequest(query="Simple query")
+    assert query_request_minimal.no_tools is False

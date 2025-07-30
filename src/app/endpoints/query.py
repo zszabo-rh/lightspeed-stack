@@ -80,6 +80,7 @@ def get_agent(  # pylint: disable=too-many-arguments,too-many-positional-argumen
     available_input_shields: list[str],
     available_output_shields: list[str],
     conversation_id: str | None,
+    no_tools: bool = False,
 ) -> tuple[Agent, str]:
     """Get existing agent or create a new one with session persistence."""
     if conversation_id is not None:
@@ -99,7 +100,7 @@ def get_agent(  # pylint: disable=too-many-arguments,too-many-positional-argumen
         instructions=system_prompt,
         input_shields=available_input_shields if available_input_shields else [],
         output_shields=available_output_shields if available_output_shields else [],
-        tool_parser=GraniteToolParser.get_parser(model_id),
+        tool_parser=None if no_tools else GraniteToolParser.get_parser(model_id),
         enable_session_persistence=True,
     )
     conversation_id = agent.create_session(get_suid())
@@ -288,36 +289,47 @@ def retrieve_response(  # pylint: disable=too-many-locals
         available_input_shields,
         available_output_shields,
         query_request.conversation_id,
+        query_request.no_tools or False,
     )
 
-    # preserve compatibility when mcp_headers is not provided
-    if mcp_headers is None:
+    # bypass tools and MCP servers if no_tools is True
+    if query_request.no_tools:
         mcp_headers = {}
-    mcp_headers = handle_mcp_headers_with_toolgroups(mcp_headers, configuration)
-    if not mcp_headers and token:
-        for mcp_server in configuration.mcp_servers:
-            mcp_headers[mcp_server.url] = {
-                "Authorization": f"Bearer {token}",
-            }
+        agent.extra_headers = {}
+        toolgroups = None
+    else:
+        # preserve compatibility when mcp_headers is not provided
+        if mcp_headers is None:
+            mcp_headers = {}
+        mcp_headers = handle_mcp_headers_with_toolgroups(mcp_headers, configuration)
+        if not mcp_headers and token:
+            for mcp_server in configuration.mcp_servers:
+                mcp_headers[mcp_server.url] = {
+                    "Authorization": f"Bearer {token}",
+                }
 
-    agent.extra_headers = {
-        "X-LlamaStack-Provider-Data": json.dumps(
-            {
-                "mcp_headers": mcp_headers,
-            }
-        ),
-    }
+        agent.extra_headers = {
+            "X-LlamaStack-Provider-Data": json.dumps(
+                {
+                    "mcp_headers": mcp_headers,
+                }
+            ),
+        }
 
-    vector_db_ids = [vector_db.identifier for vector_db in client.vector_dbs.list()]
-    toolgroups = (get_rag_toolgroups(vector_db_ids) or []) + [
-        mcp_server.name for mcp_server in configuration.mcp_servers
-    ]
+        vector_db_ids = [vector_db.identifier for vector_db in client.vector_dbs.list()]
+        toolgroups = (get_rag_toolgroups(vector_db_ids) or []) + [
+            mcp_server.name for mcp_server in configuration.mcp_servers
+        ]
+        # Convert empty list to None for consistency with existing behavior
+        if not toolgroups:
+            toolgroups = None
+
     response = agent.create_turn(
         messages=[UserMessage(role="user", content=query_request.query)],
         session_id=conversation_id,
         documents=query_request.get_documents(),
         stream=False,
-        toolgroups=toolgroups or None,
+        toolgroups=toolgroups,
     )
 
     # Check for validation errors in the response
