@@ -191,10 +191,16 @@ def test_select_model_and_provider_id_from_request(mocker):
     )
 
     model_list = [
-        mocker.Mock(identifier="model1", model_type="llm", provider_id="provider1"),
-        mocker.Mock(identifier="model2", model_type="llm", provider_id="provider2"),
         mocker.Mock(
-            identifier="default_model", model_type="llm", provider_id="default_provider"
+            identifier="provider1/model1", model_type="llm", provider_id="provider1"
+        ),
+        mocker.Mock(
+            identifier="provider2/model2", model_type="llm", provider_id="provider2"
+        ),
+        mocker.Mock(
+            identifier="default_provider/default_model",
+            model_type="llm",
+            provider_id="default_provider",
         ),
     ]
 
@@ -206,7 +212,7 @@ def test_select_model_and_provider_id_from_request(mocker):
     # Assert the model and provider from request take precedence from the configuration one
     model_id, provider_id = select_model_and_provider_id(model_list, query_request)
 
-    assert model_id == "model2"
+    assert model_id == "provider2/model2"
     assert provider_id == "provider2"
 
 
@@ -222,9 +228,13 @@ def test_select_model_and_provider_id_from_configuration(mocker):
     )
 
     model_list = [
-        mocker.Mock(identifier="model1", model_type="llm", provider_id="provider1"),
         mocker.Mock(
-            identifier="default_model", model_type="llm", provider_id="default_provider"
+            identifier="provider1/model1", model_type="llm", provider_id="provider1"
+        ),
+        mocker.Mock(
+            identifier="default_provider/default_model",
+            model_type="llm",
+            provider_id="default_provider",
         ),
     ]
 
@@ -236,7 +246,7 @@ def test_select_model_and_provider_id_from_configuration(mocker):
     model_id, provider_id = select_model_and_provider_id(model_list, query_request)
 
     # Assert that the default model and provider from the configuration are returned
-    assert model_id == "default_model"
+    assert model_id == "default_provider/default_model"
     assert provider_id == "default_provider"
 
 
