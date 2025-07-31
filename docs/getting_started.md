@@ -663,7 +663,7 @@ It is possible to run Lightspeed Core Stack service with Llama Stack "embedded" 
      + greenlet==3.2.3
      + grpcio==1.74.0
      + httpx-sse==0.4.1
-     ~ lightspeed-stack==0.1.1 (from file:///tmp/ramdisk/lightspeed-stack)
+     ~ lightspeed-stack==0.1.2 (from file:///tmp/ramdisk/lightspeed-stack)
      + litellm==1.74.9.post1
      + lxml==6.0.0
      + mcp==1.12.2
