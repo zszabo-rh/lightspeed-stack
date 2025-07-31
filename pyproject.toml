@@ -57,6 +57,8 @@ dev = [
     "aiosqlite",
     "behave>=1.2.6",
     "types-cachetools>=6.1.0.20250717",
+    "build>=1.2.2.post1",
+    "twine>=6.1.0",
 ]
 build = [
     "build>=1.2.2.post1",
