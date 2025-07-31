@@ -3,6 +3,9 @@ name = "lightspeed-stack"
 dynamic = ["version"]
 description = "LLM tooling stack"
 authors = []
+maintainers = [
+    {email = "tisnik@centrum.cz", name = "Pavel Tišnovský"},
+]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
