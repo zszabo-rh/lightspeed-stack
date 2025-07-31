@@ -216,10 +216,12 @@ def select_model_and_provider_id(
                 },
             ) from e
 
+    llama_stack_model_id = f"{provider_id}/{model_id}"
     # Validate that the model_id and provider_id are in the available models
     logger.debug("Searching for model: %s, provider: %s", model_id, provider_id)
     if not any(
-        m.identifier == model_id and m.provider_id == provider_id for m in models
+        m.identifier == llama_stack_model_id and m.provider_id == provider_id
+        for m in models
     ):
         message = f"Model {model_id} from provider {provider_id} not found in available models"
         logger.error(message)
@@ -231,7 +233,7 @@ def select_model_and_provider_id(
             },
         )
 
-    return model_id, provider_id
+    return llama_stack_model_id, provider_id
 
 
 def _is_inout_shield(shield: Shield) -> bool:
