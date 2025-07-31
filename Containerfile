@@ -19,7 +19,7 @@ RUN pip3.12 install uv
 COPY ${LSC_SOURCE_DIR}/src ./src
 COPY ${LSC_SOURCE_DIR}/pyproject.toml ${LSC_SOURCE_DIR}/LICENSE ${LSC_SOURCE_DIR}/README.md ${LSC_SOURCE_DIR}/uv.lock ./
 
-RUN uv sync --locked --no-install-project --no-dev
+RUN uv sync --locked --no-dev
 
 
 # Final image without uv package manager

@@ -14,7 +14,9 @@ services:
       - lightspeednet
 
   lightspeed-stack:
-    image: quay.io/lightspeed-core/lightspeed-stack:latest
+    build:
+      context: .
+      dockerfile: Containerfile
     container_name: lightspeed-stack
     ports:
       - "8080:8080"

@@ -10,7 +10,7 @@ Feature: REST API tests
 
   Scenario: Check if service report proper readiness state
     Given the system is in default state
-     When I access REST API endpoint "readiness" using HTTP GET method
+     When I access endpoint "readiness" using HTTP GET method
      Then The status code of the response is 200
       And The body of the response has the following schema
           """
@@ -28,7 +28,7 @@ Feature: REST API tests
 
   Scenario: Check if service report proper liveness state
     Given the system is in default state
-     When I access REST API endpoint "liveness" using HTTP GET method
+     When I access endpoint "liveness" using HTTP GET method
      Then The status code of the response is 200
       And The body of the response has the following schema
           """
