@@ -81,10 +81,10 @@ verify: ## Run all linters
 
 distribution-archives: ## Generate distribution archives to be uploaded into Python registry
 	rm -rf dist
-	pdm run python -m build
+	uv run python -m build
 
 upload-distribution-archives: ## Upload distribution archives into Python registry
-	pdm run python -m twine upload --repository ${PYTHON_REGISTRY} dist/*
+	uv run python -m twine upload --repository ${PYTHON_REGISTRY} dist/*
 
 help: ## Show this help screen
 	@echo 'Usage: make <OPTIONS> ... <TARGETS>'
