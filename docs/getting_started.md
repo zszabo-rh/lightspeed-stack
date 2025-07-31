@@ -9,7 +9,7 @@
     * [Llama Stack as a server](#llama-stack-as-a-server)
 * [Local deployment](#local-deployment)
     * [Llama Stack used as a separate process](#llama-stack-used-as-a-separate-process)
-        * [Prerequisities](#prerequisities)
+        * [Prerequisites](#prerequisites)
         * [Installation of all required tools](#installation-of-all-required-tools)
         * [Installing dependencies for Llama Stack](#installing-dependencies-for-llama-stack)
         * [Check if Llama Stack can be started](#check-if-llama-stack-can-be-started)
@@ -19,7 +19,7 @@
         * [Start LCS](#start-lcs)
         * [Check if service runs](#check-if-service-runs)
     * [Llama Stack used as a library](#llama-stack-used-as-a-library)
-        * [Prerequisities](#prerequisities-1)
+        * [Prerequisites](#prerequisites-1)
         * [Installation of all required tools](#installation-of-all-required-tools-1)
         * [Installing dependencies for Llama Stack](#installing-dependencies-for-llama-stack-1)
         * [Llama Stack configuration](#llama-stack-configuration-1)
@@ -98,7 +98,7 @@ The easiest option is to run Llama Stack in a separate process. This means that 
 
 
 
-#### Prerequisities
+#### Prerequisites
 
 1. Python 3.12 or 3.13
 1. `pip` tool installed
@@ -584,7 +584,7 @@ INFO:     Uvicorn running on http://localhost:8080 (Press CTRL+C to quit)
 curl localhost:8080/v1/models | jq .
 ```
 
-```
+```json
 {
   "models": [
     {
@@ -609,7 +609,7 @@ It is possible to run Lightspeed Core Stack service with Llama Stack "embedded" 
 
 
 
-#### Prerequisities
+#### Prerequisites
 
 1. Python 3.12 or 3.13
 1. `pip` tool installed
@@ -646,7 +646,7 @@ It is possible to run Lightspeed Core Stack service with Llama Stack "embedded" 
     "trl>=0.18.2"
     ```
 1. Check if all dependencies are really installed
-    ```
+    ```text
     Resolved 195 packages in 1.19s
           Built lightspeed-stack @ file:///tmp/ramdisk/lightspeed-stack
     Prepared 12 packages in 1.72s
@@ -887,7 +887,7 @@ authentication:
     make run
     ```
 1. Check the output
-    ```
+    ```text
     uv run src/lightspeed_stack.py
     Using config run.yaml:
     apis:
@@ -931,7 +931,7 @@ authentication:
 curl localhost:8080/v1/models | jq .
 ```
 
-```
+```json
 {
   "models": [
     {
