@@ -3,6 +3,18 @@ name = "lightspeed-stack"
 dynamic = ["version"]
 description = "LLM tooling stack"
 authors = []
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: Apache Software License",
+]
+keywords = [
+    "LLM",
+    "RAG"
+]
 requires-python = ">=3.12,<3.14"
 readme = "README.md"
 license = {file = "LICENSE"}
