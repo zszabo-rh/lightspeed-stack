@@ -69,6 +69,7 @@ class QueryRequest(BaseModel):
         model: The optional model.
         system_prompt: The optional system prompt.
         attachments: The optional attachments.
+        no_tools: Whether to bypass all tools and MCP servers (default: False).
 
     Example:
         ```python
@@ -82,6 +83,7 @@ class QueryRequest(BaseModel):
     model: Optional[str] = None
     system_prompt: Optional[str] = None
     attachments: Optional[list[Attachment]] = None
+    no_tools: Optional[bool] = False
     # media_type is not used in 'lightspeed-stack' that only supports application/json.
     # the field is kept here to enable compatibility with 'road-core' clients.
     media_type: Optional[str] = None
@@ -97,6 +99,7 @@ class QueryRequest(BaseModel):
                     "provider": "openai",
                     "model": "model-name",
                     "system_prompt": "You are a helpful assistant",
+                    "no_tools": False,
                     "attachments": [
                         {
                             "attachment_type": "log",
