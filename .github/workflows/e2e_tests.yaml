@@ -18,11 +18,44 @@ jobs:
 
           # On PR_TARGET → the PR head *commit* (reproducible).
           # On push      → the pushed commit that triggered the workflow.
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event.pull_request.head.ref || github.sha }}
 
-          fetch-depth: 0
           # Don’t keep credentials when running untrusted PR code under PR_TARGET.
           persist-credentials: ${{ github.event_name != 'pull_request_target' }}
+
+      - name: Debug checkout for umago/lightspeed-stack setup-metrics branch
+        run: |
+          echo "=== GitHub Event Information ==="
+          echo "Event name: ${{ github.event_name }}"
+          echo "Base repo: ${{ github.repository }}"
+          echo "Base SHA: ${{ github.sha }}"
+          echo ""
+          echo "=== PR Information ==="
+          echo "PR head repo: '${{ github.event.pull_request.head.repo.full_name }}'"
+          echo "PR head ref: '${{ github.event.pull_request.head.ref }}'"
+          echo "PR head SHA: '${{ github.event.pull_request.head.sha }}'"
+          echo "PR number: ${{ github.event.pull_request.number }}"
+          echo ""
+          echo "=== Resolved Checkout Values ==="
+          echo "Repository used: ${{ github.event.pull_request.head.repo.full_name || github.repository }}"
+          echo "Ref used: ${{ github.event.pull_request.head.ref || github.sha }}"
+          echo ""
+          echo "=== Expected for umago/lightspeed-stack:setup-metrics ==="
+          echo "Should be repo: umago/lightspeed-stack" 
+          echo "Should be ref: setup-metrics"
+
+      - name: Verify actual git checkout result
+        run: |
+          echo "=== Git Status After Checkout ==="
+          echo "Remote URLs:"
+          git remote -v
+          echo ""
+          echo "Current branch: $(git branch --show-current 2>/dev/null || echo 'detached HEAD')"
+          echo "Current commit: $(git rev-parse HEAD)"
+          echo "Current commit message: $(git log -1 --oneline)"
+          echo ""
+          echo "=== Recent commits (should show setup-metrics commits) ==="
+          git log --oneline -5
 
       - uses: 1arp/create-a-file-action@0.4.5
         env: 
