@@ -44,6 +44,15 @@
         * [Llama Stack configuration](#llama-stack-configuration-3)
     * [LCS configuration](#lcs-configuration)
     * [Start *Lightspeed Core Service* from a container](#start-lightspeed-core-service-from-a-container)
+* [Usage](#usage)
+    * [Using OpenAPI Swagger UI](#using-openapi-swagger-ui)
+        * [Front page](#front-page)
+        * [Swagger UI](#swagger-ui)
+        * [Sending query to LLM](#sending-query-to-llm)
+    * [Using `curl`](#using-curl)
+        * [Accessing `info` REST API endpoint](#accessing-info-rest-api-endpoint)
+        * [Retrieving list of available models](#retrieving-list-of-available-models)
+        * [Retrieving LLM response](#retrieving-llm-response)
 
 <!-- vim-markdown-toc -->
 
@@ -1678,3 +1687,170 @@ Now it is time to start the service from a container. It is needed to mount both
 podman run -it -p 8080:8080 -v lightspeed-stack.yaml:/app-root/lightspeed-stack.yaml:Z -v ./run.yaml:/app-root/run.yaml:Z -e OPENAI_API_KEY=${OPENAI_API_KEY} quay.io/lightspeed-core/lightspeed-stack:dev-latest
 ```
 
+
+## Usage
+
+### Using OpenAPI Swagger UI
+
+#### Front page
+
+Open http://localhost:8080 URL in your web browser. The following front page should be displayed:
+
+![Front page](screenshots/front_page.jpg)
+
+#### Swagger UI
+
+Click on [Swagger UI](http://localhost:8080/docs) link to open Swagger UI page:
+
+![Swagger UI page](screenshots/openapi_swagger.png)
+
+List of all available REST API endpoints is displayed on this page. It is possible to interactively access any endpoint, specify query parameters, JSON payload etc. For example it is possible to access [Info endpoint](http://localhost:8080/v1/info) and see actual response from the Ligthspeed Core Stack service:
+
+![Swagger UI page](screenshots/info_endpoint.png)
+
+
+#### Sending query to LLM
+
+Some REST API endpoints like `/query` requires payload to be send into the service. This payload should be represented in JSON format. Some attributes in JSON payload are optional, so it is possible to send just the question and system prompt. In this case the JSON payload should look like:
+
+![Swagger UI page](screenshots/openapi_swagger.png)
+
+The response retrieved from LLM is displayed directly on Swagger UI page:
+
+![Swagger UI page](screenshots/openapi_swagger.png)
+
+
+
+### Using `curl`
+
+To access Lightspeed Core Stack service functions via REST API from command line, just the `curl` tool and optionally `jq` tool are needed. Any REST API endpoint can be accessed from command line.
+
+#### Accessing `info` REST API endpoint
+
+For example, the [/v1/info](http://localhost:8080/v1/info) endpoint can be accessed without parameters using `HTTP GET` method:
+
+```bash
+curl http://localhost:8080/v1/info | jq .
+```
+
+The response should look like:
+
+```json
+{
+  "name": "Lightspeed Core Service (LCS)",
+  "version": "0.1.2"
+}
+```
+
+#### Retrieving list of available models
+
+Use the [/v1/models](http://localhost:8080/v1/models) to get list of available models:
+
+```bash
+curl http://localhost:8080/v1/models | jq .
+```
+
+Please note that actual response from the service is larger. It was stripped down in this guide:
+
+```json
+{
+  "models": [
+    {
+      "identifier": "gpt-4-turbo",
+      "metadata": {},
+      "api_model_type": "llm",
+      "provider_id": "openai",
+      "type": "model",
+      "provider_resource_id": "gpt-4-turbo",
+      "model_type": "llm"
+    },
+    {
+      "identifier": "openai/gpt-4o-mini",
+      "metadata": {},
+      "api_model_type": "llm",
+      "provider_id": "openai",
+      "type": "model",
+      "provider_resource_id": "gpt-4o-mini",
+      "model_type": "llm"
+    },
+    {
+      "identifier": "openai/gpt-4o-audio-preview",
+      "metadata": {},
+      "api_model_type": "llm",
+      "provider_id": "openai",
+      "type": "model",
+      "provider_resource_id": "gpt-4o-audio-preview",
+      "model_type": "llm"
+    },
+    {
+      "identifier": "openai/chatgpt-4o-latest",
+      "metadata": {},
+      "api_model_type": "llm",
+      "provider_id": "openai",
+      "type": "model",
+      "provider_resource_id": "chatgpt-4o-latest",
+      "model_type": "llm"
+    },
+    {
+      "identifier": "openai/o1",
+      "metadata": {},
+      "api_model_type": "llm",
+      "provider_id": "openai",
+      "type": "model",
+      "provider_resource_id": "o1",
+      "model_type": "llm"
+    },
+    {
+      "identifier": "openai/text-embedding-3-small",
+      "metadata": {
+        "embedding_dimension": 1536.0,
+        "context_length": 8192.0
+      },
+      "api_model_type": "llm",
+      "provider_id": "openai",
+      "type": "model",
+      "provider_resource_id": "text-embedding-3-small",
+      "model_type": "llm"
+    },
+    {
+      "identifier": "openai/text-embedding-3-large",
+      "metadata": {
+        "embedding_dimension": 3072.0,
+        "context_length": 8192.0
+      },
+      "api_model_type": "llm",
+      "provider_id": "openai",
+      "type": "model",
+      "provider_resource_id": "text-embedding-3-large",
+      "model_type": "llm"
+    }
+  ]
+}
+```
+
+#### Retrieving LLM response
+
+To retrieve LLM response, the question (or query) needs to be send to inference model. Thus the `HTTP POST` method should be used:
+
+```bash
+$ curl -X 'POST' \
+>   'http://localhost:8080/v1/query' \
+>   -H 'accept: application/json' \
+>   -H 'Content-Type: application/json' \
+>   -d '{
+>   "query": "write a deployment yaml for the mongodb image",
+>   "system_prompt": "You are a helpful assistant"
+> }'
+```
+
+Response should look like:
+
+```json
+{
+  "conversation_id": "a731eaf2-0935-47ee-9661-2e9b36cda1f4",
+  "response": "Below is a basic example of a Kubernetes deployment YAML file for deploying a MongoDB instance using the official MongoDB Docker image. This YAML file defines a Deployment resource that manages a Pod with a single MongoDB container.\n\n```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: mongodb-deployment\n  labels:\n    app: mongodb\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: mongodb\n  template:\n    metadata:\n      labels:\n        app: mongodb\n    spec:\n      containers:\n      - name: mongodb\n        image: mongo:latest\n        ports:\n        - containerPort: 27017\n        env:\n        - name: MONGO_INITDB_ROOT_USERNAME\n          value: \"mongoadmin\"\n        - name: MONGO_INITDB_ROOT_PASSWORD\n          value: \"mongopass\"\n        volumeMounts:\n        - name: mongodb-data\n          mountPath: /data/db\n      volumes:\n      - name: mongodb-data\n        persistentVolumeClaim:\n          claimName: mongodb-pvc\n---\napiVersion: v1\nkind: Service\nmetadata:\n  name: mongodb-service\nspec:\n  ports:\n  - port: 27017\n    targetPort: 27017\n  selector:\n    app: mongodb\n  type: ClusterIP\n---\napiVersion: v1\nkind: PersistentVolumeClaim\nmetadata:\n  name: mongodb-pvc\nspec:\n  accessModes:\n    - ReadWriteOnce\n  resources:\n    requests:\n      storage: 1Gi\n```\n\n### Explanation of the YAML Components:\n\n1. **Deployment**:\n   - `apiVersion: apps/v1`: Specifies the API version for the Deployment.\n   - `kind: Deployment`: Specifies that this is a Deployment resource.\n   - `metadata`: Metadata about the deployment, such as its name.\n   - `spec`: Specification of the deployment.\n     - `replicas`: Number of desired pods.\n     - `selector`: Selector for pod targeting.\n     - `template`: Template for the pod.\n       - `containers`: List of containers within the pod.\n         - `image`: Docker image of MongoDB.\n         - `ports`: Container port MongoDB server listens on.\n         - `env`: Environment variables for MongoDB credentials.\n         - `volumeMounts`: Mount points for volumes inside the container.\n\n2. **Service**:\n   - `apiVersion: v1`: Specifies the API version for the Service.\n   - `kind: Service`: Specifies that this is a Service resource.\n   - `metadata`: Metadata about the service, such as its name.\n   - `spec`: Specification of the service.\n     - `ports`: Ports the service exposes.\n     - `selector`: Selector for service targeting.\n     - `type`: Type of service, `ClusterIP` for internal access.\n\n3. **PersistentVolumeClaim (PVC)**:\n   - `apiVersion: v1`: Specifies the API version for the PVC.\n   - `kind: PersistentVolumeClaim`: Specifies that this is a PVC resource.\n   - `metadata`: Metadata about the PVC, such as its name.\n   - `spec`: Specification of the PVC.\n     - `accessModes`: Access modes for the volume.\n     - `resources`: Resources requests for the volume.\n\nThis setup ensures that MongoDB data persists across pod restarts and provides a basic internal service for accessing MongoDB within the cluster. Adjust the storage size, MongoDB version, and credentials as necessary for your specific requirements."
+}
+```
+
+> [!NOTE]
+> As is shown on the previous example, the output might containt endlines, Markdown marks etc.
