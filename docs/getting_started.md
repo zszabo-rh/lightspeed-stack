@@ -1046,11 +1046,12 @@ a4982f43195537b9eb1cec510fe6655f245d6d4b7236a4759808115d5d719972
 *Lightspeed Core Stack* image can run LCS service that connects to Llama Stack running in a separate process. This means that there will at least be two running processes involved:
 
 1. Llama Stack framework with open port 8321 (can be easily changed if needed)
-1. Image with LCS with open port 8080 mapped to local port 8080 (can be easily changed if needed)
+1. Image with LCS (running in a container) with open port 8080 mapped to local port 8080 (can be easily changed if needed)
+
+![LCS in a container](./lcs_in_container.svg)
 
 > [!NOTE]
 > Please note that LCS service will be run in a container. Llama Stack itself can be run in a container, in separate local process, or on external machine. It is just needed to know the URL (including TCP port) to connect to Llama Stack.
-
 > [!INFO]
 > If Llama Stack is started from a container or is running on separate machine, you can skip next parts - it is expected that everything is setup accordingly.
 
@@ -1535,7 +1536,9 @@ podman run -it --network host -v lightspeed-stack.yaml:/app-root/lightspeed-stac
 
 ### Llama Stack used as a library
 
-Llama Stack can be used as a library that is already part of OLS image. It means that no other processed needs to be started, but more configuration is required.
+Llama Stack can be used as a library that is already part of OLS image. It means that no other processed needs to be started, but more configuration is required. Everything will be started from within the one container:
+
+![Both services in a container](./both_services_in_container.svg)
 
 
 
