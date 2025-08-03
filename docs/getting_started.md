@@ -91,8 +91,8 @@ When this mode is selected, Llama Stack is used as a regular Python library. Thi
 
 ![Llama Stack as library](./llama_stack_as_library.svg)
 
-[!NOTE]
-Even when Llama Stack is used as a library, it still requires the configuration file `run.yaml` to be presented. This configuration file is loaded during initialization phase.
+> [!NOTE]
+> Even when Llama Stack is used as a library, it still requires the configuration file `run.yaml` to be presented. This configuration file is loaded during initialization phase.
 
 
 
@@ -102,8 +102,8 @@ When this mode is selected, Llama Stack is started as a separate REST API servic
 
 ![Llama Stack as service](./llama_stack_as_service.svg)
 
-[!NOTE]
-The REST API schema and semantics can change at any time, especially before version 1.0.0 is released. By using *Lightspeed Core Service*, developers, users, and customers stay isolated from these incompatibilities.
+> [!NOTE]
+> The REST API schema and semantics can change at any time, especially before version 1.0.0 is released. By using *Lightspeed Core Service*, developers, users, and customers stay isolated from these incompatibilities.
 
 
 
@@ -989,8 +989,8 @@ First, it is needed to get an image containing the *Lightspeed Core Stack* servi
 
 - `podman` installed and configured properly
 
-[!NOTE]
-It is possible to use `docker` instead of `podman`, but this use case is not tested and thus not supported.
+> [!NOTE]
+> It is possible to use `docker` instead of `podman`, but this use case is not tested and thus not supported.
 
 
 
@@ -1048,11 +1048,11 @@ a4982f43195537b9eb1cec510fe6655f245d6d4b7236a4759808115d5d719972
 1. Llama Stack framework with open port 8321 (can be easily changed if needed)
 1. Image with LCS with open port 8080 mapped to local port 8080 (can be easily changed if needed)
 
-[!NOTE]
-Please note that LCS service will be run in a container. Llama Stack itself can be run in a container, in separate local process, or on external machine. It is just needed to know the URL (including TCP port) to connect to Llama Stack.
+> [!NOTE]
+> Please note that LCS service will be run in a container. Llama Stack itself can be run in a container, in separate local process, or on external machine. It is just needed to know the URL (including TCP port) to connect to Llama Stack.
 
-[!NOTE]
-If Llama Stack is started from a container or is running on separate machine, you can skip next parts - it is expected that everything is setup accordingly.
+> [!INFO]
+> If Llama Stack is started from a container or is running on separate machine, you can skip next parts - it is expected that everything is setup accordingly.
 
 
 
@@ -1528,8 +1528,8 @@ Now it is needed to run *Lightspeed Core Stack* from within a container. The ser
 podman run -it --network host -v lightspeed-stack.yaml:/app-root/lightspeed-stack.yaml:Z quay.io/lightspeed-core/lightspeed-stack:dev-latest
 ```
 
-[!NOTE]
-Please note that `--network host` is insecure option. It is used there because LCS service running in a container have to access Llama Stack running *outside* this container and the standard port mapping can not be leveraged there. This configuration would be ok for development purposes, but for real deployment, network needs to be reconfigured accordingly to maintain required container isolation!
+> [!NOTE]
+> Please note that `--network host` is insecure option. It is used there because LCS service running in a container have to access Llama Stack running *outside* this container and the standard port mapping can not be leveraged there. This configuration would be ok for development purposes, but for real deployment, network needs to be reconfigured accordingly to maintain required container isolation!
 
 
 
