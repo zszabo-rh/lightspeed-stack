@@ -1694,7 +1694,7 @@ podman run -it -p 8080:8080 -v lightspeed-stack.yaml:/app-root/lightspeed-stack.
 
 #### Front page
 
-Open http://localhost:8080 URL in your web browser. The following front page should be displayed:
+Open <http://localhost:8080> URL in your web browser. The following front page should be displayed:
 
 ![Front page](screenshots/front_page.jpg)
 
@@ -1704,7 +1704,7 @@ Click on [Swagger UI](http://localhost:8080/docs) link to open Swagger UI page:
 
 ![Swagger UI page](screenshots/openapi_swagger.png)
 
-List of all available REST API endpoints is displayed on this page. It is possible to interactively access any endpoint, specify query parameters, JSON payload etc. For example it is possible to access [Info endpoint](http://localhost:8080/v1/info) and see actual response from the Ligthspeed Core Stack service:
+List of all available REST API endpoints is displayed on this page. It is possible to interactively access any endpoint, specify query parameters, JSON payload etc. For example it is possible to access [Info endpoint](http://localhost:8080/v1/info) and see actual response from the Lightspeed Core Stack service:
 
 ![Swagger UI page](screenshots/info_endpoint.png)
 
@@ -1853,4 +1853,4 @@ Response should look like:
 ```
 
 > [!NOTE]
-> As is shown on the previous example, the output might containt endlines, Markdown marks etc.
+> As is shown on the previous example, the output might contain endlines, Markdown marks etc.
