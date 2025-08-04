@@ -46,6 +46,9 @@ def test_get_llama_stack_library_client() -> None:
 
     ls_client = client.get_client()
     assert ls_client is not None
+    assert not ls_client.is_closed()
+    ls_client.close()
+    assert ls_client.is_closed()
 
 
 def test_get_llama_stack_remote_client() -> None:
@@ -62,6 +65,9 @@ def test_get_llama_stack_remote_client() -> None:
 
     ls_client = client.get_client()
     assert ls_client is not None
+    assert not ls_client.is_closed()
+    ls_client.close()
+    assert ls_client.is_closed()
 
 
 def test_get_llama_stack_wrong_configuration() -> None:
@@ -81,6 +87,7 @@ def test_get_llama_stack_wrong_configuration() -> None:
         client.load(cfg)
 
 
+@pytest.mark.asyncio
 async def test_get_async_llama_stack_library_client() -> None:
     """Test the initialization of asynchronous Llama Stack client in library mode."""
     cfg = LlamaStackConfiguration(
@@ -93,8 +100,11 @@ async def test_get_async_llama_stack_library_client() -> None:
     await client.load(cfg)
     assert client is not None
 
-    ls_client = client.get_client()
-    assert ls_client is not None
+    async with client.get_client() as ls_client:
+        assert ls_client is not None
+        assert not ls_client.is_closed()
+        await ls_client.close()
+        assert ls_client.is_closed()
 
 
 async def test_get_async_llama_stack_remote_client() -> None:
