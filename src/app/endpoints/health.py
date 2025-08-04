@@ -11,7 +11,7 @@ from typing import Any
 from llama_stack.providers.datatypes import HealthStatus
 
 from fastapi import APIRouter, status, Response
-from client import LlamaStackClientHolder
+from client import AsyncLlamaStackClientHolder
 from models.responses import (
     LivenessResponse,
     ReadinessResponse,
@@ -22,16 +22,17 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["health"])
 
 
-def get_providers_health_statuses() -> list[ProviderHealthStatus]:
+async def get_providers_health_statuses() -> list[ProviderHealthStatus]:
     """Check health of all providers.
 
     Returns:
         List of provider health statuses.
     """
     try:
-        client = LlamaStackClientHolder().get_client()
+        client = AsyncLlamaStackClientHolder().get_client()
 
-        providers = client.providers.list()
+        # providers = []
+        providers = await client.providers.list()
         logger.debug("Found %d providers", len(providers))
 
         health_results = [
@@ -69,9 +70,9 @@ get_readiness_responses: dict[int | str, dict[str, Any]] = {
 
 
 @router.get("/readiness", responses=get_readiness_responses)
-def readiness_probe_get_method(response: Response) -> ReadinessResponse:
+async def readiness_probe_get_method(response: Response) -> ReadinessResponse:
     """Ready status of service with provider health details."""
-    provider_statuses = get_providers_health_statuses()
+    provider_statuses = await get_providers_health_statuses()
 
     # Check if any provider is unhealthy (not counting not_implemented as unhealthy)
     unhealthy_providers = [
