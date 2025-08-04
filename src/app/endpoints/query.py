@@ -6,7 +6,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client import APIConnectionError
@@ -27,7 +27,7 @@ from models.responses import QueryResponse, UnauthorizedResponse, ForbiddenRespo
 from models.requests import QueryRequest, Attachment
 import constants
 from auth import get_auth_dependency
-from utils.common import retrieve_user_id
+from auth.interface import AuthTuple
 from utils.endpoints import check_configuration_loaded, get_system_prompt
 from utils.mcp_headers import mcp_headers_dependency, handle_mcp_headers_with_toolgroups
 from utils.suid import get_suid
@@ -113,7 +113,7 @@ def get_agent(  # pylint: disable=too-many-arguments,too-many-positional-argumen
 @router.post("/query", responses=query_response)
 def query_endpoint_handler(
     query_request: QueryRequest,
-    auth: Any = Depends(auth_dependency),
+    auth: Annotated[AuthTuple, Depends(auth_dependency)],
     mcp_headers: dict[str, dict[str, str]] = Depends(mcp_headers_dependency),
 ) -> QueryResponse:
     """Handle request to the /query endpoint."""
@@ -122,7 +122,7 @@ def query_endpoint_handler(
     llama_stack_config = configuration.llama_stack_configuration
     logger.info("LLama stack config: %s", llama_stack_config)
 
-    _user_id, _user_name, token = auth
+    user_id, _, token = auth
 
     try:
         # try to get Llama Stack client
@@ -144,7 +144,7 @@ def query_endpoint_handler(
             logger.debug("Transcript collection is disabled in the configuration")
         else:
             store_transcript(
-                user_id=retrieve_user_id(auth),
+                user_id=user_id,
                 conversation_id=conversation_id,
                 query_is_valid=True,  # TODO(lucasagomes): implement as part of query validation
                 query=query_request.query,

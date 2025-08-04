@@ -1,14 +1,14 @@
 """Handler for REST API call to provide info."""
 
 import logging
-from typing import Any
+from typing import Annotated, Any
 from pathlib import Path
 import json
 from datetime import datetime, UTC
-
 from fastapi import APIRouter, Request, HTTPException, Depends, status
 
 from auth import get_auth_dependency
+from auth.interface import AuthTuple
 from configuration import configuration
 from models.responses import (
     FeedbackResponse,
@@ -18,7 +18,6 @@ from models.responses import (
 )
 from models.requests import FeedbackRequest
 from utils.suid import get_suid
-from utils.common import retrieve_user_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/feedback", tags=["feedback"])
@@ -66,10 +65,9 @@ async def assert_feedback_enabled(_request: Request) -> None:
 
 @router.post("", responses=feedback_response)
 def feedback_endpoint_handler(
-    _request: Request,
     feedback_request: FeedbackRequest,
+    auth: Annotated[AuthTuple, Depends(auth_dependency)],
     _ensure_feedback_enabled: Any = Depends(assert_feedback_enabled),
-    auth: Any = Depends(auth_dependency),
 ) -> FeedbackResponse:
     """Handle feedback requests.
 
@@ -85,7 +83,7 @@ def feedback_endpoint_handler(
     """
     logger.debug("Feedback received %s", str(feedback_request))
 
-    user_id = retrieve_user_id(auth)
+    user_id, _, _ = auth
     try:
         store_feedback(user_id, feedback_request.model_dump(exclude={"model_config"}))
     except Exception as e:

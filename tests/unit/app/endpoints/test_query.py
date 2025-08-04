@@ -77,7 +77,7 @@ def test_query_endpoint_handler_configuration_not_loaded(mocker):
 
     request = None
     with pytest.raises(HTTPException) as e:
-        query_endpoint_handler(request)
+        query_endpoint_handler(request, auth=["test-user", "", "token"])
         assert e.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert e.detail["response"] == "Configuration is not loaded"
 
@@ -152,7 +152,7 @@ def _test_query_endpoint_handler(mocker, store_transcript_to_file=False):
     # Assert the store_transcript function is called if transcripts are enabled
     if store_transcript_to_file:
         mock_transcript.assert_called_once_with(
-            user_id="user_id_placeholder",
+            user_id="mock_user_id",
             conversation_id=conversation_id,
             query_is_valid=True,
             query=query,
