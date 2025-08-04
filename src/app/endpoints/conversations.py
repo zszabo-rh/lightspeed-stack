@@ -23,11 +23,16 @@ conversation_id_to_agent_id: dict[str, str] = {}
 conversation_responses: dict[int | str, dict[str, Any]] = {
     200: {
         "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
-        "session_data": {
-            "session_id": "123e4567-e89b-12d3-a456-426614174000",
-            "turns": [],
-            "started_at": "2024-01-01T00:00:00Z",
-        },
+        "chat_history": [
+            {
+                "messages": [
+                    {"content": "Hi", "type": "user"},
+                    {"content": "Hello!", "type": "assistant"},
+                ],
+                "started_at": "2024-01-01T00:00:00Z",
+                "completed_at": "2024-01-01T00:00:05Z",
+            }
+        ],
     },
     404: {
         "detail": {
