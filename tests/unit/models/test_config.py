@@ -10,6 +10,7 @@ from pydantic import ValidationError
 from constants import (
     AUTH_MOD_NOOP,
     AUTH_MOD_K8S,
+    AUTH_MOD_JWK_TOKEN,
     DATA_COLLECTOR_COLLECTION_INTERVAL,
     DATA_COLLECTOR_CONNECTION_TIMEOUT,
 )
@@ -17,6 +18,7 @@ from constants import (
 from models.config import (
     AuthenticationConfiguration,
     Configuration,
+    JwkConfiguration,
     LlamaStackConfiguration,
     ServiceConfiguration,
     UserDataCollection,
@@ -680,6 +682,52 @@ def test_authentication_configuration() -> None:
     assert auth_config.skip_tls_verification is False
     assert auth_config.k8s_ca_cert_path is None
     assert auth_config.k8s_cluster_api is None
+
+
+def test_authentication_configuration_jwk_token() -> None:
+    """Test the AuthenticationConfiguration with JWK token."""
+
+    auth_config = AuthenticationConfiguration(
+        module=AUTH_MOD_JWK_TOKEN,
+        skip_tls_verification=False,
+        k8s_ca_cert_path=None,
+        k8s_cluster_api=None,
+        jwk_config=JwkConfiguration(url="http://foo.bar.baz"),
+    )
+    assert auth_config is not None
+    assert auth_config.module == AUTH_MOD_JWK_TOKEN
+    assert auth_config.skip_tls_verification is False
+    assert auth_config.k8s_ca_cert_path is None
+    assert auth_config.k8s_cluster_api is None
+
+
+def test_authentication_configuration_jwk_token_but_insufficient_config() -> None:
+    """Test the AuthenticationConfiguration with JWK token."""
+
+    with pytest.raises(ValidationError, match="JwkConfiguration"):
+        AuthenticationConfiguration(
+            module=AUTH_MOD_JWK_TOKEN,
+            skip_tls_verification=False,
+            k8s_ca_cert_path=None,
+            k8s_cluster_api=None,
+            jwk_config=JwkConfiguration(),
+        )
+
+
+def test_authentication_configuration_jwk_token_but_not_config() -> None:
+    """Test the AuthenticationConfiguration with JWK token."""
+
+    with pytest.raises(
+        ValidationError,
+        match="Value error, JWK configuration must be specified when using JWK token",
+    ):
+        AuthenticationConfiguration(
+            module=AUTH_MOD_JWK_TOKEN,
+            skip_tls_verification=False,
+            k8s_ca_cert_path=None,
+            k8s_cluster_api=None,
+            # no JwkConfiguration
+        )
 
 
 def test_authentication_configuration_supported() -> None:
