@@ -1443,6 +1443,18 @@
                         ],
                         "title": "Attachments"
                     },
+                    "no_tools": {
+                        "anyOf": [
+                            {
+                                "type": "boolean"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "No Tools",
+                        "default": false
+                    },
                     "media_type": {
                         "anyOf": [
                             {
@@ -1461,7 +1473,7 @@
                     "query"
                 ],
                 "title": "QueryRequest",
-                "description": "Model representing a request for the LLM (Language Model).\n\nAttributes:\n    query: The query string.\n    conversation_id: The optional conversation ID (UUID).\n    provider: The optional provider.\n    model: The optional model.\n    system_prompt: The optional system prompt.\n    attachments: The optional attachments.\n\nExample:\n    ```python\n    query_request = QueryRequest(query=\"Tell me about Kubernetes\")\n    ```",
+                "description": "Model representing a request for the LLM (Language Model).\n\nAttributes:\n    query: The query string.\n    conversation_id: The optional conversation ID (UUID).\n    provider: The optional provider.\n    model: The optional model.\n    system_prompt: The optional system prompt.\n    attachments: The optional attachments.\n    no_tools: Whether to bypass all tools and MCP servers (default: False).\n\nExample:\n    ```python\n    query_request = QueryRequest(query=\"Tell me about Kubernetes\")\n    ```",
                 "examples": [
                     {
                         "attachments": [
@@ -1483,6 +1495,7 @@
                         ],
                         "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
                         "model": "model-name",
+                        "no_tools": false,
                         "provider": "openai",
                         "query": "write a deployment yaml for the mongodb image",
                         "system_prompt": "You are a helpful assistant"
