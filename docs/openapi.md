@@ -727,6 +727,7 @@ Attributes:
     model: The optional model.
     system_prompt: The optional system prompt.
     attachments: The optional attachments.
+    no_tools: Whether to bypass all tools and MCP servers (default: False).
 
 Example:
     ```python
@@ -742,6 +743,7 @@ Example:
 | model |  |  |
 | system_prompt |  |  |
 | attachments |  |  |
+| no_tools |  |  |
 | media_type |  |  |
 
 
