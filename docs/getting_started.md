@@ -1693,6 +1693,10 @@ podman run -it -p 8080:8080 -v lightspeed-stack.yaml:/app-root/lightspeed-stack.
 
 ## Usage
 
+The *Lightspeed Core Stack* service exposes its own REST API endpoints:
+
+![REST API](./rest_api.svg)
+
 ### Using OpenAPI Swagger UI
 
 #### Front page
