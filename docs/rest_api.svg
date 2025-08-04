@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" height="667px" preserveAspectRatio="none" style="width:363px;height:667px;background:#FFFFFF;" version="1.1" viewBox="0 0 363 667" width="363px" zoomAndPan="magnify">
+  <defs/>
+  <g>
+    <line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="30" x2="30" y1="39.0679" y2="629.7762"/>
+    <line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="315.3153" x2="315.3153" y1="39.0679" y2="629.7762"/>
+    <rect fill="#E2E2F0" height="33.0679" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="51.6738" x="5" y="5"/>
+    <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="37.6738" x="12" y="26.9659">Client</text>
+    <rect fill="#E2E2F0" height="33.0679" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="51.6738" x="5" y="628.7762"/>
+    <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="37.6738" x="12" y="650.7421">Client</text>
+    <rect fill="#E2E2F0" height="33.0679" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="81.9557" x="275.3153" y="5"/>
+    <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="67.9557" x="282.3153" y="26.9659">API Server</text>
+    <rect fill="#E2E2F0" height="33.0679" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="81.9557" x="275.3153" y="628.7762"/>
+    <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="67.9557" x="282.3153" y="650.7421">API Server</text>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="314.2932" x2="304.2932" y1="72.7739" y2="68.7739"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="314.2932" x2="304.2932" y1="72.7739" y2="76.7739"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="30.8369" x2="315.2932" y1="72.7739" y2="72.7739"/>
+    <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="74.7371" x="37.8369" y="66.9649">GET /v1/info</text>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="31.8369" x2="41.8369" y1="104.4799" y2="100.4799"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="31.8369" x2="41.8369" y1="104.4799" y2="108.4799"/>
+    <line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="30.8369" x2="315.2932" y1="104.4799" y2="104.4799"/>
+    <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="83.8761" x="47.8369" y="98.6709">InfoResponse</text>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="314.2932" x2="304.2932" y1="136.186" y2="132.186"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="314.2932" x2="304.2932" y1="136.186" y2="140.186"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="30.8369" x2="315.2932" y1="136.186" y2="136.186"/>
+    <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="95.9401" x="37.8369" y="130.377">GET /v1/models</text>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="31.8369" x2="41.8369" y1="167.892" y2="163.892"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="31.8369" x2="41.8369" y1="167.892" y2="171.892"/>
+    <line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="30.8369" x2="315.2932" y1="167.892" y2="167.892"/>
+    <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="103.6621" x="47.8369" y="162.083">ModelsResponse</text>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="314.2932" x2="304.2932" y1="199.598" y2="195.598"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="314.2932" x2="304.2932" y1="199.598" y2="203.598"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="30.8369" x2="315.2932" y1="199.598" y2="199.598"/>
+    <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="193.2322" x="37.8369" y="193.789">POST /v1/query (QueryRequest)</text>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="31.8369" x2="41.8369" y1="231.304" y2="227.304"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="31.8369" x2="41.8369" y1="231.304" y2="235.304"/>
+    <line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="30.8369" x2="315.2932" y1="231.304" y2="231.304"/>
+    <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="96.6161" x="47.8369" y="225.495">QueryResponse</text>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="314.2932" x2="304.2932" y1="263.01" y2="259.01"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="314.2932" x2="304.2932" y1="263.01" y2="267.01"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="30.8369" x2="315.2932" y1="263.01" y2="263.01"/>
+    <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="261.4562" x="37.8369" y="257.201">POST /v1/streaming_query (QueryRequest)</text>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="31.8369" x2="41.8369" y1="294.716" y2="290.716"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="31.8369" x2="41.8369" y1="294.716" y2="298.716"/>
+    <line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="30.8369" x2="315.2932" y1="294.716" y2="294.716"/>
+    <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="159.9781" x="47.8369" y="288.907">StreamingQueryResponse</text>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="314.2932" x2="304.2932" y1="326.4221" y2="322.4221"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="314.2932" x2="304.2932" y1="326.4221" y2="330.4221"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="30.8369" x2="315.2932" y1="326.4221" y2="326.4221"/>
+    <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="233.8312" x="37.8369" y="320.6131">POST /v1/feedback (FeedbackRequest)</text>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="31.8369" x2="41.8369" y1="358.1281" y2="354.1281"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="31.8369" x2="41.8369" y1="358.1281" y2="362.1281"/>
+    <line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="30.8369" x2="315.2932" y1="358.1281" y2="358.1281"/>
+    <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="116.9741" x="47.8369" y="352.3191">FeedbackResponse</text>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="314.2932" x2="304.2932" y1="389.8341" y2="385.8341"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="314.2932" x2="304.2932" y1="389.8341" y2="393.8341"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="30.8369" x2="315.2932" y1="389.8341" y2="389.8341"/>
+    <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="155.9871" x="37.8369" y="384.0251">GET /v1/conversation/{id}</text>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="31.8369" x2="41.8369" y1="421.5401" y2="417.5401"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="31.8369" x2="41.8369" y1="421.5401" y2="425.5401"/>
+    <line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="30.8369" x2="315.2932" y1="421.5401" y2="421.5401"/>
+    <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="139.9841" x="47.8369" y="415.7311">ConversationResponse</text>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="314.2932" x2="304.2932" y1="453.2461" y2="449.2461"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="314.2932" x2="304.2932" y1="453.2461" y2="457.2461"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="30.8369" x2="315.2932" y1="453.2461" y2="453.2461"/>
+    <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="177.2812" x="37.8369" y="447.4371">DELETE /v1/conversation/{id}</text>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="31.8369" x2="41.8369" y1="484.9521" y2="480.9521"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="31.8369" x2="41.8369" y1="484.9521" y2="488.9521"/>
+    <line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="30.8369" x2="315.2932" y1="484.9521" y2="484.9521"/>
+    <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="179.5171" x="47.8369" y="479.1431">ConversationDeleteResponse</text>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="314.2932" x2="304.2932" y1="516.6582" y2="512.6582"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="314.2932" x2="304.2932" y1="516.6582" y2="520.6582"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="30.8369" x2="315.2932" y1="516.6582" y2="516.6582"/>
+    <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="85.6311" x="37.8369" y="510.8492">GET /v1/ready</text>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="31.8369" x2="41.8369" y1="548.3642" y2="544.3642"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="31.8369" x2="41.8369" y1="548.3642" y2="552.3642"/>
+    <line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="30.8369" x2="315.2932" y1="548.3642" y2="548.3642"/>
+    <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="120.9781" x="47.8369" y="542.5552">ReadinessResponse</text>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="314.2932" x2="304.2932" y1="580.0702" y2="576.0702"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="314.2932" x2="304.2932" y1="580.0702" y2="584.0702"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="30.8369" x2="315.2932" y1="580.0702" y2="580.0702"/>
+    <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="71.6561" x="37.8369" y="574.2612">GET /v1/live</text>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="31.8369" x2="41.8369" y1="611.7762" y2="607.7762"/>
+    <line style="stroke:#181818;stroke-width:1.0;" x1="31.8369" x2="41.8369" y1="611.7762" y2="615.7762"/>
+    <line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="30.8369" x2="315.2932" y1="611.7762" y2="611.7762"/>
+    <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="111.0201" x="47.8369" y="605.9672">LivenessResponse</text>
+    <!--SRC=[fP312u8m5CRl-oj69pk4TFKWH5a8HQRUO-ah7jbcsn8a-jzRMMI7eT5fs_Tzx_UnLpAfCSEISKsd1GBNf6n9WqaKqWHa1N90I1CO-NvRzkWYIAbRZLtaUq7QriX4cncFXiQCGPM2A-WadKGEXRAoLa-xanQjamPtle2igRDv736Obz93A_oLwijMMW8x8JziVsf9tcC_rkq1yXtBZjIPlswTLPzWp-rdWXj1COs2krVCRrRqj9NinC-2PP06VpJCe00DlRzX5fpNLd1iNEIWL6zUWHLOSKjZVj7k]-->
+  </g>
+</svg>
