@@ -31,9 +31,17 @@ class Attachment(BaseModel):
     ```
     """
 
-    attachment_type: str
-    content_type: str
-    content: str
+    attachment_type: str = Field(
+        description="The attachment type, like 'log', 'configuration' etc.",
+        examples=["log"],
+    )
+    content_type: str = Field(
+        description="The content type as defined in MIME standard",
+        examples=["text/plain"],
+    )
+    content: str = Field(
+        description="The actual attachment content", examples=["warning: quota exceed"]
+    )
 
     # provides examples for /docs endpoint
     model_config = {
