@@ -7,7 +7,6 @@ from llama_stack_client import APIConnectionError, NotFoundError
 from app.endpoints.conversations import (
     get_conversation_endpoint_handler,
     delete_conversation_endpoint_handler,
-    conversation_id_to_agent_id,
     simplify_session_data,
 )
 from models.responses import ConversationResponse, ConversationDeleteResponse
@@ -15,7 +14,6 @@ from configuration import AppConfig
 
 MOCK_AUTH = ("mock_user_id", "mock_username", "mock_token")
 VALID_CONVERSATION_ID = "123e4567-e89b-12d3-a456-426614174000"
-VALID_AGENT_ID = "agent_123"
 INVALID_CONVERSATION_ID = "invalid-id"
 
 
@@ -46,16 +44,6 @@ def setup_configuration_fixture():
     cfg = AppConfig()
     cfg.init_from_dict(config_dict)
     return cfg
-
-
-@pytest.fixture(autouse=True)
-def setup_conversation_mapping():
-    """Set up and clean up the conversation ID to agent ID mapping."""
-    # Clear the mapping before each test
-    conversation_id_to_agent_id.clear()
-    yield
-    # Clean up after each test
-    conversation_id_to_agent_id.clear()
 
 
 @pytest.fixture(name="mock_session_data")
@@ -127,19 +115,14 @@ class TestSimplifySessionData:
     """Test cases for the simplify_session_data function."""
 
     def test_simplify_session_data_with_model_dump(
-        self, mock_session_data, expected_chat_history, mocker
+        self, mock_session_data, expected_chat_history
     ):
-        """Test simplify_session_data with session data that has model_dump method."""
-        # Create a mock object with model_dump method
-        mock_session_obj = mocker.Mock()
-        mock_session_obj.model_dump.return_value = mock_session_data
-
-        result = simplify_session_data(mock_session_obj)
+        """Test simplify_session_data with session data."""
+        result = simplify_session_data(mock_session_data)
 
         assert result == expected_chat_history
-        mock_session_obj.model_dump.assert_called_once()
 
-    def test_simplify_session_data_empty_turns(self, mocker):
+    def test_simplify_session_data_empty_turns(self):
         """Test simplify_session_data with empty turns."""
         session_data = {
             "session_id": VALID_CONVERSATION_ID,
@@ -147,14 +130,11 @@ class TestSimplifySessionData:
             "turns": [],
         }
 
-        mock_session_obj = mocker.Mock()
-        mock_session_obj.model_dump.return_value = session_data
-
-        result = simplify_session_data(mock_session_obj)
+        result = simplify_session_data(session_data)
 
         assert not result
 
-    def test_simplify_session_data_filters_unwanted_fields(self, mocker):
+    def test_simplify_session_data_filters_unwanted_fields(self):
         """Test that simplify_session_data properly filters out unwanted fields."""
         session_data = {
             "session_id": VALID_CONVERSATION_ID,
@@ -182,10 +162,7 @@ class TestSimplifySessionData:
             ],
         }
 
-        mock_session_obj = mocker.Mock()
-        mock_session_obj.model_dump.return_value = session_data
-
-        result = simplify_session_data(mock_session_obj)
+        result = simplify_session_data(session_data)
 
         expected = [
             {
@@ -226,31 +203,14 @@ class TestGetConversationEndpoint:
         assert "Invalid conversation ID format" in exc_info.value.detail["response"]
         assert INVALID_CONVERSATION_ID in exc_info.value.detail["cause"]
 
-    def test_conversation_not_found_in_mapping(self, mocker, setup_configuration):
-        """Test the endpoint when conversation ID is not in the mapping."""
-        mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
-        mocker.patch("app.endpoints.conversations.check_suid", return_value=True)
-
-        with pytest.raises(HTTPException) as exc_info:
-            get_conversation_endpoint_handler(VALID_CONVERSATION_ID, _auth=MOCK_AUTH)
-
-        assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
-        assert "conversation ID not found" in exc_info.value.detail["response"]
-        assert VALID_CONVERSATION_ID in exc_info.value.detail["cause"]
-
     def test_llama_stack_connection_error(self, mocker, setup_configuration):
         """Test the endpoint when LlamaStack connection fails."""
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
         mocker.patch("app.endpoints.conversations.check_suid", return_value=True)
 
-        # Set up conversation mapping
-        conversation_id_to_agent_id[VALID_CONVERSATION_ID] = VALID_AGENT_ID
-
         # Mock LlamaStackClientHolder to raise APIConnectionError
         mock_client = mocker.Mock()
-        mock_client.agents.session.retrieve.side_effect = APIConnectionError(
-            request=None
-        )
+        mock_client.agents.session.list.side_effect = APIConnectionError(request=None)
         mock_client_holder = mocker.patch(
             "app.endpoints.conversations.LlamaStackClientHolder"
         )
@@ -268,12 +228,9 @@ class TestGetConversationEndpoint:
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
         mocker.patch("app.endpoints.conversations.check_suid", return_value=True)
 
-        # Set up conversation mapping
-        conversation_id_to_agent_id[VALID_CONVERSATION_ID] = VALID_AGENT_ID
-
         # Mock LlamaStackClientHolder to raise NotFoundError
         mock_client = mocker.Mock()
-        mock_client.agents.session.retrieve.side_effect = NotFoundError(
+        mock_client.agents.session.list.side_effect = NotFoundError(
             message="Session not found", response=mocker.Mock(request=None), body=None
         )
         mock_client_holder = mocker.patch(
@@ -293,9 +250,6 @@ class TestGetConversationEndpoint:
         """Test the endpoint when session retrieval raises an exception."""
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
         mocker.patch("app.endpoints.conversations.check_suid", return_value=True)
-
-        # Set up conversation mapping
-        conversation_id_to_agent_id[VALID_CONVERSATION_ID] = VALID_AGENT_ID
 
         # Mock LlamaStackClientHolder to raise a general exception
         mock_client = mocker.Mock()
@@ -323,16 +277,15 @@ class TestGetConversationEndpoint:
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
         mocker.patch("app.endpoints.conversations.check_suid", return_value=True)
 
-        # Set up conversation mapping
-        conversation_id_to_agent_id[VALID_CONVERSATION_ID] = VALID_AGENT_ID
-
         # Mock session data with model_dump method
         mock_session_obj = mocker.Mock()
         mock_session_obj.model_dump.return_value = mock_session_data
 
         # Mock LlamaStackClientHolder
         mock_client = mocker.Mock()
-        mock_client.agents.session.retrieve.return_value = mock_session_obj
+        mock_client.agents.session.list.return_value = mocker.Mock(
+            data=[mock_session_data]
+        )
         mock_client_holder = mocker.patch(
             "app.endpoints.conversations.LlamaStackClientHolder"
         )
@@ -345,8 +298,8 @@ class TestGetConversationEndpoint:
         assert isinstance(response, ConversationResponse)
         assert response.conversation_id == VALID_CONVERSATION_ID
         assert response.chat_history == expected_chat_history
-        mock_client.agents.session.retrieve.assert_called_once_with(
-            agent_id=VALID_AGENT_ID, session_id=VALID_CONVERSATION_ID
+        mock_client.agents.session.list.assert_called_once_with(
+            agent_id=VALID_CONVERSATION_ID
         )
 
 
@@ -377,25 +330,10 @@ class TestDeleteConversationEndpoint:
         assert "Invalid conversation ID format" in exc_info.value.detail["response"]
         assert INVALID_CONVERSATION_ID in exc_info.value.detail["cause"]
 
-    def test_conversation_not_found_in_mapping(self, mocker, setup_configuration):
-        """Test the endpoint when conversation ID is not in the mapping."""
-        mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
-        mocker.patch("app.endpoints.conversations.check_suid", return_value=True)
-
-        with pytest.raises(HTTPException) as exc_info:
-            delete_conversation_endpoint_handler(VALID_CONVERSATION_ID, _auth=MOCK_AUTH)
-
-        assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
-        assert "conversation ID not found" in exc_info.value.detail["response"]
-        assert VALID_CONVERSATION_ID in exc_info.value.detail["cause"]
-
     def test_llama_stack_connection_error(self, mocker, setup_configuration):
         """Test the endpoint when LlamaStack connection fails."""
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
         mocker.patch("app.endpoints.conversations.check_suid", return_value=True)
-
-        # Set up conversation mapping
-        conversation_id_to_agent_id[VALID_CONVERSATION_ID] = VALID_AGENT_ID
 
         # Mock LlamaStackClientHolder to raise APIConnectionError
         mock_client = mocker.Mock()
@@ -415,9 +353,6 @@ class TestDeleteConversationEndpoint:
         """Test the endpoint when LlamaStack returns NotFoundError."""
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
         mocker.patch("app.endpoints.conversations.check_suid", return_value=True)
-
-        # Set up conversation mapping
-        conversation_id_to_agent_id[VALID_CONVERSATION_ID] = VALID_AGENT_ID
 
         # Mock LlamaStackClientHolder to raise NotFoundError
         mock_client = mocker.Mock()
@@ -441,9 +376,6 @@ class TestDeleteConversationEndpoint:
         """Test the endpoint when session deletion raises an exception."""
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
         mocker.patch("app.endpoints.conversations.check_suid", return_value=True)
-
-        # Set up conversation mapping
-        conversation_id_to_agent_id[VALID_CONVERSATION_ID] = VALID_AGENT_ID
 
         # Mock LlamaStackClientHolder to raise a general exception
         mock_client = mocker.Mock()
@@ -470,9 +402,6 @@ class TestDeleteConversationEndpoint:
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
         mocker.patch("app.endpoints.conversations.check_suid", return_value=True)
 
-        # Set up conversation mapping
-        conversation_id_to_agent_id[VALID_CONVERSATION_ID] = VALID_AGENT_ID
-
         # Mock LlamaStackClientHolder
         mock_client = mocker.Mock()
         mock_client.agents.session.delete.return_value = None  # Successful deletion
@@ -490,5 +419,5 @@ class TestDeleteConversationEndpoint:
         assert response.success is True
         assert response.response == "Conversation deleted successfully"
         mock_client.agents.session.delete.assert_called_once_with(
-            agent_id=VALID_AGENT_ID, session_id=VALID_CONVERSATION_ID
+            agent_id=VALID_CONVERSATION_ID, session_id=VALID_CONVERSATION_ID
         )

@@ -41,7 +41,6 @@ from app.endpoints.streaming_query import (
     retrieve_response,
     stream_build_event,
     get_agent,
-    _agent_cache,
 )
 
 from models.requests import QueryRequest, Attachment
@@ -113,8 +112,6 @@ def prepare_agent_mocks_fixture(mocker):
     mock_client = mocker.AsyncMock()
     mock_agent = mocker.AsyncMock()
     yield mock_client, mock_agent
-    # cleanup agent cache after tests
-    _agent_cache.clear()
 
 
 @pytest.mark.asyncio
@@ -317,7 +314,7 @@ async def test_retrieve_response_vector_db_available(prepare_agent_mocks, mocker
     mocker.patch("app.endpoints.streaming_query.configuration", mock_config)
     mocker.patch(
         "app.endpoints.streaming_query.get_agent",
-        return_value=(mock_agent, "test_conversation_id"),
+        return_value=(mock_agent, "test_conversation_id", "test_session_id"),
     )
 
     query_request = QueryRequest(query="What is OpenStack?")
@@ -334,7 +331,7 @@ async def test_retrieve_response_vector_db_available(prepare_agent_mocks, mocker
     assert conversation_id == "test_conversation_id"
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(role="user", content="What is OpenStack?")],
-        session_id="test_conversation_id",
+        session_id="test_session_id",
         documents=[],
         stream=True,  # Should be True for streaming endpoint
         toolgroups=get_rag_toolgroups(["VectorDB-1"]),
@@ -354,7 +351,7 @@ async def test_retrieve_response_no_available_shields(prepare_agent_mocks, mocke
     mocker.patch("app.endpoints.streaming_query.configuration", mock_config)
     mocker.patch(
         "app.endpoints.streaming_query.get_agent",
-        return_value=(mock_agent, "test_conversation_id"),
+        return_value=(mock_agent, "test_conversation_id", "test_session_id"),
     )
 
     query_request = QueryRequest(query="What is OpenStack?")
@@ -371,7 +368,7 @@ async def test_retrieve_response_no_available_shields(prepare_agent_mocks, mocke
     assert conversation_id == "test_conversation_id"
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(role="user", content="What is OpenStack?")],
-        session_id="test_conversation_id",
+        session_id="test_session_id",
         documents=[],
         stream=True,  # Should be True for streaming endpoint
         toolgroups=None,
@@ -404,7 +401,7 @@ async def test_retrieve_response_one_available_shield(prepare_agent_mocks, mocke
     mocker.patch("app.endpoints.streaming_query.configuration", mock_config)
     mocker.patch(
         "app.endpoints.streaming_query.get_agent",
-        return_value=(mock_agent, "test_conversation_id"),
+        return_value=(mock_agent, "test_conversation_id", "test_session_id"),
     )
 
     query_request = QueryRequest(query="What is OpenStack?")
@@ -419,7 +416,7 @@ async def test_retrieve_response_one_available_shield(prepare_agent_mocks, mocke
     assert conversation_id == "test_conversation_id"
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(role="user", content="What is OpenStack?")],
-        session_id="test_conversation_id",
+        session_id="test_session_id",
         documents=[],
         stream=True,  # Should be True for streaming endpoint
         toolgroups=None,
@@ -455,7 +452,7 @@ async def test_retrieve_response_two_available_shields(prepare_agent_mocks, mock
     mocker.patch("app.endpoints.streaming_query.configuration", mock_config)
     mocker.patch(
         "app.endpoints.streaming_query.get_agent",
-        return_value=(mock_agent, "test_conversation_id"),
+        return_value=(mock_agent, "test_conversation_id", "test_session_id"),
     )
 
     query_request = QueryRequest(query="What is OpenStack?")
@@ -470,7 +467,7 @@ async def test_retrieve_response_two_available_shields(prepare_agent_mocks, mock
     assert conversation_id == "test_conversation_id"
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(role="user", content="What is OpenStack?")],
-        session_id="test_conversation_id",
+        session_id="test_session_id",
         documents=[],
         stream=True,  # Should be True for streaming endpoint
         toolgroups=None,
@@ -508,7 +505,7 @@ async def test_retrieve_response_four_available_shields(prepare_agent_mocks, moc
     mocker.patch("app.endpoints.streaming_query.configuration", mock_config)
     mock_get_agent = mocker.patch(
         "app.endpoints.streaming_query.get_agent",
-        return_value=(mock_agent, "test_conversation_id"),
+        return_value=(mock_agent, "test_conversation_id", "test_session_id"),
     )
 
     query_request = QueryRequest(query="What is OpenStack?")
@@ -535,7 +532,7 @@ async def test_retrieve_response_four_available_shields(prepare_agent_mocks, moc
 
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(role="user", content="What is OpenStack?")],
-        session_id="test_conversation_id",
+        session_id="test_session_id",
         documents=[],
         stream=True,  # Should be True for streaming endpoint
         toolgroups=None,
@@ -563,7 +560,7 @@ async def test_retrieve_response_with_one_attachment(prepare_agent_mocks, mocker
     ]
     mocker.patch(
         "app.endpoints.streaming_query.get_agent",
-        return_value=(mock_agent, "test_conversation_id"),
+        return_value=(mock_agent, "test_conversation_id", "test_session_id"),
     )
 
     query_request = QueryRequest(query="What is OpenStack?", attachments=attachments)
@@ -578,7 +575,7 @@ async def test_retrieve_response_with_one_attachment(prepare_agent_mocks, mocker
     assert conversation_id == "test_conversation_id"
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(role="user", content="What is OpenStack?")],
-        session_id="test_conversation_id",
+        session_id="test_session_id",
         stream=True,  # Should be True for streaming endpoint
         documents=[
             {
@@ -616,7 +613,7 @@ async def test_retrieve_response_with_two_attachments(prepare_agent_mocks, mocke
     ]
     mocker.patch(
         "app.endpoints.streaming_query.get_agent",
-        return_value=(mock_agent, "test_conversation_id"),
+        return_value=(mock_agent, "test_conversation_id", "test_session_id"),
     )
 
     query_request = QueryRequest(query="What is OpenStack?", attachments=attachments)
@@ -631,7 +628,7 @@ async def test_retrieve_response_with_two_attachments(prepare_agent_mocks, mocke
     assert conversation_id == "test_conversation_id"
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(role="user", content="What is OpenStack?")],
-        session_id="test_conversation_id",
+        session_id="test_session_id",
         stream=True,  # Should be True for streaming endpoint
         documents=[
             {
@@ -1017,7 +1014,7 @@ async def test_retrieve_response_with_mcp_servers(prepare_agent_mocks, mocker):
     mocker.patch("app.endpoints.streaming_query.configuration", mock_config)
     mock_get_agent = mocker.patch(
         "app.endpoints.streaming_query.get_agent",
-        return_value=(mock_agent, "test_conversation_id"),
+        return_value=(mock_agent, "test_conversation_id", "test_session_id"),
     )
 
     query_request = QueryRequest(query="What is OpenStack?")
@@ -1060,7 +1057,7 @@ async def test_retrieve_response_with_mcp_servers(prepare_agent_mocks, mocker):
     # Check that create_turn was called with the correct parameters
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(role="user", content="What is OpenStack?")],
-        session_id="test_conversation_id",
+        session_id="test_session_id",
         documents=[],
         stream=True,
         toolgroups=[mcp_server.name for mcp_server in mcp_servers],
@@ -1085,7 +1082,7 @@ async def test_retrieve_response_with_mcp_servers_empty_token(
     mocker.patch("app.endpoints.streaming_query.configuration", mock_config)
     mock_get_agent = mocker.patch(
         "app.endpoints.streaming_query.get_agent",
-        return_value=(mock_agent, "test_conversation_id"),
+        return_value=(mock_agent, "test_conversation_id", "test_session_id"),
     )
 
     query_request = QueryRequest(query="What is OpenStack?")
@@ -1119,7 +1116,7 @@ async def test_retrieve_response_with_mcp_servers_empty_token(
     # Check that create_turn was called with the correct parameters
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(role="user", content="What is OpenStack?")],
-        session_id="test_conversation_id",
+        session_id="test_session_id",
         documents=[],
         stream=True,
         toolgroups=[mcp_server.name for mcp_server in mcp_servers],
@@ -1150,7 +1147,7 @@ async def test_retrieve_response_with_mcp_servers_and_mcp_headers(mocker):
     mocker.patch("app.endpoints.streaming_query.configuration", mock_config)
     mock_get_agent = mocker.patch(
         "app.endpoints.streaming_query.get_agent",
-        return_value=(mock_agent, "test_conversation_id"),
+        return_value=(mock_agent, "test_conversation_id", "test_session_id"),
     )
 
     query_request = QueryRequest(query="What is OpenStack?")
@@ -1206,7 +1203,7 @@ async def test_retrieve_response_with_mcp_servers_and_mcp_headers(mocker):
     # Check that create_turn was called with the correct parameters
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(role="user", content="What is OpenStack?")],
-        session_id="test_conversation_id",
+        session_id="test_session_id",
         documents=[],
         stream=True,
         toolgroups=[mcp_server.name for mcp_server in mcp_servers],
@@ -1214,16 +1211,17 @@ async def test_retrieve_response_with_mcp_servers_and_mcp_headers(mocker):
 
 
 @pytest.mark.asyncio
-async def test_get_agent_cache_hit(prepare_agent_mocks):
-    """Test get_agent function when agent exists in cache."""
+async def test_get_agent_with_conversation_id(prepare_agent_mocks, mocker):
+    """Test get_agent function when agent exists in llama stack."""
 
     mock_client, mock_agent = prepare_agent_mocks
 
-    # Set up cache with existing agent
     conversation_id = "test_conversation_id"
-    _agent_cache[conversation_id] = mock_agent
 
-    result_agent, result_conversation_id = await get_agent(
+    # Mock Agent class
+    mocker.patch("app.endpoints.streaming_query.AsyncAgent", return_value=mock_agent)
+
+    result_agent, result_conversation_id, _ = await get_agent(
         client=mock_client,
         model_id="test_model",
         system_prompt="test_prompt",
@@ -1232,18 +1230,22 @@ async def test_get_agent_cache_hit(prepare_agent_mocks):
         conversation_id=conversation_id,
     )
 
-    # Assert cached agent is returned
+    # Assert the same agent is returned
     assert result_agent == mock_agent
     assert result_conversation_id == conversation_id
+    assert conversation_id == mock_agent._agent_id  # pylint: disable=protected-access
 
 
 @pytest.mark.asyncio
-async def test_get_agent_cache_miss_with_conversation_id(
+async def test_get_agent_with_conversation_id_and_no_agent_in_llama_stack(
     setup_configuration, prepare_agent_mocks, mocker
 ):
-    """Test get_agent function when conversation_id is provided but agent not in cache."""
+    """Test get_agent function when conversation_id is provided but agent not in llama stack."""
 
     mock_client, mock_agent = prepare_agent_mocks
+    mock_client.agents.retrieve.side_effect = ValueError(
+        "fake not finding existing agent"
+    )
     mock_agent.create_session.return_value = "new_session_id"
 
     # Mock Agent class
@@ -1267,8 +1269,8 @@ async def test_get_agent_cache_miss_with_conversation_id(
     )
     mocker.patch("app.endpoints.streaming_query.configuration", setup_configuration)
 
-    # Call function with conversation_id but no cached agent
-    result_agent, result_conversation_id = await get_agent(
+    # Call function with conversation_id
+    result_agent, result_conversation_id, result_session_id = await get_agent(
         client=mock_client,
         model_id="test_model",
         system_prompt="test_prompt",
@@ -1279,7 +1281,9 @@ async def test_get_agent_cache_miss_with_conversation_id(
 
     # Assert new agent is created
     assert result_agent == mock_agent
-    assert result_conversation_id == "new_session_id"
+    assert result_conversation_id == result_agent.agent_id
+    assert "non_existent_conversation_id" != result_agent.agent_id
+    assert result_session_id == "new_session_id"
 
     # Verify Agent was created with correct parameters
     mock_agent_class.assert_called_once_with(
@@ -1291,9 +1295,6 @@ async def test_get_agent_cache_miss_with_conversation_id(
         tool_parser=None,
         enable_session_persistence=True,
     )
-
-    # Verify agent was stored in cache
-    assert _agent_cache["new_session_id"] == mock_agent
 
 
 @pytest.mark.asyncio
@@ -1327,7 +1328,7 @@ async def test_get_agent_no_conversation_id(
     mocker.patch("app.endpoints.streaming_query.configuration", setup_configuration)
 
     # Call function with None conversation_id
-    result_agent, result_conversation_id = await get_agent(
+    result_agent, result_conversation_id, result_session_id = await get_agent(
         client=mock_client,
         model_id="test_model",
         system_prompt="test_prompt",
@@ -1338,7 +1339,8 @@ async def test_get_agent_no_conversation_id(
 
     # Assert new agent is created
     assert result_agent == mock_agent
-    assert result_conversation_id == "new_session_id"
+    assert result_conversation_id == result_agent.agent_id
+    assert result_session_id == "new_session_id"
 
     # Verify Agent was created with correct parameters
     mock_agent_class.assert_called_once_with(
@@ -1350,9 +1352,6 @@ async def test_get_agent_no_conversation_id(
         tool_parser=None,
         enable_session_persistence=True,
     )
-
-    # Verify agent was stored in cache
-    assert _agent_cache["new_session_id"] == mock_agent
 
 
 @pytest.mark.asyncio
@@ -1386,7 +1385,7 @@ async def test_get_agent_empty_shields(
     mocker.patch("app.endpoints.streaming_query.configuration", setup_configuration)
 
     # Call function with empty shields list
-    result_agent, result_conversation_id = await get_agent(
+    result_agent, result_conversation_id, result_session_id = await get_agent(
         client=mock_client,
         model_id="test_model",
         system_prompt="test_prompt",
@@ -1397,7 +1396,8 @@ async def test_get_agent_empty_shields(
 
     # Assert new agent is created
     assert result_agent == mock_agent
-    assert result_conversation_id == "new_session_id"
+    assert result_conversation_id == result_agent.agent_id
+    assert result_session_id == "new_session_id"
 
     # Verify Agent was created with empty shields
     mock_agent_class.assert_called_once_with(
@@ -1444,7 +1444,7 @@ async def test_get_agent_multiple_mcp_servers(
     mocker.patch("app.endpoints.streaming_query.configuration", setup_configuration)
 
     # Call function
-    result_agent, result_conversation_id = await get_agent(
+    result_agent, result_conversation_id, result_session_id = await get_agent(
         client=mock_client,
         model_id="test_model",
         system_prompt="test_prompt",
@@ -1455,7 +1455,8 @@ async def test_get_agent_multiple_mcp_servers(
 
     # Assert new agent is created
     assert result_agent == mock_agent
-    assert result_conversation_id == "new_session_id"
+    assert result_conversation_id == result_agent.agent_id
+    assert result_session_id == "new_session_id"
 
     # Verify Agent was created with tools from both MCP servers
     mock_agent_class.assert_called_once_with(
@@ -1556,7 +1557,7 @@ async def test_auth_tuple_unpacking_in_streaming_query_endpoint_handler(mocker):
         "app.endpoints.streaming_query.retrieve_user_id", return_value="user123"
     )
 
-    _ = await streaming_query_endpoint_handler(
+    await streaming_query_endpoint_handler(
         None,
         QueryRequest(query="test query"),
         auth=("user123", "username", "auth_token_123"),
@@ -1669,7 +1670,7 @@ async def test_retrieve_response_no_tools_bypasses_mcp_and_rag(
     mocker.patch("app.endpoints.streaming_query.configuration", mock_config)
     mocker.patch(
         "app.endpoints.streaming_query.get_agent",
-        return_value=(mock_agent, "fake_session_id"),
+        return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
     )
 
     query_request = QueryRequest(query="What is OpenStack?", no_tools=True)
@@ -1681,7 +1682,7 @@ async def test_retrieve_response_no_tools_bypasses_mcp_and_rag(
     )
 
     assert response is not None
-    assert conversation_id == "fake_session_id"
+    assert conversation_id == "fake_conversation_id"
 
     # Verify that agent.extra_headers is empty (no MCP headers)
     assert mock_agent.extra_headers == {}
@@ -1719,7 +1720,7 @@ async def test_retrieve_response_no_tools_false_preserves_functionality(
     mocker.patch("app.endpoints.streaming_query.configuration", mock_config)
     mocker.patch(
         "app.endpoints.streaming_query.get_agent",
-        return_value=(mock_agent, "fake_session_id"),
+        return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
     )
 
     query_request = QueryRequest(query="What is OpenStack?", no_tools=False)
@@ -1731,7 +1732,7 @@ async def test_retrieve_response_no_tools_false_preserves_functionality(
     )
 
     assert response is not None
-    assert conversation_id == "fake_session_id"
+    assert conversation_id == "fake_conversation_id"
 
     # Verify that agent.extra_headers contains MCP headers
     expected_extra_headers = {
@@ -1785,7 +1786,7 @@ async def test_get_agent_no_tools_no_parser(
     mocker.patch("app.endpoints.streaming_query.configuration", setup_configuration)
 
     # Call function with no_tools=True
-    result_agent, result_conversation_id = await get_agent(
+    result_agent, result_conversation_id, result_session_id = await get_agent(
         client=mock_client,
         model_id="test_model",
         system_prompt="test_prompt",
@@ -1797,7 +1798,8 @@ async def test_get_agent_no_tools_no_parser(
 
     # Assert new agent is created
     assert result_agent == mock_agent
-    assert result_conversation_id == "new_session_id"
+    assert result_conversation_id == result_agent.agent_id
+    assert result_session_id == "new_session_id"
 
     # Verify Agent was created with tool_parser=None
     mock_agent_class.assert_called_once_with(
@@ -1848,7 +1850,7 @@ async def test_get_agent_no_tools_false_preserves_parser(
     mocker.patch("app.endpoints.streaming_query.configuration", setup_configuration)
 
     # Call function with no_tools=False
-    result_agent, result_conversation_id = await get_agent(
+    result_agent, result_conversation_id, result_session_id = await get_agent(
         client=mock_client,
         model_id="test_model",
         system_prompt="test_prompt",
@@ -1860,7 +1862,8 @@ async def test_get_agent_no_tools_false_preserves_parser(
 
     # Assert new agent is created
     assert result_agent == mock_agent
-    assert result_conversation_id == "new_session_id"
+    assert result_conversation_id == result_agent.agent_id
+    assert result_session_id == "new_session_id"
 
     # Verify Agent was created with the proper tool_parser
     mock_agent_class.assert_called_once_with(
