@@ -73,6 +73,8 @@ async def get_agent(
         enable_session_persistence=True,
     )
 
+    await agent.initialize()
+
     if existing_agent_id and conversation_id:
         orphan_agent_id = agent.agent_id
         agent._agent_id = conversation_id  # type: ignore[assignment]  # pylint: disable=protected-access
