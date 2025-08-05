@@ -634,15 +634,27 @@
                 "properties": {
                     "attachment_type": {
                         "type": "string",
-                        "title": "Attachment Type"
+                        "title": "Attachment Type",
+                        "description": "The attachment type, like 'log', 'configuration' etc.",
+                        "examples": [
+                            "log"
+                        ]
                     },
                     "content_type": {
                         "type": "string",
-                        "title": "Content Type"
+                        "title": "Content Type",
+                        "description": "The content type as defined in MIME standard",
+                        "examples": [
+                            "text/plain"
+                        ]
                     },
                     "content": {
                         "type": "string",
-                        "title": "Content"
+                        "title": "Content",
+                        "description": "The actual attachment content",
+                        "examples": [
+                            "warning: quota exceed"
+                        ]
                     }
                 },
                 "type": "object",
