@@ -1,6 +1,5 @@
 """Handler for REST API call to provide answer to query."""
 
-from contextlib import suppress
 from datetime import datetime, UTC
 import json
 import logging
@@ -8,9 +7,8 @@ import os
 from pathlib import Path
 from typing import Annotated, Any
 
-from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client import APIConnectionError
-from llama_stack_client import LlamaStackClient  # type: ignore
+from llama_stack_client import AsyncLlamaStackClient  # type: ignore
 from llama_stack_client.types import UserMessage, Shield  # type: ignore
 from llama_stack_client.types.agents.turn_create_params import (
     ToolgroupAgentToolGroupWithArgs,
@@ -20,18 +18,17 @@ from llama_stack_client.types.model_list_response import ModelListResponse
 
 from fastapi import APIRouter, HTTPException, status, Depends
 
-from client import LlamaStackClientHolder
+from auth import get_auth_dependency
+from auth.interface import AuthTuple
+from client import AsyncLlamaStackClientHolder
 from configuration import configuration
 import metrics
 from models.responses import QueryResponse, UnauthorizedResponse, ForbiddenResponse
 from models.requests import QueryRequest, Attachment
 import constants
-from auth import get_auth_dependency
-from auth.interface import AuthTuple
-from utils.endpoints import check_configuration_loaded, get_system_prompt
+from utils.endpoints import check_configuration_loaded, get_agent, get_system_prompt
 from utils.mcp_headers import mcp_headers_dependency, handle_mcp_headers_with_toolgroups
 from utils.suid import get_suid
-from utils.types import GraniteToolParser
 
 logger = logging.getLogger("app.endpoints.handlers")
 router = APIRouter(tags=["query"])
@@ -68,53 +65,8 @@ def is_transcripts_enabled() -> bool:
     return configuration.user_data_collection_configuration.transcripts_enabled
 
 
-def get_agent(  # pylint: disable=too-many-arguments,too-many-positional-arguments
-    client: LlamaStackClient,
-    model_id: str,
-    system_prompt: str,
-    available_input_shields: list[str],
-    available_output_shields: list[str],
-    conversation_id: str | None,
-    no_tools: bool = False,
-) -> tuple[Agent, str, str]:
-    """Get existing agent or create a new one with session persistence."""
-    existing_agent_id = None
-    if conversation_id:
-        with suppress(ValueError):
-            existing_agent_id = client.agents.retrieve(
-                agent_id=conversation_id
-            ).agent_id
-
-    logger.debug("Creating new agent")
-    # TODO(lucasagomes): move to ReActAgent
-    agent = Agent(
-        client,
-        model=model_id,
-        instructions=system_prompt,
-        input_shields=available_input_shields if available_input_shields else [],
-        output_shields=available_output_shields if available_output_shields else [],
-        tool_parser=None if no_tools else GraniteToolParser.get_parser(model_id),
-        enable_session_persistence=True,
-    )
-
-    agent.initialize()
-
-    if existing_agent_id and conversation_id:
-        orphan_agent_id = agent.agent_id
-        agent.agent_id = conversation_id
-        client.agents.delete(agent_id=orphan_agent_id)
-        sessions_response = client.agents.session.list(agent_id=conversation_id)
-        logger.info("session response: %s", sessions_response)
-        session_id = str(sessions_response.data[0]["session_id"])
-    else:
-        conversation_id = agent.agent_id
-        session_id = agent.create_session(get_suid())
-
-    return agent, conversation_id, session_id
-
-
 @router.post("/query", responses=query_response)
-def query_endpoint_handler(
+async def query_endpoint_handler(
     query_request: QueryRequest,
     auth: Annotated[AuthTuple, Depends(auth_dependency)],
     mcp_headers: dict[str, dict[str, str]] = Depends(mcp_headers_dependency),
@@ -129,11 +81,11 @@ def query_endpoint_handler(
 
     try:
         # try to get Llama Stack client
-        client = LlamaStackClientHolder().get_client()
+        client = AsyncLlamaStackClientHolder().get_client()
         model_id, provider_id = select_model_and_provider_id(
-            client.models.list(), query_request
+            await client.models.list(), query_request
         )
-        response, conversation_id = retrieve_response(
+        response, conversation_id = await retrieve_response(
             client,
             model_id,
             query_request,
@@ -253,8 +205,8 @@ def is_input_shield(shield: Shield) -> bool:
     return _is_inout_shield(shield) or not is_output_shield(shield)
 
 
-def retrieve_response(  # pylint: disable=too-many-locals
-    client: LlamaStackClient,
+async def retrieve_response(  # pylint: disable=too-many-locals
+    client: AsyncLlamaStackClient,
     model_id: str,
     query_request: QueryRequest,
     token: str,
@@ -262,10 +214,12 @@ def retrieve_response(  # pylint: disable=too-many-locals
 ) -> tuple[str, str]:
     """Retrieve response from LLMs and agents."""
     available_input_shields = [
-        shield.identifier for shield in filter(is_input_shield, client.shields.list())
+        shield.identifier
+        for shield in filter(is_input_shield, await client.shields.list())
     ]
     available_output_shields = [
-        shield.identifier for shield in filter(is_output_shield, client.shields.list())
+        shield.identifier
+        for shield in filter(is_output_shield, await client.shields.list())
     ]
     if not available_input_shields and not available_output_shields:
         logger.info("No available shields. Disabling safety")
@@ -284,7 +238,7 @@ def retrieve_response(  # pylint: disable=too-many-locals
     if query_request.attachments:
         validate_attachments_metadata(query_request.attachments)
 
-    agent, conversation_id, session_id = get_agent(
+    agent, conversation_id, session_id = await get_agent(
         client,
         model_id,
         system_prompt,
@@ -294,6 +248,7 @@ def retrieve_response(  # pylint: disable=too-many-locals
         query_request.no_tools or False,
     )
 
+    logger.debug("Conversation ID: %s, session ID: %s", conversation_id, session_id)
     # bypass tools and MCP servers if no_tools is True
     if query_request.no_tools:
         mcp_headers = {}
@@ -318,7 +273,9 @@ def retrieve_response(  # pylint: disable=too-many-locals
             ),
         }
 
-        vector_db_ids = [vector_db.identifier for vector_db in client.vector_dbs.list()]
+        vector_db_ids = [
+            vector_db.identifier for vector_db in await client.vector_dbs.list()
+        ]
         toolgroups = (get_rag_toolgroups(vector_db_ids) or []) + [
             mcp_server.name for mcp_server in configuration.mcp_servers
         ]
@@ -326,7 +283,7 @@ def retrieve_response(  # pylint: disable=too-many-locals
         if not toolgroups:
             toolgroups = None
 
-    response = agent.create_turn(
+    response = await agent.create_turn(
         messages=[UserMessage(role="user", content=query_request.query)],
         session_id=session_id,
         documents=query_request.get_documents(),

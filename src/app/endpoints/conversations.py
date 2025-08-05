@@ -7,7 +7,7 @@ from llama_stack_client import APIConnectionError, NotFoundError
 
 from fastapi import APIRouter, HTTPException, status, Depends
 
-from client import LlamaStackClientHolder
+from client import AsyncLlamaStackClientHolder
 from configuration import configuration
 from models.responses import ConversationResponse, ConversationDeleteResponse
 from auth import get_auth_dependency
@@ -110,7 +110,7 @@ def simplify_session_data(session_data: dict) -> list[dict[str, Any]]:
 
 
 @router.get("/conversations/{conversation_id}", responses=conversation_responses)
-def get_conversation_endpoint_handler(
+async def get_conversation_endpoint_handler(
     conversation_id: str,
     _auth: Any = Depends(auth_dependency),
 ) -> ConversationResponse:
@@ -132,9 +132,9 @@ def get_conversation_endpoint_handler(
     logger.info("Retrieving conversation %s", conversation_id)
 
     try:
-        client = LlamaStackClientHolder().get_client()
+        client = AsyncLlamaStackClientHolder().get_client()
 
-        session_data = client.agents.session.list(agent_id=agent_id).data[0]
+        session_data = (await client.agents.session.list(agent_id=agent_id)).data[0]
 
         logger.info("Successfully retrieved conversation %s", conversation_id)
 
@@ -179,7 +179,7 @@ def get_conversation_endpoint_handler(
 @router.delete(
     "/conversations/{conversation_id}", responses=conversation_delete_responses
 )
-def delete_conversation_endpoint_handler(
+async def delete_conversation_endpoint_handler(
     conversation_id: str,
     _auth: Any = Depends(auth_dependency),
 ) -> ConversationDeleteResponse:
@@ -201,10 +201,12 @@ def delete_conversation_endpoint_handler(
 
     try:
         # Get Llama Stack client
-        client = LlamaStackClientHolder().get_client()
+        client = AsyncLlamaStackClientHolder().get_client()
         # Delete session using the conversation_id as session_id
         # In this implementation, conversation_id and session_id are the same
-        client.agents.session.delete(agent_id=agent_id, session_id=conversation_id)
+        await client.agents.session.delete(
+            agent_id=agent_id, session_id=conversation_id
+        )
 
         logger.info("Successfully deleted conversation %s", conversation_id)
 

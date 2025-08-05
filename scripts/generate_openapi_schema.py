@@ -10,13 +10,15 @@ from fastapi.openapi.utils import get_openapi
 # it is needed to read proper configuration in order to start the app to generate schema
 from configuration import configuration
 
-from client import LlamaStackClientHolder
+from client import AsyncLlamaStackClientHolder
 
 cfg_file = "lightspeed-stack.yaml"
 configuration.load_configuration(cfg_file)
 
 # Llama Stack client needs to be loaded before REST API is fully initialized
-LlamaStackClientHolder().load(configuration.configuration.llama_stack)
+import asyncio  # noqa: E402
+
+asyncio.run(AsyncLlamaStackClientHolder().load(configuration.configuration.llama_stack))
 
 from app.main import app  # noqa: E402  pylint: disable=C0413
 

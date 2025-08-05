@@ -114,7 +114,8 @@ def expected_chat_history_fixture():
 class TestSimplifySessionData:
     """Test cases for the simplify_session_data function."""
 
-    def test_simplify_session_data_with_model_dump(
+    @pytest.mark.asyncio
+    async def test_simplify_session_data_with_model_dump(
         self, mock_session_data, expected_chat_history
     ):
         """Test simplify_session_data with session data."""
@@ -122,7 +123,8 @@ class TestSimplifySessionData:
 
         assert result == expected_chat_history
 
-    def test_simplify_session_data_empty_turns(self):
+    @pytest.mark.asyncio
+    async def test_simplify_session_data_empty_turns(self):
         """Test simplify_session_data with empty turns."""
         session_data = {
             "session_id": VALID_CONVERSATION_ID,
@@ -134,7 +136,8 @@ class TestSimplifySessionData:
 
         assert not result
 
-    def test_simplify_session_data_filters_unwanted_fields(self):
+    @pytest.mark.asyncio
+    async def test_simplify_session_data_filters_unwanted_fields(self):
         """Test that simplify_session_data properly filters out unwanted fields."""
         session_data = {
             "session_id": VALID_CONVERSATION_ID,
@@ -181,88 +184,103 @@ class TestSimplifySessionData:
 class TestGetConversationEndpoint:
     """Test cases for the GET /conversations/{conversation_id} endpoint."""
 
-    def test_configuration_not_loaded(self, mocker):
+    @pytest.mark.asyncio
+    async def test_configuration_not_loaded(self, mocker):
         """Test the endpoint when configuration is not loaded."""
         mocker.patch("app.endpoints.conversations.configuration", None)
 
         with pytest.raises(HTTPException) as exc_info:
-            get_conversation_endpoint_handler(VALID_CONVERSATION_ID, _auth=MOCK_AUTH)
+            await get_conversation_endpoint_handler(
+                VALID_CONVERSATION_ID, _auth=MOCK_AUTH
+            )
 
         assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Configuration is not loaded" in exc_info.value.detail["response"]
 
-    def test_invalid_conversation_id_format(self, mocker, setup_configuration):
+    @pytest.mark.asyncio
+    async def test_invalid_conversation_id_format(self, mocker, setup_configuration):
         """Test the endpoint with an invalid conversation ID format."""
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
         mocker.patch("app.endpoints.conversations.check_suid", return_value=False)
 
         with pytest.raises(HTTPException) as exc_info:
-            get_conversation_endpoint_handler(INVALID_CONVERSATION_ID, _auth=MOCK_AUTH)
+            await get_conversation_endpoint_handler(
+                INVALID_CONVERSATION_ID, _auth=MOCK_AUTH
+            )
 
         assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
         assert "Invalid conversation ID format" in exc_info.value.detail["response"]
         assert INVALID_CONVERSATION_ID in exc_info.value.detail["cause"]
 
-    def test_llama_stack_connection_error(self, mocker, setup_configuration):
+    @pytest.mark.asyncio
+    async def test_llama_stack_connection_error(self, mocker, setup_configuration):
         """Test the endpoint when LlamaStack connection fails."""
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
         mocker.patch("app.endpoints.conversations.check_suid", return_value=True)
 
-        # Mock LlamaStackClientHolder to raise APIConnectionError
-        mock_client = mocker.Mock()
+        # Mock AsyncLlamaStackClientHolder to raise APIConnectionError
+        mock_client = mocker.AsyncMock()
         mock_client.agents.session.list.side_effect = APIConnectionError(request=None)
         mock_client_holder = mocker.patch(
-            "app.endpoints.conversations.LlamaStackClientHolder"
+            "app.endpoints.conversations.AsyncLlamaStackClientHolder"
         )
         mock_client_holder.return_value.get_client.return_value = mock_client
 
         # simulate situation when it is not possible to connect to Llama Stack
         with pytest.raises(HTTPException) as exc_info:
-            get_conversation_endpoint_handler(VALID_CONVERSATION_ID, _auth=MOCK_AUTH)
+            await get_conversation_endpoint_handler(
+                VALID_CONVERSATION_ID, _auth=MOCK_AUTH
+            )
 
         assert exc_info.value.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
         assert "Unable to connect to Llama Stack" in exc_info.value.detail["response"]
 
-    def test_llama_stack_not_found_error(self, mocker, setup_configuration):
+    @pytest.mark.asyncio
+    async def test_llama_stack_not_found_error(self, mocker, setup_configuration):
         """Test the endpoint when LlamaStack returns NotFoundError."""
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
         mocker.patch("app.endpoints.conversations.check_suid", return_value=True)
 
-        # Mock LlamaStackClientHolder to raise NotFoundError
-        mock_client = mocker.Mock()
+        # Mock AsyncLlamaStackClientHolder to raise NotFoundError
+        mock_client = mocker.AsyncMock()
         mock_client.agents.session.list.side_effect = NotFoundError(
             message="Session not found", response=mocker.Mock(request=None), body=None
         )
         mock_client_holder = mocker.patch(
-            "app.endpoints.conversations.LlamaStackClientHolder"
+            "app.endpoints.conversations.AsyncLlamaStackClientHolder"
         )
         mock_client_holder.return_value.get_client.return_value = mock_client
 
         with pytest.raises(HTTPException) as exc_info:
-            get_conversation_endpoint_handler(VALID_CONVERSATION_ID, _auth=MOCK_AUTH)
+            await get_conversation_endpoint_handler(
+                VALID_CONVERSATION_ID, _auth=MOCK_AUTH
+            )
 
         assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
         assert "Conversation not found" in exc_info.value.detail["response"]
         assert "could not be retrieved" in exc_info.value.detail["cause"]
         assert VALID_CONVERSATION_ID in exc_info.value.detail["cause"]
 
-    def test_session_retrieve_exception(self, mocker, setup_configuration):
+    @pytest.mark.asyncio
+    async def test_session_retrieve_exception(self, mocker, setup_configuration):
         """Test the endpoint when session retrieval raises an exception."""
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
         mocker.patch("app.endpoints.conversations.check_suid", return_value=True)
 
-        # Mock LlamaStackClientHolder to raise a general exception
+        # Mock AsyncLlamaStackClientHolder to raise a general exception
         mock_client = mocker.Mock()
-        mock_client.agents.session.retrieve.side_effect = Exception(
-            "Failed to get session"
+        mock_client.agents.session.retrieve.side_effect = HTTPException(
+            status_code=500, detail="Failed to get session"
         )
         mock_client_holder = mocker.patch(
-            "app.endpoints.conversations.LlamaStackClientHolder"
+            "app.endpoints.conversations.AsyncLlamaStackClientHolder"
         )
         mock_client_holder.return_value.get_client.return_value = mock_client
 
         with pytest.raises(HTTPException) as exc_info:
-            get_conversation_endpoint_handler(VALID_CONVERSATION_ID, _auth=MOCK_AUTH)
+            await get_conversation_endpoint_handler(
+                VALID_CONVERSATION_ID, _auth=MOCK_AUTH
+            )
 
         assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Unknown error" in exc_info.value.detail["response"]
@@ -270,7 +288,8 @@ class TestGetConversationEndpoint:
             "Unknown error while getting conversation" in exc_info.value.detail["cause"]
         )
 
-    def test_successful_conversation_retrieval(
+    @pytest.mark.asyncio
+    async def test_successful_conversation_retrieval(
         self, mocker, setup_configuration, mock_session_data, expected_chat_history
     ):
         """Test successful conversation retrieval with simplified response structure."""
@@ -281,17 +300,17 @@ class TestGetConversationEndpoint:
         mock_session_obj = mocker.Mock()
         mock_session_obj.model_dump.return_value = mock_session_data
 
-        # Mock LlamaStackClientHolder
-        mock_client = mocker.Mock()
+        # Mock AsyncLlamaStackClientHolder
+        mock_client = mocker.AsyncMock()
         mock_client.agents.session.list.return_value = mocker.Mock(
             data=[mock_session_data]
         )
         mock_client_holder = mocker.patch(
-            "app.endpoints.conversations.LlamaStackClientHolder"
+            "app.endpoints.conversations.AsyncLlamaStackClientHolder"
         )
         mock_client_holder.return_value.get_client.return_value = mock_client
 
-        response = get_conversation_endpoint_handler(
+        response = await get_conversation_endpoint_handler(
             VALID_CONVERSATION_ID, _auth=MOCK_AUTH
         )
 
@@ -306,23 +325,27 @@ class TestGetConversationEndpoint:
 class TestDeleteConversationEndpoint:
     """Test cases for the DELETE /conversations/{conversation_id} endpoint."""
 
-    def test_configuration_not_loaded(self, mocker):
+    @pytest.mark.asyncio
+    async def test_configuration_not_loaded(self, mocker):
         """Test the endpoint when configuration is not loaded."""
         mocker.patch("app.endpoints.conversations.configuration", None)
 
         with pytest.raises(HTTPException) as exc_info:
-            delete_conversation_endpoint_handler(VALID_CONVERSATION_ID, _auth=MOCK_AUTH)
+            await delete_conversation_endpoint_handler(
+                VALID_CONVERSATION_ID, _auth=MOCK_AUTH
+            )
 
         assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Configuration is not loaded" in exc_info.value.detail["response"]
 
-    def test_invalid_conversation_id_format(self, mocker, setup_configuration):
+    @pytest.mark.asyncio
+    async def test_invalid_conversation_id_format(self, mocker, setup_configuration):
         """Test the endpoint with an invalid conversation ID format."""
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
         mocker.patch("app.endpoints.conversations.check_suid", return_value=False)
 
         with pytest.raises(HTTPException) as exc_info:
-            delete_conversation_endpoint_handler(
+            await delete_conversation_endpoint_handler(
                 INVALID_CONVERSATION_ID, _auth=MOCK_AUTH
             )
 
@@ -330,65 +353,74 @@ class TestDeleteConversationEndpoint:
         assert "Invalid conversation ID format" in exc_info.value.detail["response"]
         assert INVALID_CONVERSATION_ID in exc_info.value.detail["cause"]
 
-    def test_llama_stack_connection_error(self, mocker, setup_configuration):
+    @pytest.mark.asyncio
+    async def test_llama_stack_connection_error(self, mocker, setup_configuration):
         """Test the endpoint when LlamaStack connection fails."""
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
         mocker.patch("app.endpoints.conversations.check_suid", return_value=True)
 
-        # Mock LlamaStackClientHolder to raise APIConnectionError
-        mock_client = mocker.Mock()
+        # Mock AsyncLlamaStackClientHolder to raise APIConnectionError
+        mock_client = mocker.AsyncMock()
         mock_client.agents.session.delete.side_effect = APIConnectionError(request=None)
         mock_client_holder = mocker.patch(
-            "app.endpoints.conversations.LlamaStackClientHolder"
+            "app.endpoints.conversations.AsyncLlamaStackClientHolder"
         )
         mock_client_holder.return_value.get_client.return_value = mock_client
 
         with pytest.raises(HTTPException) as exc_info:
-            delete_conversation_endpoint_handler(VALID_CONVERSATION_ID, _auth=MOCK_AUTH)
+            await delete_conversation_endpoint_handler(
+                VALID_CONVERSATION_ID, _auth=MOCK_AUTH
+            )
 
         assert exc_info.value.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
         assert "Unable to connect to Llama Stack" in exc_info.value.detail["response"]
 
-    def test_llama_stack_not_found_error(self, mocker, setup_configuration):
+    @pytest.mark.asyncio
+    async def test_llama_stack_not_found_error(self, mocker, setup_configuration):
         """Test the endpoint when LlamaStack returns NotFoundError."""
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
         mocker.patch("app.endpoints.conversations.check_suid", return_value=True)
 
-        # Mock LlamaStackClientHolder to raise NotFoundError
-        mock_client = mocker.Mock()
+        # Mock AsyncLlamaStackClientHolder to raise NotFoundError
+        mock_client = mocker.AsyncMock()
         mock_client.agents.session.delete.side_effect = NotFoundError(
             message="Session not found", response=mocker.Mock(request=None), body=None
         )
         mock_client_holder = mocker.patch(
-            "app.endpoints.conversations.LlamaStackClientHolder"
+            "app.endpoints.conversations.AsyncLlamaStackClientHolder"
         )
         mock_client_holder.return_value.get_client.return_value = mock_client
 
         with pytest.raises(HTTPException) as exc_info:
-            delete_conversation_endpoint_handler(VALID_CONVERSATION_ID, _auth=MOCK_AUTH)
+            await delete_conversation_endpoint_handler(
+                VALID_CONVERSATION_ID, _auth=MOCK_AUTH
+            )
 
         assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
         assert "Conversation not found" in exc_info.value.detail["response"]
         assert "could not be deleted" in exc_info.value.detail["cause"]
         assert VALID_CONVERSATION_ID in exc_info.value.detail["cause"]
 
-    def test_session_deletion_exception(self, mocker, setup_configuration):
+    @pytest.mark.asyncio
+    async def test_session_deletion_exception(self, mocker, setup_configuration):
         """Test the endpoint when session deletion raises an exception."""
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
         mocker.patch("app.endpoints.conversations.check_suid", return_value=True)
 
-        # Mock LlamaStackClientHolder to raise a general exception
-        mock_client = mocker.Mock()
+        # Mock AsyncLlamaStackClientHolder to raise a general exception
+        mock_client = mocker.AsyncMock()
         mock_client.agents.session.delete.side_effect = Exception(
             "Session deletion failed"
         )
         mock_client_holder = mocker.patch(
-            "app.endpoints.conversations.LlamaStackClientHolder"
+            "app.endpoints.conversations.AsyncLlamaStackClientHolder"
         )
         mock_client_holder.return_value.get_client.return_value = mock_client
 
         with pytest.raises(HTTPException) as exc_info:
-            delete_conversation_endpoint_handler(VALID_CONVERSATION_ID, _auth=MOCK_AUTH)
+            await delete_conversation_endpoint_handler(
+                VALID_CONVERSATION_ID, _auth=MOCK_AUTH
+            )
 
         assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Unknown error" in exc_info.value.detail["response"]
@@ -397,20 +429,21 @@ class TestDeleteConversationEndpoint:
             in exc_info.value.detail["cause"]
         )
 
-    def test_successful_conversation_deletion(self, mocker, setup_configuration):
+    @pytest.mark.asyncio
+    async def test_successful_conversation_deletion(self, mocker, setup_configuration):
         """Test successful conversation deletion."""
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
         mocker.patch("app.endpoints.conversations.check_suid", return_value=True)
 
-        # Mock LlamaStackClientHolder
-        mock_client = mocker.Mock()
+        # Mock AsyncLlamaStackClientHolder
+        mock_client = mocker.AsyncMock()
         mock_client.agents.session.delete.return_value = None  # Successful deletion
         mock_client_holder = mocker.patch(
-            "app.endpoints.conversations.LlamaStackClientHolder"
+            "app.endpoints.conversations.AsyncLlamaStackClientHolder"
         )
         mock_client_holder.return_value.get_client.return_value = mock_client
 
-        response = delete_conversation_endpoint_handler(
+        response = await delete_conversation_endpoint_handler(
             VALID_CONVERSATION_ID, _auth=MOCK_AUTH
         )
 
