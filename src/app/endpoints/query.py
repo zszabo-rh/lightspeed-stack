@@ -96,6 +96,9 @@ def get_agent(  # pylint: disable=too-many-arguments,too-many-positional-argumen
         tool_parser=None if no_tools else GraniteToolParser.get_parser(model_id),
         enable_session_persistence=True,
     )
+
+    agent.initialize()
+
     if existing_agent_id and conversation_id:
         orphan_agent_id = agent.agent_id
         agent.agent_id = conversation_id
