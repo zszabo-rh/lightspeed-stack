@@ -687,7 +687,7 @@ It is possible to run Lightspeed Core Stack service with Llama Stack "embedded" 
      + greenlet==3.2.3
      + grpcio==1.74.0
      + httpx-sse==0.4.1
-     ~ lightspeed-stack==0.1.2 (from file:///tmp/ramdisk/lightspeed-stack)
+     ~ lightspeed-stack==0.1.3 (from file:///tmp/ramdisk/lightspeed-stack)
      + litellm==1.74.9.post1
      + lxml==6.0.0
      + mcp==1.12.2
@@ -1022,14 +1022,14 @@ Writing manifest to image destination
 4468f475931a54ad1e5c26270ff4c3e55ec31444c1b0bf8fb77a576db7ab33f1
 ```
 
-To retrieve stable version `0.1.2`, use the following command:
+To retrieve stable version `0.1.3`, use the following command:
 
 ```bash
-podman pull quay.io/lightspeed-core/lightspeed-stack:0.1.2
+podman pull quay.io/lightspeed-core/lightspeed-stack:0.1.3
 ```
 
 ```text
-Trying to pull quay.io/lightspeed-core/lightspeed-stack:0.1.2...
+Trying to pull quay.io/lightspeed-core/lightspeed-stack:0.1.3...
 Getting image source signatures
 Copying blob 7c9e86f872c9 done   | 
 Copying blob 455d71b0a12b skipped: already exists  
@@ -1745,7 +1745,7 @@ The response should look like:
 ```json
 {
   "name": "Lightspeed Core Service (LCS)",
-  "version": "0.1.2"
+  "version": "0.1.3"
 }
 ```
 
