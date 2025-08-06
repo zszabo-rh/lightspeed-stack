@@ -261,10 +261,6 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
         "app.endpoints.streaming_query.is_transcripts_enabled",
         return_value=store_transcript,
     )
-    mocker.patch(
-        "app.endpoints.streaming_query.retrieve_user_id",
-        return_value="user_id_placeholder",
-    )
     mock_transcript = mocker.patch("app.endpoints.streaming_query.store_transcript")
 
     query_request = QueryRequest(query=query)
@@ -303,7 +299,7 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
     # Assert the store_transcript function is called if transcripts are enabled
     if store_transcript:
         mock_transcript.assert_called_once_with(
-            user_id="user_id_placeholder",
+            user_id="mock_user_id",
             conversation_id="test_conversation_id",
             query_is_valid=True,
             query=query,
@@ -1582,9 +1578,6 @@ async def test_auth_tuple_unpacking_in_streaming_query_endpoint_handler(mocker):
     )
     mocker.patch(
         "app.endpoints.streaming_query.is_transcripts_enabled", return_value=False
-    )
-    mocker.patch(
-        "app.endpoints.streaming_query.retrieve_user_id", return_value="user123"
     )
 
     await streaming_query_endpoint_handler(

@@ -5,7 +5,7 @@ from contextlib import suppress
 import json
 import re
 import logging
-from typing import Any, AsyncIterator, Iterator
+from typing import Annotated, Any, AsyncIterator, Iterator
 
 from llama_stack_client import APIConnectionError
 from llama_stack_client.lib.agents.agent import AsyncAgent  # type: ignore
@@ -20,12 +20,12 @@ from fastapi import APIRouter, HTTPException, Request, Depends, status
 from fastapi.responses import StreamingResponse
 
 from auth import get_auth_dependency
+from auth.interface import AuthTuple
 from client import AsyncLlamaStackClientHolder
 from configuration import configuration
 import metrics
 from models.requests import QueryRequest
 from utils.endpoints import check_configuration_loaded, get_system_prompt
-from utils.common import retrieve_user_id
 from utils.mcp_headers import mcp_headers_dependency, handle_mcp_headers_with_toolgroups
 from utils.suid import get_suid
 from utils.types import GraniteToolParser
@@ -431,7 +431,7 @@ def _handle_heartbeat_event(chunk_id: int) -> Iterator[str]:
 async def streaming_query_endpoint_handler(
     _request: Request,
     query_request: QueryRequest,
-    auth: Any = Depends(auth_dependency),
+    auth: Annotated[AuthTuple, Depends(auth_dependency)],
     mcp_headers: dict[str, dict[str, str]] = Depends(mcp_headers_dependency),
 ) -> StreamingResponse:
     """Handle request to the /streaming_query endpoint."""
@@ -440,7 +440,7 @@ async def streaming_query_endpoint_handler(
     llama_stack_config = configuration.llama_stack_configuration
     logger.info("LLama stack config: %s", llama_stack_config)
 
-    _user_id, _user_name, token = auth
+    user_id, _user_name, token = auth
 
     try:
         # try to get Llama Stack client
@@ -483,7 +483,7 @@ async def streaming_query_endpoint_handler(
                 logger.debug("Transcript collection is disabled in the configuration")
             else:
                 store_transcript(
-                    user_id=retrieve_user_id(auth),
+                    user_id=user_id,
                     conversation_id=conversation_id,
                     query_is_valid=True,  # TODO(lucasagomes): implement as part of query validation
                     query=query_request.query,

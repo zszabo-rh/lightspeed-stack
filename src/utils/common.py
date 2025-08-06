@@ -2,8 +2,8 @@
 
 import asyncio
 from functools import wraps
+from typing import Any, Callable, List, cast
 from logging import Logger
-from typing import Any, List, cast, Callable
 
 from llama_stack_client import LlamaStackClient, AsyncLlamaStackClient
 from llama_stack.distribution.library_client import (
@@ -12,20 +12,6 @@ from llama_stack.distribution.library_client import (
 
 from client import LlamaStackClientHolder, AsyncLlamaStackClientHolder
 from models.config import Configuration, ModelContextProtocolServer
-
-
-# TODO(lucasagomes): implement this function to retrieve user ID from auth
-def retrieve_user_id(auth: Any) -> str:  # pylint: disable=unused-argument
-    """Retrieve the user ID from the authentication handler.
-
-    Args:
-        auth: The Authentication handler (FastAPI Depends) that will
-            handle authentication Logic.
-
-    Returns:
-        str: The user ID.
-    """
-    return "user_id_placeholder"
 
 
 async def register_mcp_servers_async(

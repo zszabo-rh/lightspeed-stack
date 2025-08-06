@@ -67,7 +67,6 @@ def test_feedback_endpoint_handler(mocker, feedback_request_data):
 
     # Mock the dependencies
     mocker.patch("app.endpoints.feedback.assert_feedback_enabled", return_value=None)
-    mocker.patch("utils.common.retrieve_user_id", return_value="test_user_id")
     mocker.patch("app.endpoints.feedback.store_feedback", return_value=None)
 
     # Prepare the feedback request mock
@@ -76,8 +75,8 @@ def test_feedback_endpoint_handler(mocker, feedback_request_data):
 
     # Call the endpoint handler
     result = feedback_endpoint_handler(
-        _request=mocker.Mock(),
         feedback_request=feedback_request,
+        auth=["test-user", "", ""],
         _ensure_feedback_enabled=assert_feedback_enabled,
     )
 
@@ -89,7 +88,6 @@ def test_feedback_endpoint_handler_error(mocker):
     """Test that feedback_endpoint_handler raises an HTTPException on error."""
     # Mock the dependencies
     mocker.patch("app.endpoints.feedback.assert_feedback_enabled", return_value=None)
-    mocker.patch("utils.common.retrieve_user_id", return_value="test_user_id")
     mocker.patch(
         "app.endpoints.feedback.store_feedback",
         side_effect=Exception("Error storing feedback"),
@@ -101,8 +99,8 @@ def test_feedback_endpoint_handler_error(mocker):
     # Call the endpoint handler and assert it raises an exception
     with pytest.raises(HTTPException) as exc_info:
         feedback_endpoint_handler(
-            _request=mocker.Mock(),
             feedback_request=feedback_request,
+            auth=["test-user", "", ""],
             _ensure_feedback_enabled=assert_feedback_enabled,
         )
 
