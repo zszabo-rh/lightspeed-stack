@@ -4,7 +4,7 @@ import logging
 
 from typing import Optional
 
-from llama_stack.distribution.library_client import (
+from llama_stack import (
     AsyncLlamaStackAsLibraryClient,  # type: ignore
     LlamaStackAsLibraryClient,  # type: ignore
 )
