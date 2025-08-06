@@ -6,7 +6,7 @@ from typing import Any, Callable, List, cast
 from logging import Logger
 
 from llama_stack_client import LlamaStackClient, AsyncLlamaStackClient
-from llama_stack.distribution.library_client import (
+from llama_stack import (
     AsyncLlamaStackAsLibraryClient,
 )
 
