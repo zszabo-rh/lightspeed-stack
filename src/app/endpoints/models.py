@@ -6,7 +6,7 @@ from typing import Any
 from llama_stack_client import APIConnectionError
 from fastapi import APIRouter, HTTPException, Request, status
 
-from client import LlamaStackClientHolder
+from client import AsyncLlamaStackClientHolder
 from configuration import configuration
 from models.responses import ModelsResponse
 from utils.endpoints import check_configuration_loaded
@@ -43,7 +43,7 @@ models_responses: dict[int | str, dict[str, Any]] = {
 
 
 @router.get("/models", responses=models_responses)
-def models_endpoint_handler(_request: Request) -> ModelsResponse:
+async def models_endpoint_handler(_request: Request) -> ModelsResponse:
     """Handle requests to the /models endpoint."""
     check_configuration_loaded(configuration)
 
@@ -52,9 +52,9 @@ def models_endpoint_handler(_request: Request) -> ModelsResponse:
 
     try:
         # try to get Llama Stack client
-        client = LlamaStackClientHolder().get_client()
+        client = AsyncLlamaStackClientHolder().get_client()
         # retrieve models
-        models = client.models.list()
+        models = await client.models.list()
         m = [dict(m) for m in models]
         return ModelsResponse(models=m)
 

@@ -19,7 +19,6 @@ from app.endpoints.query import (
     construct_transcripts_path,
     store_transcript,
     get_rag_toolgroups,
-    get_agent,
 )
 
 from models.requests import QueryRequest, Attachment
@@ -57,16 +56,8 @@ def setup_configuration_fixture():
     return cfg
 
 
-@pytest.fixture(autouse=True, name="prepare_agent_mocks")
-def prepare_agent_mocks_fixture(mocker):
-    """Fixture that yields mock agent when called."""
-    mock_client = mocker.Mock()
-    mock_agent = mocker.Mock()
-    mock_agent.create_turn.return_value.steps = []
-    yield mock_client, mock_agent
-
-
-def test_query_endpoint_handler_configuration_not_loaded(mocker):
+@pytest.mark.asyncio
+async def test_query_endpoint_handler_configuration_not_loaded(mocker):
     """Test the query endpoint handler if configuration is not loaded."""
     # simulate state when no configuration is loaded
     mocker.patch(
@@ -77,9 +68,9 @@ def test_query_endpoint_handler_configuration_not_loaded(mocker):
 
     request = None
     with pytest.raises(HTTPException) as e:
-        query_endpoint_handler(request, auth=["test-user", "", "token"])
-        assert e.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-        assert e.detail["response"] == "Configuration is not loaded"
+        await query_endpoint_handler(request, auth=["test-user", "", "token"])
+    assert e.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert e.value.detail["response"] == "Configuration is not loaded"
 
 
 def test_is_transcripts_enabled(setup_configuration, mocker):
@@ -103,11 +94,11 @@ def test_is_transcripts_disabled(setup_configuration, mocker):
     assert is_transcripts_enabled() is False, "Transcripts should be disabled"
 
 
-def _test_query_endpoint_handler(mocker, store_transcript_to_file=False):
+async def _test_query_endpoint_handler(mocker, store_transcript_to_file=False):
     """Test the query endpoint handler."""
     mock_metric = mocker.patch("metrics.llm_calls_total")
-    mock_client = mocker.Mock()
-    mock_lsc = mocker.patch("client.LlamaStackClientHolder.get_client")
+    mock_client = mocker.AsyncMock()
+    mock_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
     mock_lsc.return_value = mock_client
     mock_client.models.list.return_value = [
         mocker.Mock(identifier="model1", model_type="llm", provider_id="provider1"),
@@ -140,7 +131,7 @@ def _test_query_endpoint_handler(mocker, store_transcript_to_file=False):
 
     query_request = QueryRequest(query=query)
 
-    response = query_endpoint_handler(query_request, auth=MOCK_AUTH)
+    response = await query_endpoint_handler(query_request, auth=MOCK_AUTH)
 
     # Assert the response is as expected
     assert response.response == llm_response
@@ -166,14 +157,16 @@ def _test_query_endpoint_handler(mocker, store_transcript_to_file=False):
         mock_transcript.assert_not_called()
 
 
-def test_query_endpoint_handler_transcript_storage_disabled(mocker):
+@pytest.mark.asyncio
+async def test_query_endpoint_handler_transcript_storage_disabled(mocker):
     """Test the query endpoint handler with transcript storage disabled."""
-    _test_query_endpoint_handler(mocker, store_transcript_to_file=False)
+    await _test_query_endpoint_handler(mocker, store_transcript_to_file=False)
 
 
-def test_query_endpoint_handler_store_transcript(mocker):
+@pytest.mark.asyncio
+async def test_query_endpoint_handler_store_transcript(mocker):
     """Test the query endpoint handler with transcript storage enabled."""
-    _test_query_endpoint_handler(mocker, store_transcript_to_file=True)
+    await _test_query_endpoint_handler(mocker, store_transcript_to_file=True)
 
 
 def test_select_model_and_provider_id_from_request(mocker):
@@ -362,7 +355,8 @@ def test_validate_attachments_metadata_invalid_content_type():
     )
 
 
-def test_retrieve_response_vector_db_available(prepare_agent_mocks, mocker):
+@pytest.mark.asyncio
+async def test_retrieve_response_vector_db_available(prepare_agent_mocks, mocker):
     """Test the retrieve_response function."""
     mock_metric = mocker.patch("metrics.llm_calls_validation_errors_total")
     mock_client, mock_agent = prepare_agent_mocks
@@ -385,7 +379,7 @@ def test_retrieve_response_vector_db_available(prepare_agent_mocks, mocker):
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    response, conversation_id = retrieve_response(
+    response, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -402,7 +396,8 @@ def test_retrieve_response_vector_db_available(prepare_agent_mocks, mocker):
     )
 
 
-def test_retrieve_response_no_available_shields(prepare_agent_mocks, mocker):
+@pytest.mark.asyncio
+async def test_retrieve_response_no_available_shields(prepare_agent_mocks, mocker):
     """Test the retrieve_response function."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -422,7 +417,7 @@ def test_retrieve_response_no_available_shields(prepare_agent_mocks, mocker):
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    response, conversation_id = retrieve_response(
+    response, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -437,7 +432,8 @@ def test_retrieve_response_no_available_shields(prepare_agent_mocks, mocker):
     )
 
 
-def test_retrieve_response_one_available_shield(prepare_agent_mocks, mocker):
+@pytest.mark.asyncio
+async def test_retrieve_response_one_available_shield(prepare_agent_mocks, mocker):
     """Test the retrieve_response function."""
 
     class MockShield:
@@ -470,7 +466,7 @@ def test_retrieve_response_one_available_shield(prepare_agent_mocks, mocker):
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    response, conversation_id = retrieve_response(
+    response, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -485,7 +481,8 @@ def test_retrieve_response_one_available_shield(prepare_agent_mocks, mocker):
     )
 
 
-def test_retrieve_response_two_available_shields(prepare_agent_mocks, mocker):
+@pytest.mark.asyncio
+async def test_retrieve_response_two_available_shields(prepare_agent_mocks, mocker):
     """Test the retrieve_response function."""
 
     class MockShield:
@@ -521,7 +518,7 @@ def test_retrieve_response_two_available_shields(prepare_agent_mocks, mocker):
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    response, conversation_id = retrieve_response(
+    response, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -536,7 +533,8 @@ def test_retrieve_response_two_available_shields(prepare_agent_mocks, mocker):
     )
 
 
-def test_retrieve_response_four_available_shields(prepare_agent_mocks, mocker):
+@pytest.mark.asyncio
+async def test_retrieve_response_four_available_shields(prepare_agent_mocks, mocker):
     """Test the retrieve_response function."""
 
     class MockShield:
@@ -574,7 +572,7 @@ def test_retrieve_response_four_available_shields(prepare_agent_mocks, mocker):
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    response, conversation_id = retrieve_response(
+    response, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -601,7 +599,8 @@ def test_retrieve_response_four_available_shields(prepare_agent_mocks, mocker):
     )
 
 
-def test_retrieve_response_with_one_attachment(prepare_agent_mocks, mocker):
+@pytest.mark.asyncio
+async def test_retrieve_response_with_one_attachment(prepare_agent_mocks, mocker):
     """Test the retrieve_response function."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -629,7 +628,7 @@ def test_retrieve_response_with_one_attachment(prepare_agent_mocks, mocker):
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    response, conversation_id = retrieve_response(
+    response, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -649,7 +648,8 @@ def test_retrieve_response_with_one_attachment(prepare_agent_mocks, mocker):
     )
 
 
-def test_retrieve_response_with_two_attachments(prepare_agent_mocks, mocker):
+@pytest.mark.asyncio
+async def test_retrieve_response_with_two_attachments(prepare_agent_mocks, mocker):
     """Test the retrieve_response function."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -682,7 +682,7 @@ def test_retrieve_response_with_two_attachments(prepare_agent_mocks, mocker):
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    response, conversation_id = retrieve_response(
+    response, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -706,7 +706,8 @@ def test_retrieve_response_with_two_attachments(prepare_agent_mocks, mocker):
     )
 
 
-def test_retrieve_response_with_mcp_servers(prepare_agent_mocks, mocker):
+@pytest.mark.asyncio
+async def test_retrieve_response_with_mcp_servers(prepare_agent_mocks, mocker):
     """Test the retrieve_response function with MCP servers configured."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -736,7 +737,7 @@ def test_retrieve_response_with_mcp_servers(prepare_agent_mocks, mocker):
     model_id = "fake_model_id"
     access_token = "test_token_123"
 
-    response, conversation_id = retrieve_response(
+    response, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -779,7 +780,10 @@ def test_retrieve_response_with_mcp_servers(prepare_agent_mocks, mocker):
     )
 
 
-def test_retrieve_response_with_mcp_servers_empty_token(prepare_agent_mocks, mocker):
+@pytest.mark.asyncio
+async def test_retrieve_response_with_mcp_servers_empty_token(
+    prepare_agent_mocks, mocker
+):
     """Test the retrieve_response function with MCP servers and empty access token."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -802,7 +806,7 @@ def test_retrieve_response_with_mcp_servers_empty_token(prepare_agent_mocks, moc
     model_id = "fake_model_id"
     access_token = ""  # Empty token
 
-    response, conversation_id = retrieve_response(
+    response, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -830,7 +834,8 @@ def test_retrieve_response_with_mcp_servers_empty_token(prepare_agent_mocks, moc
     )
 
 
-def test_retrieve_response_with_mcp_servers_and_mcp_headers(
+@pytest.mark.asyncio
+async def test_retrieve_response_with_mcp_servers_and_mcp_headers(
     prepare_agent_mocks, mocker
 ):
     """Test the retrieve_response function with MCP servers configured."""
@@ -872,7 +877,7 @@ def test_retrieve_response_with_mcp_servers_and_mcp_headers(
         },
     }
 
-    response, conversation_id = retrieve_response(
+    response, conversation_id = await retrieve_response(
         mock_client,
         model_id,
         query_request,
@@ -924,7 +929,8 @@ def test_retrieve_response_with_mcp_servers_and_mcp_headers(
     )
 
 
-def test_retrieve_response_shield_violation(prepare_agent_mocks, mocker):
+@pytest.mark.asyncio
+async def test_retrieve_response_shield_violation(prepare_agent_mocks, mocker):
     """Test the retrieve_response function."""
     mock_metric = mocker.patch("metrics.llm_calls_validation_errors_total")
     mock_client, mock_agent = prepare_agent_mocks
@@ -952,7 +958,7 @@ def test_retrieve_response_shield_violation(prepare_agent_mocks, mocker):
 
     query_request = QueryRequest(query="What is OpenStack?")
 
-    _, conversation_id = retrieve_response(
+    _, conversation_id = await retrieve_response(
         mock_client, "fake_model_id", query_request, "test_token"
     )
 
@@ -1058,7 +1064,8 @@ def test_get_rag_toolgroups():
     assert result[0]["args"]["vector_db_ids"] == vector_db_ids
 
 
-def test_query_endpoint_handler_on_connection_error(mocker):
+@pytest.mark.asyncio
+async def test_query_endpoint_handler_on_connection_error(mocker):
     """Test the query endpoint handler."""
     mock_metric = mocker.patch("metrics.llm_calls_failures_total")
 
@@ -1070,320 +1077,32 @@ def test_query_endpoint_handler_on_connection_error(mocker):
     query_request = QueryRequest(query="What is OpenStack?")
 
     # simulate situation when it is not possible to connect to Llama Stack
-    mock_get_client = mocker.patch("client.LlamaStackClientHolder.get_client")
+    mock_get_client = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
     mock_get_client.side_effect = APIConnectionError(request=query_request)
 
     with pytest.raises(HTTPException) as exc_info:
-        query_endpoint_handler(query_request, auth=MOCK_AUTH)
+        await query_endpoint_handler(query_request, auth=MOCK_AUTH)
 
     assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
     assert "Unable to connect to Llama Stack" in str(exc_info.value.detail)
     mock_metric.inc.assert_called_once()
 
 
-def test_get_agent_with_conversation_id(prepare_agent_mocks, mocker):
-    """Test get_agent function when agent exists in llama stack."""
-    mock_client, mock_agent = prepare_agent_mocks
-    mock_client.agents.session.list.return_value = mocker.Mock(
-        data=[{"session_id": "test_session_id"}]
-    )
-
-    # Set up cache with existing agent
-    conversation_id = "test_conversation_id"
-
-    # Mock Agent class
-    mocker.patch("app.endpoints.query.Agent", return_value=mock_agent)
-
-    result_agent, result_conversation_id, result_session_id = get_agent(
-        client=mock_client,
-        model_id="test_model",
-        system_prompt="test_prompt",
-        available_input_shields=["shield1"],
-        available_output_shields=["output_shield2"],
-        conversation_id=conversation_id,
-    )
-
-    # Assert the same agent is returned
-    assert result_agent == mock_agent
-    assert result_conversation_id == result_agent.agent_id
-    assert conversation_id == result_agent.agent_id
-    assert result_session_id == "test_session_id"
-
-
-def test_get_agent_with_conversation_id_and_no_agent_in_llama_stack(
-    setup_configuration, prepare_agent_mocks, mocker
-):
-    """Test get_agent function when conversation_id is provided."""
-    mock_client, mock_agent = prepare_agent_mocks
-    mock_client.agents.retrieve.side_effect = ValueError(
-        "fake not finding existing agent"
-    )
-    mock_agent.create_session.return_value = "new_session_id"
-
-    # Mock Agent class
-    mock_agent_class = mocker.patch(
-        "app.endpoints.query.Agent", return_value=mock_agent
-    )
-
-    # Mock get_suid
-    mocker.patch("app.endpoints.query.get_suid", return_value="new_session_id")
-
-    # Mock configuration
-    mock_mcp_server = mocker.Mock()
-    mock_mcp_server.name = "mcp_server_1"
-    mocker.patch.object(
-        type(setup_configuration),
-        "mcp_servers",
-        new_callable=mocker.PropertyMock,
-        return_value=[mock_mcp_server],
-    )
-    mocker.patch("app.endpoints.query.configuration", setup_configuration)
-    conversation_id = "non_existent_conversation_id"
-    # Call function with conversation_id
-    result_agent, result_conversation_id, result_session_id = get_agent(
-        client=mock_client,
-        model_id="test_model",
-        system_prompt="test_prompt",
-        available_input_shields=["shield1"],
-        available_output_shields=["output_shield2"],
-        conversation_id=conversation_id,
-    )
-
-    # Assert new agent is created
-    assert result_agent == mock_agent
-    assert result_conversation_id == result_agent.agent_id
-    assert conversation_id != result_agent.agent_id
-    assert result_session_id == "new_session_id"
-
-    # Verify Agent was created with correct parameters
-    mock_agent_class.assert_called_once_with(
-        mock_client,
-        model="test_model",
-        instructions="test_prompt",
-        input_shields=["shield1"],
-        output_shields=["output_shield2"],
-        tool_parser=None,
-        enable_session_persistence=True,
-    )
-
-
-def test_get_agent_no_conversation_id(setup_configuration, prepare_agent_mocks, mocker):
-    """Test get_agent function when conversation_id is None."""
-    mock_client, mock_agent = prepare_agent_mocks
-    mock_agent.create_session.return_value = "new_session_id"
-
-    # Mock Agent class
-    mock_agent_class = mocker.patch(
-        "app.endpoints.query.Agent", return_value=mock_agent
-    )
-
-    # Mock get_suid
-    mocker.patch("app.endpoints.query.get_suid", return_value="new_session_id")
-
-    # Mock configuration
-    mock_mcp_server = mocker.Mock()
-    mock_mcp_server.name = "mcp_server_1"
-    mocker.patch.object(
-        type(setup_configuration),
-        "mcp_servers",
-        new_callable=mocker.PropertyMock,
-        return_value=[mock_mcp_server],
-    )
-    mocker.patch("app.endpoints.query.configuration", setup_configuration)
-
-    # Call function with None conversation_id
-    result_agent, result_conversation_id, result_session_id = get_agent(
-        client=mock_client,
-        model_id="test_model",
-        system_prompt="test_prompt",
-        available_input_shields=["shield1"],
-        available_output_shields=["output_shield2"],
-        conversation_id=None,
-    )
-
-    # Assert new agent is created
-    assert result_agent == mock_agent
-    assert result_conversation_id == result_agent.agent_id
-    assert result_session_id == "new_session_id"
-
-    # Verify Agent was created with correct parameters
-    mock_agent_class.assert_called_once_with(
-        mock_client,
-        model="test_model",
-        instructions="test_prompt",
-        input_shields=["shield1"],
-        output_shields=["output_shield2"],
-        tool_parser=None,
-        enable_session_persistence=True,
-    )
-
-
-def test_get_agent_empty_shields(setup_configuration, prepare_agent_mocks, mocker):
-    """Test get_agent function with empty shields list."""
-    mock_client, mock_agent = prepare_agent_mocks
-    mock_agent.create_session.return_value = "new_session_id"
-
-    # Mock Agent class
-    mock_agent_class = mocker.patch(
-        "app.endpoints.query.Agent", return_value=mock_agent
-    )
-
-    # Mock get_suid
-    mocker.patch("app.endpoints.query.get_suid", return_value="new_session_id")
-
-    # Mock configuration
-    mock_mcp_server = mocker.Mock()
-    mock_mcp_server.name = "mcp_server_1"
-    mocker.patch.object(
-        type(setup_configuration),
-        "mcp_servers",
-        new_callable=mocker.PropertyMock,
-        return_value=[mock_mcp_server],
-    )
-    mocker.patch("app.endpoints.query.configuration", setup_configuration)
-
-    # Call function with empty shields list
-    result_agent, result_conversation_id, result_session_id = get_agent(
-        client=mock_client,
-        model_id="test_model",
-        system_prompt="test_prompt",
-        available_input_shields=[],
-        available_output_shields=[],
-        conversation_id=None,
-    )
-
-    # Assert new agent is created
-    assert result_agent == mock_agent
-    assert result_conversation_id == result_agent.agent_id
-    assert result_session_id == "new_session_id"
-
-    # Verify Agent was created with empty shields
-    mock_agent_class.assert_called_once_with(
-        mock_client,
-        model="test_model",
-        instructions="test_prompt",
-        input_shields=[],
-        output_shields=[],
-        tool_parser=None,
-        enable_session_persistence=True,
-    )
-
-
-def test_get_agent_multiple_mcp_servers(
-    setup_configuration, prepare_agent_mocks, mocker
-):
-    """Test get_agent function with multiple MCP servers."""
-    mock_client, mock_agent = prepare_agent_mocks
-    mock_agent.create_session.return_value = "new_session_id"
-
-    # Mock Agent class
-    mock_agent_class = mocker.patch(
-        "app.endpoints.query.Agent", return_value=mock_agent
-    )
-
-    # Mock get_suid
-    mocker.patch("app.endpoints.query.get_suid", return_value="new_session_id")
-
-    # Mock configuration with multiple MCP servers
-    mock_mcp_server1 = mocker.Mock()
-    mock_mcp_server1.name = "mcp_server_1"
-    mock_mcp_server2 = mocker.Mock()
-    mock_mcp_server2.name = "mcp_server_2"
-    mocker.patch.object(
-        type(setup_configuration),
-        "mcp_servers",
-        new_callable=mocker.PropertyMock,
-        return_value=[mock_mcp_server1, mock_mcp_server2],
-    )
-    mocker.patch("app.endpoints.query.configuration", setup_configuration)
-
-    # Call function
-    result_agent, result_conversation_id, result_session_id = get_agent(
-        client=mock_client,
-        model_id="test_model",
-        system_prompt="test_prompt",
-        available_input_shields=["shield1", "shield2"],
-        available_output_shields=["output_shield3", "output_shield4"],
-        conversation_id=None,
-    )
-
-    # Assert new agent is created
-    assert result_agent == mock_agent
-    assert result_conversation_id == result_agent.agent_id
-    assert result_session_id == "new_session_id"
-
-    # Verify Agent was created with tools from both MCP servers
-    mock_agent_class.assert_called_once_with(
-        mock_client,
-        model="test_model",
-        instructions="test_prompt",
-        input_shields=["shield1", "shield2"],
-        output_shields=["output_shield3", "output_shield4"],
-        tool_parser=None,
-        enable_session_persistence=True,
-    )
-
-
-def test_get_agent_session_persistence_enabled(
-    setup_configuration, prepare_agent_mocks, mocker
-):
-    """Test get_agent function ensures session persistence is enabled."""
-    mock_client, mock_agent = prepare_agent_mocks
-    mock_agent.create_session.return_value = "new_session_id"
-
-    # Mock Agent class
-    mock_agent_class = mocker.patch(
-        "app.endpoints.query.Agent", return_value=mock_agent
-    )
-
-    # Mock get_suid
-    mocker.patch("app.endpoints.query.get_suid", return_value="new_session_id")
-
-    # Mock configuration
-    mock_mcp_server = mocker.Mock()
-    mock_mcp_server.name = "mcp_server_1"
-    mocker.patch.object(
-        type(setup_configuration),
-        "mcp_servers",
-        new_callable=mocker.PropertyMock,
-        return_value=[mock_mcp_server],
-    )
-    mocker.patch("app.endpoints.query.configuration", setup_configuration)
-
-    # Call function
-    get_agent(
-        client=mock_client,
-        model_id="test_model",
-        system_prompt="test_prompt",
-        available_input_shields=["shield1"],
-        available_output_shields=["output_shield2"],
-        conversation_id=None,
-    )
-
-    # Verify Agent was created with session persistence enabled
-    mock_agent_class.assert_called_once_with(
-        mock_client,
-        model="test_model",
-        instructions="test_prompt",
-        input_shields=["shield1"],
-        output_shields=["output_shield2"],
-        tool_parser=None,
-        enable_session_persistence=True,
-    )
-
-
-def test_auth_tuple_unpacking_in_query_endpoint_handler(mocker):
+@pytest.mark.asyncio
+async def test_auth_tuple_unpacking_in_query_endpoint_handler(mocker):
     """Test that auth tuple is correctly unpacked in query endpoint handler."""
     # Mock dependencies
     mock_config = mocker.Mock()
     mock_config.llama_stack_configuration = mocker.Mock()
     mocker.patch("app.endpoints.query.configuration", mock_config)
 
-    mock_client = mocker.Mock()
+    mock_client = mocker.AsyncMock()
     mock_client.models.list.return_value = [
         mocker.Mock(identifier="model1", model_type="llm", provider_id="provider1")
     ]
-    mocker.patch("client.LlamaStackClientHolder.get_client", return_value=mock_client)
+    mocker.patch(
+        "client.AsyncLlamaStackClientHolder.get_client", return_value=mock_client
+    )
 
     mock_retrieve_response = mocker.patch(
         "app.endpoints.query.retrieve_response",
@@ -1396,7 +1115,7 @@ def test_auth_tuple_unpacking_in_query_endpoint_handler(mocker):
     )
     mocker.patch("app.endpoints.query.is_transcripts_enabled", return_value=False)
 
-    _ = query_endpoint_handler(
+    _ = await query_endpoint_handler(
         QueryRequest(query="test query"),
         auth=("user123", "username", "auth_token_123"),
         mcp_headers=None,
@@ -1405,10 +1124,11 @@ def test_auth_tuple_unpacking_in_query_endpoint_handler(mocker):
     assert mock_retrieve_response.call_args[0][3] == "auth_token_123"
 
 
-def test_query_endpoint_handler_no_tools_true(mocker):
+@pytest.mark.asyncio
+async def test_query_endpoint_handler_no_tools_true(mocker):
     """Test the query endpoint handler with no_tools=True."""
-    mock_client = mocker.Mock()
-    mock_lsc = mocker.patch("client.LlamaStackClientHolder.get_client")
+    mock_client = mocker.AsyncMock()
+    mock_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
     mock_lsc.return_value = mock_client
     mock_client.models.list.return_value = [
         mocker.Mock(identifier="model1", model_type="llm", provider_id="provider1"),
@@ -1434,17 +1154,18 @@ def test_query_endpoint_handler_no_tools_true(mocker):
 
     query_request = QueryRequest(query=query, no_tools=True)
 
-    response = query_endpoint_handler(query_request, auth=MOCK_AUTH)
+    response = await query_endpoint_handler(query_request, auth=MOCK_AUTH)
 
     # Assert the response is as expected
     assert response.response == llm_response
     assert response.conversation_id == conversation_id
 
 
-def test_query_endpoint_handler_no_tools_false(mocker):
+@pytest.mark.asyncio
+async def test_query_endpoint_handler_no_tools_false(mocker):
     """Test the query endpoint handler with no_tools=False (default behavior)."""
-    mock_client = mocker.Mock()
-    mock_lsc = mocker.patch("client.LlamaStackClientHolder.get_client")
+    mock_client = mocker.AsyncMock()
+    mock_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
     mock_lsc.return_value = mock_client
     mock_client.models.list.return_value = [
         mocker.Mock(identifier="model1", model_type="llm", provider_id="provider1"),
@@ -1470,14 +1191,17 @@ def test_query_endpoint_handler_no_tools_false(mocker):
 
     query_request = QueryRequest(query=query, no_tools=False)
 
-    response = query_endpoint_handler(query_request, auth=MOCK_AUTH)
+    response = await query_endpoint_handler(query_request, auth=MOCK_AUTH)
 
     # Assert the response is as expected
     assert response.response == llm_response
     assert response.conversation_id == conversation_id
 
 
-def test_retrieve_response_no_tools_bypasses_mcp_and_rag(prepare_agent_mocks, mocker):
+@pytest.mark.asyncio
+async def test_retrieve_response_no_tools_bypasses_mcp_and_rag(
+    prepare_agent_mocks, mocker
+):
     """Test that retrieve_response bypasses MCP servers and RAG when no_tools=True."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -1504,7 +1228,7 @@ def test_retrieve_response_no_tools_bypasses_mcp_and_rag(prepare_agent_mocks, mo
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    response, conversation_id = retrieve_response(
+    response, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -1524,7 +1248,8 @@ def test_retrieve_response_no_tools_bypasses_mcp_and_rag(prepare_agent_mocks, mo
     )
 
 
-def test_retrieve_response_no_tools_false_preserves_functionality(
+@pytest.mark.asyncio
+async def test_retrieve_response_no_tools_false_preserves_functionality(
     prepare_agent_mocks, mocker
 ):
     """Test that retrieve_response preserves normal functionality when no_tools=False."""
@@ -1553,7 +1278,7 @@ def test_retrieve_response_no_tools_false_preserves_functionality(
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    response, conversation_id = retrieve_response(
+    response, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -1580,117 +1305,6 @@ def test_retrieve_response_no_tools_false_preserves_functionality(
         documents=[],
         stream=False,
         toolgroups=expected_toolgroups,
-    )
-
-
-def test_get_agent_no_tools_no_parser(setup_configuration, prepare_agent_mocks, mocker):
-    """Test get_agent function sets tool_parser=None when no_tools=True."""
-    mock_client, mock_agent = prepare_agent_mocks
-    mock_agent.create_session.return_value = "new_session_id"
-
-    # Mock Agent class
-    mock_agent_class = mocker.patch(
-        "app.endpoints.query.Agent", return_value=mock_agent
-    )
-
-    # Mock get_suid
-    mocker.patch("app.endpoints.query.get_suid", return_value="new_session_id")
-
-    # Mock configuration
-    mock_mcp_server = mocker.Mock()
-    mock_mcp_server.name = "mcp_server_1"
-    mocker.patch.object(
-        type(setup_configuration),
-        "mcp_servers",
-        new_callable=mocker.PropertyMock,
-        return_value=[mock_mcp_server],
-    )
-    mocker.patch("app.endpoints.query.configuration", setup_configuration)
-
-    # Call function with no_tools=True
-    result_agent, result_conversation_id, result_session_id = get_agent(
-        client=mock_client,
-        model_id="test_model",
-        system_prompt="test_prompt",
-        available_input_shields=["shield1"],
-        available_output_shields=["output_shield2"],
-        conversation_id=None,
-        no_tools=True,
-    )
-
-    # Assert new agent is created
-    assert result_agent == mock_agent
-    assert result_conversation_id == result_agent.agent_id
-    assert result_session_id == "new_session_id"
-
-    # Verify Agent was created with tool_parser=None
-    mock_agent_class.assert_called_once_with(
-        mock_client,
-        model="test_model",
-        instructions="test_prompt",
-        input_shields=["shield1"],
-        output_shields=["output_shield2"],
-        tool_parser=None,
-        enable_session_persistence=True,
-    )
-
-
-def test_get_agent_no_tools_false_preserves_parser(
-    setup_configuration, prepare_agent_mocks, mocker
-):
-    """Test get_agent function preserves tool_parser when no_tools=False."""
-    mock_client, mock_agent = prepare_agent_mocks
-    mock_agent.create_session.return_value = "new_session_id"
-
-    # Mock Agent class
-    mock_agent_class = mocker.patch(
-        "app.endpoints.query.Agent", return_value=mock_agent
-    )
-
-    # Mock get_suid
-    mocker.patch("app.endpoints.query.get_suid", return_value="new_session_id")
-
-    # Mock GraniteToolParser
-    mock_parser = mocker.Mock()
-    mock_granite_parser = mocker.patch("app.endpoints.query.GraniteToolParser")
-    mock_granite_parser.get_parser.return_value = mock_parser
-
-    # Mock configuration
-    mock_mcp_server = mocker.Mock()
-    mock_mcp_server.name = "mcp_server_1"
-    mocker.patch.object(
-        type(setup_configuration),
-        "mcp_servers",
-        new_callable=mocker.PropertyMock,
-        return_value=[mock_mcp_server],
-    )
-    mocker.patch("app.endpoints.query.configuration", setup_configuration)
-
-    # Call function with no_tools=False
-    result_agent, result_conversation_id, result_session_id = get_agent(
-        client=mock_client,
-        model_id="test_model",
-        system_prompt="test_prompt",
-        available_input_shields=["shield1"],
-        available_output_shields=["output_shield2"],
-        conversation_id=None,
-        no_tools=False,
-    )
-
-    # Assert new agent is created
-    assert result_agent == mock_agent
-    assert result_conversation_id == result_agent.agent_id
-    assert result_session_id == "new_session_id"
-
-    # Verify Agent was created with the proper tool_parser
-    mock_agent_class.assert_called_once_with(
-        mock_client,
-        model="test_model",
-        instructions="test_prompt",
-        input_shields=["shield1"],
-        output_shields=["output_shield2"],
-        tool_parser=mock_parser,
-        enable_session_persistence=True,
     )
 
 

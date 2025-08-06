@@ -1,10 +1,9 @@
 """Handler for REST API call to authorized endpoint."""
 
-import asyncio
 import logging
 from typing import Any
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends
 
 from auth import get_auth_dependency
 from models.responses import AuthorizedResponse, UnauthorizedResponse, ForbiddenResponse
@@ -31,8 +30,10 @@ authorized_responses: dict[int | str, dict[str, Any]] = {
 
 
 @router.post("/authorized", responses=authorized_responses)
-def authorized_endpoint_handler(_request: Request) -> AuthorizedResponse:
+async def authorized_endpoint_handler(
+    auth: Any = Depends(auth_dependency),
+) -> AuthorizedResponse:
     """Handle request to the /authorized endpoint."""
     # Ignore the user token, we should not return it in the response
-    user_id, user_name, _ = asyncio.run(auth_dependency(_request))
+    user_id, user_name, _ = auth
     return AuthorizedResponse(user_id=user_id, username=user_name)

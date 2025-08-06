@@ -7,7 +7,14 @@ async def test_setup_model_metrics(mocker):
     """Test the setup_model_metrics function."""
 
     # Mock the LlamaStackAsLibraryClient
-    mock_client = mocker.patch("client.LlamaStackClientHolder.get_client").return_value
+    mock_client = mocker.patch(
+        "client.AsyncLlamaStackClientHolder.get_client"
+    ).return_value
+    # Make sure the client is an AsyncMock for async methods
+    mock_client = mocker.AsyncMock()
+    mocker.patch(
+        "client.AsyncLlamaStackClientHolder.get_client", return_value=mock_client
+    )
     mocker.patch(
         "metrics.utils.configuration.inference.default_provider",
         "default_provider",

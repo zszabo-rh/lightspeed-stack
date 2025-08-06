@@ -1,14 +1,12 @@
 """Handler for REST API call to provide answer to streaming query."""
 
 import ast
-from contextlib import suppress
 import json
 import re
 import logging
 from typing import Annotated, Any, AsyncIterator, Iterator
 
 from llama_stack_client import APIConnectionError
-from llama_stack_client.lib.agents.agent import AsyncAgent  # type: ignore
 from llama_stack_client import AsyncLlamaStackClient  # type: ignore
 from llama_stack_client.types import UserMessage  # type: ignore
 
@@ -25,10 +23,8 @@ from client import AsyncLlamaStackClientHolder
 from configuration import configuration
 import metrics
 from models.requests import QueryRequest
-from utils.endpoints import check_configuration_loaded, get_system_prompt
+from utils.endpoints import check_configuration_loaded, get_agent, get_system_prompt
 from utils.mcp_headers import mcp_headers_dependency, handle_mcp_headers_with_toolgroups
-from utils.suid import get_suid
-from utils.types import GraniteToolParser
 
 from app.endpoints.query import (
     get_rag_toolgroups,
@@ -43,50 +39,6 @@ from app.endpoints.query import (
 logger = logging.getLogger("app.endpoints.handlers")
 router = APIRouter(tags=["streaming_query"])
 auth_dependency = get_auth_dependency()
-
-
-# # pylint: disable=R0913,R0917
-async def get_agent(
-    client: AsyncLlamaStackClient,
-    model_id: str,
-    system_prompt: str,
-    available_input_shields: list[str],
-    available_output_shields: list[str],
-    conversation_id: str | None,
-    no_tools: bool = False,
-) -> tuple[AsyncAgent, str, str]:
-    """Get existing agent or create a new one with session persistence."""
-    existing_agent_id = None
-    if conversation_id:
-        with suppress(ValueError):
-            agent_response = await client.agents.retrieve(agent_id=conversation_id)
-            existing_agent_id = agent_response.agent_id
-
-    logger.debug("Creating new agent")
-    agent = AsyncAgent(
-        client,  # type: ignore[arg-type]
-        model=model_id,
-        instructions=system_prompt,
-        input_shields=available_input_shields if available_input_shields else [],
-        output_shields=available_output_shields if available_output_shields else [],
-        tool_parser=None if no_tools else GraniteToolParser.get_parser(model_id),
-        enable_session_persistence=True,
-    )
-
-    await agent.initialize()
-
-    if existing_agent_id and conversation_id:
-        orphan_agent_id = agent.agent_id
-        agent._agent_id = conversation_id  # type: ignore[assignment]  # pylint: disable=protected-access
-        await client.agents.delete(agent_id=orphan_agent_id)
-        sessions_response = await client.agents.session.list(agent_id=conversation_id)
-        logger.info("session response: %s", sessions_response)
-        session_id = str(sessions_response.data[0]["session_id"])
-    else:
-        conversation_id = agent.agent_id
-        session_id = await agent.create_session(get_suid())
-
-    return agent, conversation_id, session_id
 
 
 METADATA_PATTERN = re.compile(r"\nMetadata: (\{.+})\n")
@@ -556,8 +508,7 @@ async def retrieve_response(
         query_request.no_tools or False,
     )
 
-    logger.debug("Session ID: %s", conversation_id)
-
+    logger.debug("Conversation ID: %s, session ID: %s", conversation_id, session_id)
     # bypass tools and MCP servers if no_tools is True
     if query_request.no_tools:
         mcp_headers = {}
