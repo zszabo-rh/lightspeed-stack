@@ -305,6 +305,12 @@ class TestGetConversationEndpoint:
         mock_client.agents.session.list.return_value = mocker.Mock(
             data=[mock_session_data]
         )
+
+        # Mock session.retrieve to return an object with model_dump() method
+        mock_session_retrieve_result = mocker.Mock()
+        mock_session_retrieve_result.model_dump.return_value = mock_session_data
+        mock_client.agents.session.retrieve.return_value = mock_session_retrieve_result
+
         mock_client_holder = mocker.patch(
             "app.endpoints.conversations.AsyncLlamaStackClientHolder"
         )
