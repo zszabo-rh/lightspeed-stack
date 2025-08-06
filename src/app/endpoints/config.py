@@ -49,7 +49,7 @@ get_config_responses: dict[int | str, dict[str, Any]] = {
     },
     503: {
         "detail": {
-            "response": "Configuration is no loaded",
+            "response": "Configuration is not loaded",
         }
     },
 }
