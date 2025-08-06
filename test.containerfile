@@ -17,7 +17,7 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 RUN uv -h
 
 RUN uv venv && \
-    uv pip install llama-stack==0.2.16 \
+    uv pip install llama-stack==0.2.17 \
     fastapi \
     opentelemetry-sdk \
     opentelemetry-exporter-otlp \
