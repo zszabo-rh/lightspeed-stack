@@ -213,7 +213,9 @@ def _handle_turn_complete_event(chunk: Any, chunk_id: int) -> Iterator[str]:
             "event": "turn_complete",
             "data": {
                 "id": chunk_id,
-                "token": chunk.event.payload.turn.output_message.content,
+                "token": interleaved_content_as_str(
+                    chunk.event.payload.turn.output_message.content
+                ),
             },
         }
     )
@@ -335,7 +337,10 @@ def _handle_tool_execution_event(
                     "data": {
                         "id": chunk_id,
                         "role": chunk.event.payload.step_type,
-                        "token": f"Tool:{t.tool_name} arguments:{t.arguments}",
+                        "token": {
+                            "tool_name": t.tool_name,
+                            "arguments": t.arguments,
+                        },
                     },
                 }
             )
@@ -349,7 +354,10 @@ def _handle_tool_execution_event(
                         "data": {
                             "id": chunk_id,
                             "role": chunk.event.payload.step_type,
-                            "token": f"Fetched {len(inserted_context)} bytes from memory",
+                            "token": {
+                                "tool_name": r.tool_name,
+                                "response": f"Fetched {len(inserted_context)} bytes from memory",
+                            },
                         },
                     }
                 )
@@ -380,7 +388,10 @@ def _handle_tool_execution_event(
                         "data": {
                             "id": chunk_id,
                             "role": chunk.event.payload.step_type,
-                            "token": f"Tool:{r.tool_name} summary:{summary}",
+                            "token": {
+                                "tool_name": r.tool_name,
+                                "summary": summary,
+                            },
                         },
                     }
                 )
@@ -392,7 +403,10 @@ def _handle_tool_execution_event(
                         "data": {
                             "id": chunk_id,
                             "role": chunk.event.payload.step_type,
-                            "token": f"Tool:{r.tool_name} response:{r.content}",
+                            "token": {
+                                "tool_name": r.tool_name,
+                                "response": interleaved_content_as_str(r.content),
+                            },
                         },
                     }
                 )
@@ -446,16 +460,20 @@ async def streaming_query_endpoint_handler(
         async def response_generator(turn_response: Any) -> AsyncIterator[str]:
             """Generate SSE formatted streaming response."""
             chunk_id = 0
-            complete_response = ""
+            complete_response = "No response from the model"
 
             # Send start event
             yield stream_start_event(conversation_id)
 
             async for chunk in turn_response:
                 for event in stream_build_event(chunk, chunk_id, metadata_map):
-                    complete_response += json.loads(event.replace("data: ", ""))[
-                        "data"
-                    ]["token"]
+                    if (
+                        json.loads(event.replace("data: ", ""))["event"]
+                        == "turn_complete"
+                    ):
+                        complete_response = json.loads(event.replace("data: ", ""))[
+                            "data"
+                        ]["token"]
                     chunk_id += 1
                     yield event
 

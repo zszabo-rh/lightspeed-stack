@@ -181,8 +181,18 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
                 payload=AgentTurnResponseStepProgressPayload(
                     event_type="step_progress",
                     step_type="inference",
-                    delta=TextDelta(text="LLM answer", type="text"),
+                    delta=TextDelta(text="LLM ", type="text"),
                     step_id="s1",
+                )
+            )
+        ),
+        AgentTurnResponseStreamChunk(
+            event=TurnResponseEvent(
+                payload=AgentTurnResponseStepProgressPayload(
+                    event_type="step_progress",
+                    step_type="inference",
+                    delta=TextDelta(text="answer", type="text"),
+                    step_id="s2",
                 )
             )
         ),
@@ -194,7 +204,7 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
                     step_type="tool_execution",
                     step_details=ToolExecutionStep(
                         turn_id="t1",
-                        step_id="s2",
+                        step_id="s3",
                         step_type="tool_execution",
                         tool_responses=[
                             ToolResponse(
@@ -211,6 +221,27 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
                                 call_id="t1", tool_name="knowledge_search", arguments={}
                             )
                         ],
+                    ),
+                )
+            )
+        ),
+        AgentTurnResponseStreamChunk(
+            event=TurnResponseEvent(
+                payload=AgentTurnResponseTurnCompletePayload(
+                    event_type="turn_complete",
+                    turn=Turn(
+                        turn_id="t1",
+                        input_messages=[],
+                        output_message=CompletionMessage(
+                            role="assistant",
+                            content=[TextContentItem(text="LLM answer", type="text")],
+                            stop_reason="end_of_turn",
+                        ),
+                        session_id="test_session_id",
+                        started_at=datetime.now(),
+                        steps=[],
+                        completed_at=datetime.now(),
+                        output_attachments=[],
                     ),
                 )
             )
@@ -263,8 +294,8 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
     assert "LLM answer" in full_content
 
     # Assert referenced documents
-    assert len(streaming_content) == 5
-    d = json.loads(streaming_content[4][5:])
+    assert len(streaming_content) == 7
+    d = json.loads(streaming_content[6][5:])
     referenced_documents = d["data"]["referenced_documents"]
     assert len(referenced_documents) == 2
     assert referenced_documents[1]["doc_title"] == "Doc2"
@@ -277,8 +308,7 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
             query_is_valid=True,
             query=query,
             query_request=query_request,
-            response="LLM answerTool:knowledge_search arguments:{}Tool:knowledge_search "
-            "summary:knowledge_search tool found 2 chunks:",
+            response="LLM answer",
             attachments=[],
             rag_chunks=[],
             truncated=False,
@@ -940,12 +970,12 @@ def test_stream_build_event_step_complete():
     assert result is not None
     assert "data: " in result
     assert '"event": "tool_call"' in result
-    assert '"token": "Tool:knowledge_search arguments:' in result
+    assert '"token": {"tool_name": "knowledge_search", "arguments": {}}' in result
 
     result = next(itr)
     assert (
-        '"token": "Tool:knowledge_search summary:knowledge_search tool found 2 chunks:"'
-        in result
+        '"token": {"tool_name": "knowledge_search", '
+        '"summary": "knowledge_search tool found 2 chunks:"}' in result
     )
     assert '"role": "tool_execution"' in result
     assert '"id": 0' in result
