@@ -31,7 +31,6 @@ async def get_providers_health_statuses() -> list[ProviderHealthStatus]:
     try:
         client = AsyncLlamaStackClientHolder().get_client()
 
-        # providers = []
         providers = await client.providers.list()
         logger.debug("Found %d providers", len(providers))
 

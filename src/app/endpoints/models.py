@@ -48,7 +48,7 @@ def models_endpoint_handler(_request: Request) -> ModelsResponse:
     check_configuration_loaded(configuration)
 
     llama_stack_configuration = configuration.llama_stack_configuration
-    logger.info("LLama stack config: %s", llama_stack_configuration)
+    logger.info("Llama stack config: %s", llama_stack_configuration)
 
     try:
         # try to get Llama Stack client

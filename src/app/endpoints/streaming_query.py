@@ -556,6 +556,8 @@ async def retrieve_response(
         query_request.no_tools or False,
     )
 
+    logger.debug("Session ID: %s", conversation_id)
+
     # bypass tools and MCP servers if no_tools is True
     if query_request.no_tools:
         mcp_headers = {}
@@ -582,7 +584,6 @@ async def retrieve_response(
             ),
         }
 
-        logger.debug("Session ID: %s", conversation_id)
         vector_db_ids = [
             vector_db.identifier for vector_db in await client.vector_dbs.list()
         ]
@@ -593,7 +594,6 @@ async def retrieve_response(
         if not toolgroups:
             toolgroups = None
 
-    logger.debug("Session ID: %s", conversation_id)
     response = await agent.create_turn(
         messages=[UserMessage(role="user", content=query_request.query)],
         session_id=session_id,
