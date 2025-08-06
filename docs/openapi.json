@@ -1406,7 +1406,11 @@
                 "properties": {
                     "query": {
                         "type": "string",
-                        "title": "Query"
+                        "title": "Query",
+                        "description": "The query string",
+                        "examples": [
+                            "What is Kubernetes?"
+                        ]
                     },
                     "conversation_id": {
                         "anyOf": [
@@ -1417,7 +1421,11 @@
                                 "type": "null"
                             }
                         ],
-                        "title": "Conversation Id"
+                        "title": "Conversation Id",
+                        "description": "The optional conversation ID (UUID)",
+                        "examples": [
+                            "c5260aec-4d82-4370-9fdf-05cf908b3f16"
+                        ]
                     },
                     "provider": {
                         "anyOf": [
@@ -1428,7 +1436,12 @@
                                 "type": "null"
                             }
                         ],
-                        "title": "Provider"
+                        "title": "Provider",
+                        "description": "The optional provider",
+                        "examples": [
+                            "openai",
+                            "watsonx"
+                        ]
                     },
                     "model": {
                         "anyOf": [
@@ -1439,7 +1452,11 @@
                                 "type": "null"
                             }
                         ],
-                        "title": "Model"
+                        "title": "Model",
+                        "description": "The optional model",
+                        "examples": [
+                            "gpt4mini"
+                        ]
                     },
                     "system_prompt": {
                         "anyOf": [
@@ -1450,7 +1467,12 @@
                                 "type": "null"
                             }
                         ],
-                        "title": "System Prompt"
+                        "title": "System Prompt",
+                        "description": "The optional system prompt.",
+                        "examples": [
+                            "You are OpenShift assistant.",
+                            "You are Ansible assistant."
+                        ]
                     },
                     "attachments": {
                         "anyOf": [
@@ -1464,7 +1486,25 @@
                                 "type": "null"
                             }
                         ],
-                        "title": "Attachments"
+                        "title": "Attachments",
+                        "description": "The optional list of attachments.",
+                        "examples": [
+                            {
+                                "attachment_type": "log",
+                                "content": "this is attachment",
+                                "content_type": "text/plain"
+                            },
+                            {
+                                "attachment_type": "configuration",
+                                "content": "kind: Pod\n metadata:\n name:    private-reg",
+                                "content_type": "application/yaml"
+                            },
+                            {
+                                "attachment_type": "configuration",
+                                "content": "foo: bar",
+                                "content_type": "application/yaml"
+                            }
+                        ]
                     },
                     "no_tools": {
                         "anyOf": [
@@ -1476,7 +1516,12 @@
                             }
                         ],
                         "title": "No Tools",
-                        "default": false
+                        "description": "Whether to bypass all tools and MCP servers",
+                        "default": false,
+                        "examples": [
+                            true,
+                            false
+                        ]
                     },
                     "media_type": {
                         "anyOf": [
@@ -1487,7 +1532,11 @@
                                 "type": "null"
                             }
                         ],
-                        "title": "Media Type"
+                        "title": "Media Type",
+                        "description": "Media type (used just to enable compatibility)",
+                        "examples": [
+                            "application/json"
+                        ]
                     }
                 },
                 "additionalProperties": false,

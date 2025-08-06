@@ -719,14 +719,14 @@ Example:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| query | string |  |
-| conversation_id |  |  |
-| provider |  |  |
-| model |  |  |
-| system_prompt |  |  |
-| attachments |  |  |
-| no_tools |  |  |
-| media_type |  |  |
+| query | string | The query string |
+| conversation_id |  | The optional conversation ID (UUID) |
+| provider |  | The optional provider |
+| model |  | The optional model |
+| system_prompt |  | The optional system prompt. |
+| attachments |  | The optional list of attachments. |
+| no_tools |  | Whether to bypass all tools and MCP servers |
+| media_type |  | Media type (used just to enable compatibility) |
 
 
 ## QueryResponse

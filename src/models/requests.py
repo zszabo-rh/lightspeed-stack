@@ -85,16 +85,70 @@ class QueryRequest(BaseModel):
         ```
     """
 
-    query: str
-    conversation_id: Optional[str] = None
-    provider: Optional[str] = None
-    model: Optional[str] = None
-    system_prompt: Optional[str] = None
-    attachments: Optional[list[Attachment]] = None
-    no_tools: Optional[bool] = False
+    query: str = Field(
+        description="The query string",
+        examples=["What is Kubernetes?"],
+    )
+
+    conversation_id: Optional[str] = Field(
+        None,
+        description="The optional conversation ID (UUID)",
+        examples=["c5260aec-4d82-4370-9fdf-05cf908b3f16"],
+    )
+
+    provider: Optional[str] = Field(
+        None,
+        description="The optional provider",
+        examples=["openai", "watsonx"],
+    )
+
+    model: Optional[str] = Field(
+        None,
+        description="The optional model",
+        examples=["gpt4mini"],
+    )
+
+    system_prompt: Optional[str] = Field(
+        None,
+        description="The optional system prompt.",
+        examples=["You are OpenShift assistant.", "You are Ansible assistant."],
+    )
+
+    attachments: Optional[list[Attachment]] = Field(
+        None,
+        description="The optional list of attachments.",
+        examples=[
+            {
+                "attachment_type": "log",
+                "content_type": "text/plain",
+                "content": "this is attachment",
+            },
+            {
+                "attachment_type": "configuration",
+                "content_type": "application/yaml",
+                "content": "kind: Pod\n metadata:\n name:    private-reg",
+            },
+            {
+                "attachment_type": "configuration",
+                "content_type": "application/yaml",
+                "content": "foo: bar",
+            },
+        ],
+    )
+
+    no_tools: Optional[bool] = Field(
+        False,
+        description="Whether to bypass all tools and MCP servers",
+        examples=[True, False],
+    )
+
     # media_type is not used in 'lightspeed-stack' that only supports application/json.
     # the field is kept here to enable compatibility with 'road-core' clients.
-    media_type: Optional[str] = None
+    media_type: Optional[str] = Field(
+        None,
+        description="Media type (used just to enable compatibility)",
+        examples=["application/json"],
+    )
 
     # provides examples for /docs endpoint
     model_config = {
