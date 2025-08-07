@@ -245,6 +245,8 @@ models:
 
 #### LCS configuration to use Llama Stack in library mode
 
+Create a file named lightspeed-stack.yaml with this content.
+
 ```yaml
 name: Lightspeed Core Service (LCS)
 service:
