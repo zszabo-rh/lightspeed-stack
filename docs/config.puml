@@ -12,7 +12,7 @@ class "AuthenticationConfiguration" as src.models.config.AuthenticationConfigura
 class "Configuration" as src.models.config.Configuration {
   authentication : Optional[AuthenticationConfiguration]
   customization : Optional[Customization]
-  inference : Optional[InferenceConfiguration]
+  inference
   llama_stack
   mcp_servers : list[ModelContextProtocolServer]
   name : str
@@ -86,6 +86,7 @@ class "UserDataCollection" as src.models.config.UserDataCollection {
   check_storage_location_is_set_when_needed() -> Self
 }
 src.models.config.DataCollectorConfiguration --* src.models.config.UserDataCollection : data_collector
+src.models.config.InferenceConfiguration --* src.models.config.Configuration : inference
 src.models.config.JwtConfiguration --* src.models.config.JwkConfiguration : jwt_configuration
 src.models.config.LlamaStackConfiguration --* src.models.config.Configuration : llama_stack
 src.models.config.ServiceConfiguration --* src.models.config.Configuration : service

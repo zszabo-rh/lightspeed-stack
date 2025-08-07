@@ -106,7 +106,7 @@ class AppConfig:
         return self._configuration.customization
 
     @property
-    def inference(self) -> Optional[InferenceConfiguration]:
+    def inference(self) -> InferenceConfiguration:
         """Return inference configuration."""
         assert (
             self._configuration is not None

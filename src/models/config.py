@@ -249,7 +249,7 @@ class Configuration(BaseModel):
         AuthenticationConfiguration()
     )
     customization: Optional[Customization] = None
-    inference: Optional[InferenceConfiguration] = InferenceConfiguration()
+    inference: InferenceConfiguration = InferenceConfiguration()
 
     def dump(self, filename: str = "configuration.json") -> None:
         """Dump actual configuration into JSON file."""
