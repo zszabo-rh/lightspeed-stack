@@ -93,7 +93,7 @@ many applications.
 
 ## Llama Stack as separate server
 
-If Llama Stack runs as a separate server, the Lightspeed service needs to be configured to be able to access it. For example, if server runs on localhost:8321, the service configuration stored in file `llama-stack.yaml` should look like:
+If Llama Stack runs as a separate server, the Lightspeed service needs to be configured to be able to access it. For example, if server runs on localhost:8321, the service configuration stored in file `lightspeed-stack.yaml` should look like:
 
 ```yaml
 name: foo bar baz
