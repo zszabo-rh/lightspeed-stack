@@ -132,7 +132,7 @@
                             }
                         },
                         "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
-                        "response": "LLM ansert"
+                        "response": "LLM answer"
                     },
                     "400": {
                         "description": "Missing or invalid credentials provided by client",
@@ -276,7 +276,7 @@
                     "503": {
                         "description": "Service Unavailable",
                         "detail": {
-                            "response": "Configuration is no loaded"
+                            "response": "Configuration is not loaded"
                         }
                     }
                 }
@@ -808,14 +808,7 @@
                         ]
                     },
                     "inference": {
-                        "anyOf": [
-                            {
-                                "$ref": "#/components/schemas/InferenceConfiguration"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
+                        "$ref": "#/components/schemas/InferenceConfiguration",
                         "default": {}
                     }
                 },
