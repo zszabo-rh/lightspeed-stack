@@ -1,4 +1,4 @@
-"""Handler for REST API call to provide info."""
+"""Handler for REST API endpoint for user feedback."""
 
 import logging
 from typing import Annotated, Any

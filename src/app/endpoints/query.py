@@ -37,7 +37,7 @@ auth_dependency = get_auth_dependency()
 query_response: dict[int | str, dict[str, Any]] = {
     200: {
         "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
-        "response": "LLM ansert",
+        "response": "LLM answer",
     },
     400: {
         "description": "Missing or invalid credentials provided by client",

@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["info"])
 
 
-get_into_responses: dict[int | str, dict[str, Any]] = {
+get_info_responses: dict[int | str, dict[str, Any]] = {
     200: {
         "name": "Service name",
         "version": "Service version",
@@ -21,7 +21,7 @@ get_into_responses: dict[int | str, dict[str, Any]] = {
 }
 
 
-@router.get("/info", responses=get_into_responses)
+@router.get("/info", responses=get_info_responses)
 def info_endpoint_handler(_request: Request) -> InfoResponse:
     """Handle request to the /info endpoint."""
     return InfoResponse(name=configuration.configuration.name, version=__version__)
