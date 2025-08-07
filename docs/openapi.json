@@ -1011,15 +1011,27 @@
                 "properties": {
                     "conversation_id": {
                         "type": "string",
-                        "title": "Conversation Id"
+                        "title": "Conversation Id",
+                        "description": "The required conversation ID (UUID)",
+                        "examples": [
+                            "c5260aec-4d82-4370-9fdf-05cf908b3f16"
+                        ]
                     },
                     "user_question": {
                         "type": "string",
-                        "title": "User Question"
+                        "title": "User Question",
+                        "description": "User question (the query string)",
+                        "examples": [
+                            "What is Kubernetes?"
+                        ]
                     },
                     "llm_response": {
                         "type": "string",
-                        "title": "Llm Response"
+                        "title": "Llm Response",
+                        "description": "Response from LLM",
+                        "examples": [
+                            "Kubernetes is an open-source container orchestration system for automating ..."
+                        ]
                     },
                     "sentiment": {
                         "anyOf": [
@@ -1030,7 +1042,12 @@
                                 "type": "null"
                             }
                         ],
-                        "title": "Sentiment"
+                        "title": "Sentiment",
+                        "description": "User sentiment, if provided must be -1 or 1",
+                        "examples": [
+                            -1,
+                            1
+                        ]
                     },
                     "user_feedback": {
                         "anyOf": [

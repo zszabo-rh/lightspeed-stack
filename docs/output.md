@@ -515,10 +515,10 @@ Example:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| conversation_id | string |  |
-| user_question | string |  |
-| llm_response | string |  |
-| sentiment |  |  |
+| conversation_id | string | The required conversation ID (UUID) |
+| user_question | string | User question (the query string) |
+| llm_response | string | Response from LLM |
+| sentiment |  | User sentiment, if provided must be -1 or 1 |
 | user_feedback |  | Feedback on the LLM response. |
 | categories |  | List of feedback categories that describe issues with the LLM response (for negative feedback). |
 
