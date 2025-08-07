@@ -9,7 +9,7 @@ Feature: REST API tests
 
 
   Scenario: Check if service report proper readiness state
-    Given the system is in default state
+    Given The system is in default state
      When I access endpoint "readiness" using HTTP GET method
      Then The status code of the response is 200
       And The body of the response has the following schema
@@ -27,7 +27,7 @@ Feature: REST API tests
 
 
   Scenario: Check if service report proper liveness state
-    Given the system is in default state
+    Given The system is in default state
      When I access endpoint "liveness" using HTTP GET method
      Then The status code of the response is 200
       And The body of the response has the following schema
@@ -43,14 +43,14 @@ Feature: REST API tests
 
 
   Scenario: Check if the OpenAPI endpoint works as expected
-    Given the system is in default state
+    Given The system is in default state
      When I access endpoint "openapi.json" using HTTP GET method
      Then The status code of the response is 200
       And The body of the response contains OpenAPI
 
 
   Scenario: Check if info endpoint is working
-    Given the system is in default state
+    Given The system is in default state
      When I access REST API endpoint "info" using HTTP GET method
      Then The status code of the response is 200
       And The body of the response contains name
