@@ -577,7 +577,7 @@ def test_dump_configuration_with_one_mcp_server(tmp_path) -> None:
         ),
         mcp_servers=mcp_servers,
         customization=None,
-        inference=None,
+        inference=InferenceConfiguration(),
     )
     dump_file = tmp_path / "test.json"
     cfg.dump(dump_file)
@@ -628,7 +628,7 @@ def test_dump_configuration_with_more_mcp_servers(tmp_path) -> None:
         ),
         mcp_servers=mcp_servers,
         customization=None,
-        inference=None,
+        inference=InferenceConfiguration(),
     )
     dump_file = tmp_path / "test.json"
     cfg.dump(dump_file)
