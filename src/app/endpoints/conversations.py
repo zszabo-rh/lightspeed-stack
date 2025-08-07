@@ -134,7 +134,13 @@ async def get_conversation_endpoint_handler(
     try:
         client = AsyncLlamaStackClientHolder().get_client()
 
-        session_data = (await client.agents.session.list(agent_id=agent_id)).data[0]
+        agent_sessions = (await client.agents.session.list(agent_id=agent_id)).data
+        session_id = str(agent_sessions[0].get("session_id"))
+
+        session_response = await client.agents.session.retrieve(
+            agent_id=agent_id, session_id=session_id
+        )
+        session_data = session_response.model_dump()
 
         logger.info("Successfully retrieved conversation %s", conversation_id)
 
