@@ -9,7 +9,7 @@ Feature: LLM interface tests
 
 
   Scenario: Check if LLM responds to sent question
-    Given the system is in default state
+    Given The system is in default state
      When I ask question "Say hello"
      Then The status code of the response is 200
       And The response should have proper LLM response format

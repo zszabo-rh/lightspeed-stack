@@ -9,7 +9,7 @@ Feature: Smoke tests
 
 
   Scenario: Check if the main endpoint is reachable
-    Given the system is in default state
+    Given The system is in default state
      When I access endpoint "/" using HTTP GET method
      Then The status code of the response is 200
       And Content type of response should be set to "text/html"
