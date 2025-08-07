@@ -252,10 +252,29 @@ class FeedbackRequest(BaseModel):
         ```
     """
 
-    conversation_id: str
-    user_question: str
-    llm_response: str
-    sentiment: Optional[int] = None
+    conversation_id: str = Field(
+        description="The required conversation ID (UUID)",
+        examples=["c5260aec-4d82-4370-9fdf-05cf908b3f16"],
+    )
+
+    user_question: str = Field(
+        description="User question (the query string)",
+        examples=["What is Kubernetes?"],
+    )
+
+    llm_response: str = Field(
+        description="Response from LLM",
+        examples=[
+            "Kubernetes is an open-source container orchestration system for automating ..."
+        ],
+    )
+
+    sentiment: Optional[int] = Field(
+        None,
+        description="User sentiment, if provided must be -1 or 1",
+        examples=[-1, 1],
+    )
+
     # Optional user feedback limited to 1–4096 characters to prevent abuse.
     user_feedback: Optional[str] = Field(
         default=None,
@@ -263,6 +282,7 @@ class FeedbackRequest(BaseModel):
         description="Feedback on the LLM response.",
         examples=["I'm not satisfied with the response because it is too vague."],
     )
+
     # Optional list of predefined feedback categories for negative feedback
     categories: Optional[list[FeedbackCategory]] = Field(
         default=None,
