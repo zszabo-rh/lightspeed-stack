@@ -55,7 +55,15 @@ async def test_noop_with_token_auth_dependency_custom_user_id():
 
 
 async def test_noop_with_token_auth_dependency_no_token():
-    """Test the NoopWithTokenAuthDependency class with no token."""
+    """
+    Test if checks for Authorization header is in place.
+
+    Test that NoopWithTokenAuthDependency raises an HTTPException when no
+    Authorization header is present in the request.
+
+    Asserts that the exception has a status code of 400 and the detail message
+    "No Authorization header found".
+    """
     dependency = NoopWithTokenAuthDependency()
 
     # Create a mock request without token
