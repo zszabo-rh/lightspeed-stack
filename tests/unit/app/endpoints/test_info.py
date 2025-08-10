@@ -1,5 +1,7 @@
 """Unit tests for the /info REST API endpoint."""
 
+from fastapi import Request
+
 from app.endpoints.info import info_endpoint_handler
 from configuration import AppConfig
 
@@ -28,7 +30,11 @@ def test_info_endpoint():
     }
     cfg = AppConfig()
     cfg.init_from_dict(config_dict)
-    request = None
+    request = Request(
+        scope={
+            "type": "http",
+        }
+    )
     response = info_endpoint_handler(request)
     assert response is not None
     assert response.name is not None

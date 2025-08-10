@@ -8,7 +8,7 @@ import json
 
 import pytest
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException, Request, status
 from fastapi.responses import StreamingResponse
 
 from llama_stack_client import APIConnectionError
@@ -118,9 +118,14 @@ async def test_streaming_query_endpoint_handler_configuration_not_loaded(mocker)
     query = "What is OpenStack?"
     query_request = QueryRequest(query=query)
 
+    request = Request(
+        scope={
+            "type": "http",
+        }
+    )
     # await the async function
     with pytest.raises(HTTPException) as e:
-        await streaming_query_endpoint_handler(None, query_request, auth=MOCK_AUTH)
+        await streaming_query_endpoint_handler(request, query_request, auth=MOCK_AUTH)
         assert e.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert e.detail["response"] == "Configuration is not loaded"
 
@@ -145,9 +150,14 @@ async def test_streaming_query_endpoint_on_connection_error(mocker):
     mock_async_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
     mock_async_lsc.return_value = mock_client
 
+    request = Request(
+        scope={
+            "type": "http",
+        }
+    )
     # await the async function
     with pytest.raises(HTTPException) as e:
-        await streaming_query_endpoint_handler(None, query_request, auth=MOCK_AUTH)
+        await streaming_query_endpoint_handler(request, query_request, auth=MOCK_AUTH)
         assert e.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert e.detail["response"] == "Configuration is not loaded"
 
@@ -256,9 +266,14 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
 
     query_request = QueryRequest(query=query)
 
+    request = Request(
+        scope={
+            "type": "http",
+        }
+    )
     # Await the async function
     response = await streaming_query_endpoint_handler(
-        None, query_request, auth=MOCK_AUTH
+        request, query_request, auth=MOCK_AUTH
     )
 
     # assert the response is a StreamingResponse
@@ -1259,8 +1274,13 @@ async def test_auth_tuple_unpacking_in_streaming_query_endpoint_handler(mocker):
         "app.endpoints.streaming_query.is_transcripts_enabled", return_value=False
     )
 
+    request = Request(
+        scope={
+            "type": "http",
+        }
+    )
     await streaming_query_endpoint_handler(
-        None,
+        request,
         QueryRequest(query="test query"),
         auth=("user123", "username", "auth_token_123"),
         mcp_headers=None,
@@ -1301,8 +1321,13 @@ async def test_streaming_query_endpoint_handler_no_tools_true(mocker):
 
     query_request = QueryRequest(query="What is OpenStack?", no_tools=True)
 
+    request = Request(
+        scope={
+            "type": "http",
+        }
+    )
     response = await streaming_query_endpoint_handler(
-        None, query_request, auth=MOCK_AUTH
+        request, query_request, auth=MOCK_AUTH
     )
 
     # Assert the response is a StreamingResponse
@@ -1341,8 +1366,13 @@ async def test_streaming_query_endpoint_handler_no_tools_false(mocker):
 
     query_request = QueryRequest(query="What is OpenStack?", no_tools=False)
 
+    request = Request(
+        scope={
+            "type": "http",
+        }
+    )
     response = await streaming_query_endpoint_handler(
-        None, query_request, auth=MOCK_AUTH
+        request, query_request, auth=MOCK_AUTH
     )
 
     # Assert the response is a StreamingResponse
