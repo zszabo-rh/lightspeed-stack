@@ -66,9 +66,10 @@ async def test_query_endpoint_handler_configuration_not_loaded(mocker):
     )
     mocker.patch("app.endpoints.query.configuration", None)
 
-    request = None
+    query = "What is OpenStack?"
+    query_request = QueryRequest(query=query)
     with pytest.raises(HTTPException) as e:
-        await query_endpoint_handler(request, auth=["test-user", "", "token"])
+        await query_endpoint_handler(query_request, auth=["test-user", "", "token"])
     assert e.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
     assert e.value.detail["response"] == "Configuration is not loaded"
 
