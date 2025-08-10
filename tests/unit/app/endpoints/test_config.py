@@ -2,7 +2,7 @@
 
 import pytest
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException, Request, status
 from app.endpoints.config import config_endpoint_handler
 from configuration import AppConfig
 
@@ -15,7 +15,11 @@ def test_config_endpoint_handler_configuration_not_loaded(mocker):
     )
     mocker.patch("app.endpoints.config.configuration", None)
 
-    request = None
+    request = Request(
+        scope={
+            "type": "http",
+        }
+    )
     with pytest.raises(HTTPException) as e:
         config_endpoint_handler(request)
         assert e.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -49,7 +53,11 @@ def test_config_endpoint_handler_configuration_loaded():
     }
     cfg = AppConfig()
     cfg.init_from_dict(config_dict)
-    request = None
+    request = Request(
+        scope={
+            "type": "http",
+        }
+    )
     response = config_endpoint_handler(request)
     assert response is not None
     assert response == cfg.configuration

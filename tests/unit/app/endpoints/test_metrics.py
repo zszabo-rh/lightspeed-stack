@@ -1,5 +1,7 @@
 """Unit tests for the /metrics REST API endpoint."""
 
+from fastapi import Request
+
 from app.endpoints.metrics import metrics_endpoint_handler
 
 
@@ -8,7 +10,12 @@ async def test_metrics_endpoint(mocker):
     mock_setup_metrics = mocker.patch(
         "app.endpoints.metrics.setup_model_metrics", return_value=None
     )
-    response = await metrics_endpoint_handler(None)
+    request = Request(
+        scope={
+            "type": "http",
+        }
+    )
+    response = await metrics_endpoint_handler(request)
     assert response is not None
     assert response.status_code == 200
     assert "text/plain" in response.headers["Content-Type"]
