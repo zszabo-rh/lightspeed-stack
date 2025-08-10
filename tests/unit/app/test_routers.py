@@ -2,6 +2,8 @@
 
 from typing import Any, Optional
 
+from fastapi import FastAPI
+
 from app.routers import include_routers  # noqa:E402
 
 from app.endpoints import (
@@ -19,14 +21,27 @@ from app.endpoints import (
 )  # noqa:E402
 
 
-class MockFastAPI:
+class MockFastAPI(FastAPI):
     """Mock class for FastAPI."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # pylint: disable=super-init-not-called
         """Initialize mock class."""
         self.routers: list[tuple[Any, Optional[str]]] = []
 
-    def include_router(self, router: Any, prefix: Optional[str] = None) -> None:
+    def include_router(  # pylint: disable=too-many-arguments
+        self,
+        router: Any,
+        *,
+        prefix: str = "",
+        tags=None,
+        dependencies=None,
+        responses=None,
+        deprecated=None,
+        include_in_schema=None,
+        default_response_class=None,
+        callbacks=None,
+        generate_unique_id_function=None,
+    ) -> None:
         """Register new router."""
         self.routers.append((router, prefix))
 
@@ -66,14 +81,14 @@ def test_check_prefixes() -> None:
 
     # are all routers added?
     assert len(app.routers) == 11
-    assert app.get_router_prefix(root.router) is None
+    assert app.get_router_prefix(root.router) == ""
     assert app.get_router_prefix(info.router) == "/v1"
     assert app.get_router_prefix(models.router) == "/v1"
     assert app.get_router_prefix(query.router) == "/v1"
     assert app.get_router_prefix(streaming_query.router) == "/v1"
     assert app.get_router_prefix(config.router) == "/v1"
     assert app.get_router_prefix(feedback.router) == "/v1"
-    assert app.get_router_prefix(health.router) is None
-    assert app.get_router_prefix(authorized.router) is None
+    assert app.get_router_prefix(health.router) == ""
+    assert app.get_router_prefix(authorized.router) == ""
     assert app.get_router_prefix(conversations.router) == "/v1"
-    assert app.get_router_prefix(metrics.router) is None
+    assert app.get_router_prefix(metrics.router) == ""
