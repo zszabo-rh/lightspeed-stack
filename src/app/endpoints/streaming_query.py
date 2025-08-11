@@ -421,7 +421,7 @@ async def streaming_query_endpoint_handler(  # pylint: disable=too-many-locals
     try:
         # try to get Llama Stack client
         client = AsyncLlamaStackClientHolder().get_client()
-        model_id, provider_id = select_model_and_provider_id(
+        llama_stack_model_id, model_id, provider_id = select_model_and_provider_id(
             await client.models.list(),
             *evaluate_model_hints(
                 user_conversation=user_conversation, query_request=query_request
@@ -429,7 +429,7 @@ async def streaming_query_endpoint_handler(  # pylint: disable=too-many-locals
         )
         response, conversation_id = await retrieve_response(
             client,
-            model_id,
+            llama_stack_model_id,
             query_request,
             token,
             mcp_headers=mcp_headers,
