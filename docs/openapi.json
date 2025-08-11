@@ -38,7 +38,7 @@
                     "info"
                 ],
                 "summary": "Info Endpoint Handler",
-                "description": "Handle request to the /info endpoint.",
+                "description": "Handle request to the /info endpoint.\n\nProcess GET requests to the /info endpoint, returning the\nservice name and version.\n\nReturns:\n    InfoResponse: An object containing the service's name and version.",
                 "operationId": "info_endpoint_handler_v1_info_get",
                 "responses": {
                     "200": {
@@ -220,7 +220,7 @@
                     "config"
                 ],
                 "summary": "Config Endpoint Handler",
-                "description": "Handle requests to the /config endpoint.",
+                "description": "Handle requests to the /config endpoint.\n\nProcess GET requests to the /config endpoint and returns the\ncurrent service configuration.\n\nReturns:\n    Configuration: The loaded service configuration object.",
                 "operationId": "config_endpoint_handler_v1_config_get",
                 "responses": {
                     "200": {
@@ -367,6 +367,53 @@
                 }
             }
         },
+        "/v1/conversations": {
+            "get": {
+                "tags": [
+                    "conversations"
+                ],
+                "summary": "Get Conversations List Endpoint Handler",
+                "description": "Handle request to retrieve all conversations for the authenticated user.",
+                "operationId": "get_conversations_list_endpoint_handler_v1_conversations_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ConversationsListResponse"
+                                }
+                            }
+                        },
+                        "conversations": [
+                            {
+                                "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
+                                "created_at": "2024-01-01T00:00:00Z",
+                                "last_message_at": "2024-01-01T00:05:00Z",
+                                "last_used_model": "gemini/gemini-1.5-flash",
+                                "last_used_provider": "gemini",
+                                "message_count": 5
+                            },
+                            {
+                                "conversation_id": "456e7890-e12b-34d5-a678-901234567890",
+                                "created_at": "2024-01-01T01:00:00Z",
+                                "last_message_at": "2024-01-01T01:02:00Z",
+                                "last_used_model": "gemini/gemini-2.0-flash",
+                                "last_used_provider": "gemini",
+                                "message_count": 2
+                            }
+                        ]
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "detail": {
+                            "response": "Unable to connect to Llama Stack",
+                            "cause": "Connection error."
+                        }
+                    }
+                }
+            }
+        },
         "/v1/conversations/{conversation_id}": {
             "get": {
                 "tags": [
@@ -505,7 +552,7 @@
                     "health"
                 ],
                 "summary": "Readiness Probe Get Method",
-                "description": "Ready status of service with provider health details.",
+                "description": "Handle the readiness probe endpoint, returning service readiness.\n\nIf any provider reports an error status, responds with HTTP 503\nand details of unhealthy providers; otherwise, indicates the\nservice is ready.",
                 "operationId": "readiness_probe_get_method_readiness_get",
                 "responses": {
                     "200": {
@@ -537,7 +584,7 @@
                     "health"
                 ],
                 "summary": "Liveness Probe Get Method",
-                "description": "Live status of service.",
+                "description": "Return the liveness status of the service.\n\nReturns:\n    LivenessResponse: Indicates that the service is alive.",
                 "operationId": "liveness_probe_get_method_liveness_get",
                 "responses": {
                     "200": {
@@ -569,7 +616,7 @@
                     "authorized"
                 ],
                 "summary": "Authorized Endpoint Handler",
-                "description": "Handle request to the /authorized endpoint.",
+                "description": "Handle request to the /authorized endpoint.\n\nProcess POST requests to the /authorized endpoint, returning\nthe authenticated user's ID and username.\n\nReturns:\n    AuthorizedResponse: Contains the user ID and username of the authenticated user.",
                 "operationId": "authorized_endpoint_handler_authorized_post",
                 "responses": {
                     "200": {
@@ -611,7 +658,7 @@
                     "metrics"
                 ],
                 "summary": "Metrics Endpoint Handler",
-                "description": "Handle request to the /metrics endpoint.",
+                "description": "Handle request to the /metrics endpoint.\n\nProcess GET requests to the /metrics endpoint, returning the\nlatest Prometheus metrics in form of a plain text.\n\nInitializes model metrics on the first request if not already\nset up, then responds with the current metrics snapshot in\nPrometheus format.",
                 "operationId": "metrics_endpoint_handler_metrics_get",
                 "responses": {
                     "200": {
@@ -775,6 +822,14 @@
                     "user_data_collection": {
                         "$ref": "#/components/schemas/UserDataCollection"
                     },
+                    "database": {
+                        "$ref": "#/components/schemas/DatabaseConfiguration",
+                        "default": {
+                            "sqlite": {
+                                "db_path": "/tmp/lightspeed-stack.db"
+                            }
+                        }
+                    },
                     "mcp_servers": {
                         "items": {
                             "$ref": "#/components/schemas/ModelContextProtocolServer"
@@ -853,6 +908,75 @@
                     }
                 ]
             },
+            "ConversationDetails": {
+                "properties": {
+                    "conversation_id": {
+                        "type": "string",
+                        "title": "Conversation Id"
+                    },
+                    "created_at": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Created At"
+                    },
+                    "last_message_at": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Last Message At"
+                    },
+                    "message_count": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Message Count"
+                    },
+                    "last_used_model": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Last Used Model"
+                    },
+                    "last_used_provider": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Last Used Provider"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "conversation_id"
+                ],
+                "title": "ConversationDetails",
+                "description": "Model representing the details of a user conversation.\n\nAttributes:\n    conversation_id: The conversation ID (UUID).\n    created_at: When the conversation was created.\n    last_message_at: When the last message was sent.\n    message_count: Number of user messages in the conversation.\n    model: The model used for the conversation.\n\nExample:\n    ```python\n    conversation = ConversationSummary(\n        conversation_id=\"123e4567-e89b-12d3-a456-426614174000\"\n        created_at=\"2024-01-01T00:00:00Z\",\n        last_message_at=\"2024-01-01T00:05:00Z\",\n        message_count=5,\n        model=\"gemini/gemini-2.0-flash\"\n    )\n    ```"
+            },
             "ConversationResponse": {
                 "properties": {
                     "conversation_id": {
@@ -894,6 +1018,42 @@
                             }
                         ],
                         "conversation_id": "123e4567-e89b-12d3-a456-426614174000"
+                    }
+                ]
+            },
+            "ConversationsListResponse": {
+                "properties": {
+                    "conversations": {
+                        "items": {
+                            "$ref": "#/components/schemas/ConversationDetails"
+                        },
+                        "type": "array",
+                        "title": "Conversations"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "conversations"
+                ],
+                "title": "ConversationsListResponse",
+                "description": "Model representing a response for listing conversations of a user.\n\nAttributes:\n    conversations: List of conversation details associated with the user.\n\nExample:\n    ```python\n    conversations_list = ConversationsListResponse(\n        conversations=[\n            ConversationDetails(\n                conversation_id=\"123e4567-e89b-12d3-a456-426614174000\",\n                created_at=\"2024-01-01T00:00:00Z\",\n                last_message_at=\"2024-01-01T00:05:00Z\",\n                message_count=5,\n                model=\"gemini/gemini-2.0-flash\"\n            ),\n            ConversationDetails(\n                conversation_id=\"456e7890-e12b-34d5-a678-901234567890\"\n                created_at=\"2024-01-01T01:00:00Z\",\n                message_count=2,\n                model=\"gemini/gemini-2.5-flash\"\n            )\n        ]\n    )\n    ```",
+                "examples": [
+                    {
+                        "conversations": [
+                            {
+                                "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
+                                "created_at": "2024-01-01T00:00:00Z",
+                                "last_message_at": "2024-01-01T00:05:00Z",
+                                "message_count": 5,
+                                "model": "gemini/gemini-2.0-flash"
+                            },
+                            {
+                                "conversation_id": "456e7890-e12b-34d5-a678-901234567890",
+                                "created_at": "2024-01-01T01:00:00Z",
+                                "message_count": 2,
+                                "model": "gemini/gemini-2.5-flash"
+                            }
+                        ]
                     }
                 ]
             },
@@ -993,6 +1153,33 @@
                 "type": "object",
                 "title": "DataCollectorConfiguration",
                 "description": "Data collector configuration for sending data to ingress server."
+            },
+            "DatabaseConfiguration": {
+                "properties": {
+                    "sqlite": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/SQLiteDatabaseConfiguration"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "postgres": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/PostgreSQLDatabaseConfiguration"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "type": "object",
+                "title": "DatabaseConfiguration",
+                "description": "Database configuration."
             },
             "FeedbackCategory": {
                 "type": "string",
@@ -1382,6 +1569,74 @@
                 "title": "ModelsResponse",
                 "description": "Model representing a response to models request."
             },
+            "PostgreSQLDatabaseConfiguration": {
+                "properties": {
+                    "host": {
+                        "type": "string",
+                        "title": "Host",
+                        "default": "localhost"
+                    },
+                    "port": {
+                        "type": "integer",
+                        "title": "Port",
+                        "default": 5432
+                    },
+                    "db": {
+                        "type": "string",
+                        "title": "Db"
+                    },
+                    "user": {
+                        "type": "string",
+                        "title": "User"
+                    },
+                    "password": {
+                        "type": "string",
+                        "title": "Password"
+                    },
+                    "namespace": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Namespace",
+                        "default": "lightspeed-stack"
+                    },
+                    "ssl_mode": {
+                        "type": "string",
+                        "title": "Ssl Mode",
+                        "default": "prefer"
+                    },
+                    "gss_encmode": {
+                        "type": "string",
+                        "title": "Gss Encmode",
+                        "default": "prefer"
+                    },
+                    "ca_cert_path": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "file-path"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Ca Cert Path"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "db",
+                    "user",
+                    "password"
+                ],
+                "title": "PostgreSQLDatabaseConfiguration",
+                "description": "PostgreSQL database configuration."
+            },
             "ProviderHealthStatus": {
                 "properties": {
                     "provider_id": {
@@ -1648,6 +1903,20 @@
                         "reason": "Service is ready"
                     }
                 ]
+            },
+            "SQLiteDatabaseConfiguration": {
+                "properties": {
+                    "db_path": {
+                        "type": "string",
+                        "title": "Db Path"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "db_path"
+                ],
+                "title": "SQLiteDatabaseConfiguration",
+                "description": "SQLite database configuration."
             },
             "ServiceConfiguration": {
                 "properties": {
