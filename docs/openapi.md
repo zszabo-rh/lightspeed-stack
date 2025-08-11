@@ -33,6 +33,12 @@ Handle request to the / endpoint.
 
 Handle request to the /info endpoint.
 
+Process GET requests to the /info endpoint, returning the
+service name and version.
+
+Returns:
+    InfoResponse: An object containing the service's name and version.
+
 
 
 
@@ -114,6 +120,12 @@ Handle request to the /streaming_query endpoint.
 
 Handle requests to the /config endpoint.
 
+Process GET requests to the /config endpoint and returns the
+current service configuration.
+
+Returns:
+    Configuration: The loaded service configuration object.
+
 
 
 
@@ -180,6 +192,23 @@ Returns:
 |-------------|-------------|-----------|
 | 200 | Successful Response | [StatusResponse](#statusresponse)
  |
+## GET `/v1/conversations`
+
+> **Get Conversations List Endpoint Handler**
+
+Handle request to retrieve all conversations for the authenticated user.
+
+
+
+
+
+### ✅ Responses
+
+| Status Code | Description | Component |
+|-------------|-------------|-----------|
+| 200 | Successful Response | [ConversationsListResponse](#conversationslistresponse)
+ |
+| 503 | Service Unavailable |  |
 ## GET `/v1/conversations/{conversation_id}`
 
 > **Get Conversation Endpoint Handler**
@@ -234,7 +263,11 @@ Handle request to delete a conversation by ID.
 
 > **Readiness Probe Get Method**
 
-Ready status of service with provider health details.
+Handle the readiness probe endpoint, returning service readiness.
+
+If any provider reports an error status, responds with HTTP 503
+and details of unhealthy providers; otherwise, indicates the
+service is ready.
 
 
 
@@ -252,7 +285,10 @@ Ready status of service with provider health details.
 
 > **Liveness Probe Get Method**
 
-Live status of service.
+Return the liveness status of the service.
+
+Returns:
+    LivenessResponse: Indicates that the service is alive.
 
 
 
@@ -271,6 +307,12 @@ Live status of service.
 > **Authorized Endpoint Handler**
 
 Handle request to the /authorized endpoint.
+
+Process POST requests to the /authorized endpoint, returning
+the authenticated user's ID and username.
+
+Returns:
+    AuthorizedResponse: Contains the user ID and username of the authenticated user.
 
 
 
@@ -291,6 +333,13 @@ Handle request to the /authorized endpoint.
 > **Metrics Endpoint Handler**
 
 Handle request to the /metrics endpoint.
+
+Process GET requests to the /metrics endpoint, returning the
+latest Prometheus metrics in form of a plain text.
+
+Initializes model metrics on the first request if not already
+set up, then responds with the current metrics snapshot in
+Prometheus format.
 
 
 
@@ -379,6 +428,7 @@ Global service configuration.
 | service |  |  |
 | llama_stack |  |  |
 | user_data_collection |  |  |
+| database |  |  |
 | mcp_servers | array |  |
 | authentication |  |  |
 | customization |  |  |
@@ -410,6 +460,40 @@ Example:
 | conversation_id | string |  |
 | success | boolean |  |
 | response | string |  |
+
+
+## ConversationDetails
+
+
+Model representing the details of a user conversation.
+
+Attributes:
+    conversation_id: The conversation ID (UUID).
+    created_at: When the conversation was created.
+    last_message_at: When the last message was sent.
+    message_count: Number of user messages in the conversation.
+    model: The model used for the conversation.
+
+Example:
+    ```python
+    conversation = ConversationSummary(
+        conversation_id="123e4567-e89b-12d3-a456-426614174000"
+        created_at="2024-01-01T00:00:00Z",
+        last_message_at="2024-01-01T00:05:00Z",
+        message_count=5,
+        model="gemini/gemini-2.0-flash"
+    )
+    ```
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| conversation_id | string |  |
+| created_at |  |  |
+| last_message_at |  |  |
+| message_count |  |  |
+| last_used_model |  |  |
+| last_used_provider |  |  |
 
 
 ## ConversationResponse
@@ -445,6 +529,41 @@ Example:
 | chat_history | array |  |
 
 
+## ConversationsListResponse
+
+
+Model representing a response for listing conversations of a user.
+
+Attributes:
+    conversations: List of conversation details associated with the user.
+
+Example:
+    ```python
+    conversations_list = ConversationsListResponse(
+        conversations=[
+            ConversationDetails(
+                conversation_id="123e4567-e89b-12d3-a456-426614174000",
+                created_at="2024-01-01T00:00:00Z",
+                last_message_at="2024-01-01T00:05:00Z",
+                message_count=5,
+                model="gemini/gemini-2.0-flash"
+            ),
+            ConversationDetails(
+                conversation_id="456e7890-e12b-34d5-a678-901234567890"
+                created_at="2024-01-01T01:00:00Z",
+                message_count=2,
+                model="gemini/gemini-2.5-flash"
+            )
+        ]
+    )
+    ```
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| conversations | array |  |
+
+
 ## Customization
 
 
@@ -475,6 +594,18 @@ Data collector configuration for sending data to ingress server.
 | connection_timeout | integer |  |
 
 
+## DatabaseConfiguration
+
+
+Database configuration.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| sqlite |  |  |
+| postgres |  |  |
+
+
 ## FeedbackCategory
 
 
@@ -485,14 +616,6 @@ when users provide negative feedback (thumbs down). Multiple categories can
 be selected to provide comprehensive feedback about response issues.
 
 
-| Value | Description |
-|-------|-------------|
-| incorrect | The answer provided is completely wrong |
-| not_relevant | This answer doesn't address my question at all |
-| incomplete | The answer only covers part of what I asked about |
-| outdated_information | This information is from several years ago and no longer accurate |
-| unsafe | This response could be harmful or dangerous if followed |
-| other | The response has issues not covered by other categories |
 
 
 ## FeedbackRequest
@@ -697,6 +820,25 @@ Model representing a response to models request.
 | models | array |  |
 
 
+## PostgreSQLDatabaseConfiguration
+
+
+PostgreSQL database configuration.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| host | string |  |
+| port | integer |  |
+| db | string |  |
+| user | string |  |
+| password | string |  |
+| namespace |  |  |
+| ssl_mode | string |  |
+| gss_encmode | string |  |
+| ca_cert_path |  |  |
+
+
 ## ProviderHealthStatus
 
 
@@ -794,6 +936,17 @@ Example:
 | ready | boolean |  |
 | reason | string |  |
 | providers | array |  |
+
+
+## SQLiteDatabaseConfiguration
+
+
+SQLite database configuration.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| db_path | string |  |
 
 
 ## ServiceConfiguration
