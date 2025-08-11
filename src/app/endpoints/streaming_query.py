@@ -464,6 +464,8 @@ async def streaming_query_endpoint_handler(  # pylint: disable=too-many-locals
                 store_transcript(
                     user_id=user_id,
                     conversation_id=conversation_id,
+                    model_id=model_id,
+                    provider_id=provider_id,
                     query_is_valid=True,  # TODO(lucasagomes): implement as part of query validation
                     query=query_request.query,
                     query_request=query_request,

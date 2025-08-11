@@ -318,6 +318,8 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
         mock_transcript.assert_called_once_with(
             user_id="mock_user_id",
             conversation_id="test_conversation_id",
+            model_id="fake_model_id",
+            provider_id="fake_provider_id",
             query_is_valid=True,
             query=query,
             query_request=query_request,

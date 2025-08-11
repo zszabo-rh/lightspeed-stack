@@ -159,6 +159,8 @@ async def _test_query_endpoint_handler(mocker, store_transcript_to_file=False):
         mock_transcript.assert_called_once_with(
             user_id="mock_user_id",
             conversation_id=conversation_id,
+            model_id="fake_model_id",
+            provider_id="fake_provider_id",
             query_is_valid=True,
             query=query,
             query_request=query_request,
@@ -1045,6 +1047,8 @@ def test_store_transcript(mocker):
     store_transcript(
         user_id,
         conversation_id,
+        model,
+        provider,
         query_is_valid,
         query,
         query_request,
@@ -1058,8 +1062,10 @@ def test_store_transcript(mocker):
     mock_json.dump.assert_called_once_with(
         {
             "metadata": {
-                "provider": query_request.provider,
-                "model": query_request.model,
+                "provider": "fake-provider",
+                "model": "fake-model",
+                "query_provider": query_request.provider,
+                "query_model": query_request.model,
                 "user_id": user_id,
                 "conversation_id": conversation_id,
                 "timestamp": mocker.ANY,
