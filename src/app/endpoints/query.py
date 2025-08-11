@@ -205,6 +205,8 @@ async def query_endpoint_handler(
             store_transcript(
                 user_id=user_id,
                 conversation_id=conversation_id,
+                model_id=model_id,
+                provider_id=provider_id,
                 query_is_valid=True,  # TODO(lucasagomes): implement as part of query validation
                 query=query_request.query,
                 query_request=query_request,
@@ -456,6 +458,8 @@ def construct_transcripts_path(user_id: str, conversation_id: str) -> Path:
 def store_transcript(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     user_id: str,
     conversation_id: str,
+    model_id: str,
+    provider_id: str | None,
     query_is_valid: bool,
     query: str,
     query_request: QueryRequest,
@@ -482,8 +486,10 @@ def store_transcript(  # pylint: disable=too-many-arguments,too-many-positional-
 
     data_to_store = {
         "metadata": {
-            "provider": query_request.provider,
-            "model": query_request.model,
+            "provider": provider_id,
+            "model": model_id,
+            "query_provider": query_request.provider,
+            "query_model": query_request.model,
             "user_id": user_id,
             "conversation_id": conversation_id,
             "timestamp": datetime.now(UTC).isoformat(),
