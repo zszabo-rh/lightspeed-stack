@@ -265,7 +265,7 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
     )
     mocker.patch(
         "app.endpoints.streaming_query.select_model_and_provider_id",
-        return_value=("fake_model_id", "fake_provider_id"),
+        return_value=("fake_model_id", "fake_model_id", "fake_provider_id"),
     )
     mocker.patch(
         "app.endpoints.streaming_query.is_transcripts_enabled",
@@ -1279,7 +1279,7 @@ async def test_auth_tuple_unpacking_in_streaming_query_endpoint_handler(mocker):
 
     mocker.patch(
         "app.endpoints.streaming_query.select_model_and_provider_id",
-        return_value=("test_model", "test_provider"),
+        return_value=("test_model", "test_model", "test_provider"),
     )
     mocker.patch(
         "app.endpoints.streaming_query.is_transcripts_enabled", return_value=False
@@ -1325,7 +1325,7 @@ async def test_streaming_query_endpoint_handler_no_tools_true(mocker):
     )
     mocker.patch(
         "app.endpoints.streaming_query.select_model_and_provider_id",
-        return_value=("fake_model_id", "fake_provider_id"),
+        return_value=("fake_model_id", "fake_model_id", "fake_provider_id"),
     )
     mocker.patch(
         "app.endpoints.streaming_query.is_transcripts_enabled", return_value=False
@@ -1372,7 +1372,7 @@ async def test_streaming_query_endpoint_handler_no_tools_false(mocker):
     )
     mocker.patch(
         "app.endpoints.streaming_query.select_model_and_provider_id",
-        return_value=("fake_model_id", "fake_provider_id"),
+        return_value=("fake_model_id", "fake_model_id", "fake_provider_id"),
     )
     mocker.patch(
         "app.endpoints.streaming_query.is_transcripts_enabled", return_value=False

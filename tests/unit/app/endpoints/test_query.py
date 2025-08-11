@@ -132,7 +132,7 @@ async def _test_query_endpoint_handler(mocker, store_transcript_to_file=False):
     )
     mocker.patch(
         "app.endpoints.query.select_model_and_provider_id",
-        return_value=("fake_model_id", "fake_provider_id"),
+        return_value=("fake_model_id", "fake_model_id", "fake_provider_id"),
     )
     mocker.patch(
         "app.endpoints.query.is_transcripts_enabled",
@@ -214,11 +214,12 @@ def test_select_model_and_provider_id_from_request(mocker):
     )
 
     # Assert the model and provider from request take precedence from the configuration one
-    model_id, provider_id = select_model_and_provider_id(
+    llama_stack_model_id, model_id, provider_id = select_model_and_provider_id(
         model_list, query_request.model, query_request.provider
     )
 
-    assert model_id == "provider2/model2"
+    assert llama_stack_model_id == "provider2/model2"
+    assert model_id == "model2"
     assert provider_id == "provider2"
 
 
@@ -249,12 +250,13 @@ def test_select_model_and_provider_id_from_configuration(mocker):
         query="What is OpenStack?",
     )
 
-    model_id, provider_id = select_model_and_provider_id(
+    llama_stack_model_id, model_id, provider_id = select_model_and_provider_id(
         model_list, query_request.model, query_request.provider
     )
 
     # Assert that the default model and provider from the configuration are returned
-    assert model_id == "default_provider/default_model"
+    assert llama_stack_model_id == "default_provider/default_model"
+    assert model_id == "default_model"
     assert provider_id == "default_provider"
 
 
@@ -274,12 +276,13 @@ def test_select_model_and_provider_id_first_from_list(mocker):
 
     query_request = QueryRequest(query="What is OpenStack?")
 
-    model_id, provider_id = select_model_and_provider_id(
+    llama_stack_model_id, model_id, provider_id = select_model_and_provider_id(
         model_list, query_request.model, query_request.provider
     )
 
     # Assert return the first available LLM model when no model/provider is
     # specified in the request or in the configuration
+    assert llama_stack_model_id == "first_model"
     assert model_id == "first_model"
     assert provider_id == "provider1"
 
@@ -1135,7 +1138,7 @@ async def test_auth_tuple_unpacking_in_query_endpoint_handler(mocker):
 
     mocker.patch(
         "app.endpoints.query.select_model_and_provider_id",
-        return_value=("test_model", "test_provider"),
+        return_value=("test_model", "test_model", "test_provider"),
     )
     mocker.patch("app.endpoints.query.is_transcripts_enabled", return_value=False)
     # Mock database operations
@@ -1174,7 +1177,7 @@ async def test_query_endpoint_handler_no_tools_true(mocker):
     )
     mocker.patch(
         "app.endpoints.query.select_model_and_provider_id",
-        return_value=("fake_model_id", "fake_provider_id"),
+        return_value=("fake_model_id", "fake_model_id", "fake_provider_id"),
     )
     mocker.patch("app.endpoints.query.is_transcripts_enabled", return_value=False)
     # Mock database operations
@@ -1213,7 +1216,7 @@ async def test_query_endpoint_handler_no_tools_false(mocker):
     )
     mocker.patch(
         "app.endpoints.query.select_model_and_provider_id",
-        return_value=("fake_model_id", "fake_provider_id"),
+        return_value=("fake_model_id", "fake_model_id", "fake_provider_id"),
     )
     mocker.patch("app.endpoints.query.is_transcripts_enabled", return_value=False)
     # Mock database operations

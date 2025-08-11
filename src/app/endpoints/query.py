@@ -183,7 +183,7 @@ async def query_endpoint_handler(
     try:
         # try to get Llama Stack client
         client = AsyncLlamaStackClientHolder().get_client()
-        model_id, provider_id = select_model_and_provider_id(
+        llama_stack_model_id, model_id, provider_id = select_model_and_provider_id(
             await client.models.list(),
             *evaluate_model_hints(
                 user_conversation=user_conversation, query_request=query_request
@@ -191,7 +191,7 @@ async def query_endpoint_handler(
         )
         response, conversation_id = await retrieve_response(
             client,
-            model_id,
+            llama_stack_model_id,
             query_request,
             token,
             mcp_headers=mcp_headers,
@@ -239,7 +239,7 @@ async def query_endpoint_handler(
 
 def select_model_and_provider_id(
     models: ModelListResponse, model_id: str | None, provider_id: str | None
-) -> tuple[str, str]:
+) -> tuple[str, str, str]:
     """Select the model ID and provider ID based on the request or available models."""
     # If model_id and provider_id are provided in the request, use them
 
@@ -268,7 +268,7 @@ def select_model_and_provider_id(
             model_id = model.identifier
             provider_id = model.provider_id
             logger.info("Selected model: %s", model)
-            return model_id, provider_id
+            return model_id, model_id, provider_id
         except (StopIteration, AttributeError) as e:
             message = "No LLM model found in available models"
             logger.error(message)
@@ -297,7 +297,7 @@ def select_model_and_provider_id(
             },
         )
 
-    return llama_stack_model_id, provider_id
+    return llama_stack_model_id, model_id, provider_id
 
 
 def _is_inout_shield(shield: Shield) -> bool:
