@@ -11,8 +11,6 @@ from constants import (
     AUTH_MOD_NOOP,
     AUTH_MOD_K8S,
     AUTH_MOD_JWK_TOKEN,
-    DATA_COLLECTOR_COLLECTION_INTERVAL,
-    DATA_COLLECTOR_CONNECTION_TIMEOUT,
 )
 
 from models.config import (
@@ -24,7 +22,6 @@ from models.config import (
     UserDataCollection,
     TLSConfiguration,
     ModelContextProtocolServer,
-    DataCollectorConfiguration,
     InferenceConfiguration,
 )
 
@@ -215,53 +212,6 @@ def test_user_data_collection_transcripts_disabled() -> None:
         match="transcripts_storage is required when transcripts is enabled",
     ):
         UserDataCollection(transcripts_enabled=True, transcripts_storage=None)
-
-
-def test_user_data_collection_data_collector_enabled() -> None:
-    """Test the UserDataCollection constructor for data collector."""
-    # correct configuration
-    cfg = UserDataCollection(
-        data_collector=DataCollectorConfiguration(
-            enabled=True,
-            ingress_server_url="http://localhost:8080",
-            ingress_server_auth_token="xyzzy",
-            ingress_content_service_name="lightspeed-core",
-            collection_interval=60,
-        )
-    )
-    assert cfg is not None
-    assert cfg.data_collector.enabled is True
-
-
-def test_user_data_collection_data_collector_wrong_configuration() -> None:
-    """Test the UserDataCollection constructor for data collector."""
-    # incorrect configuration
-    with pytest.raises(
-        ValueError,
-        match="ingress_server_url is required when data collector is enabled",
-    ):
-        UserDataCollection(
-            data_collector=DataCollectorConfiguration(
-                enabled=True,
-                ingress_server_url=None,
-                ingress_server_auth_token="xyzzy",
-                ingress_content_service_name="lightspeed-core",
-                collection_interval=60,
-            )
-        )
-    with pytest.raises(
-        ValueError,
-        match="ingress_content_service_name is required when data collector is enabled",
-    ):
-        UserDataCollection(
-            data_collector=DataCollectorConfiguration(
-                enabled=True,
-                ingress_server_url="http://localhost:8080",
-                ingress_server_auth_token="xyzzy",
-                ingress_content_service_name=None,
-                collection_interval=60,
-            )
-        )
 
 
 def test_tls_configuration() -> None:
@@ -528,15 +478,6 @@ def test_dump_configuration(tmp_path) -> None:
                 "feedback_storage": None,
                 "transcripts_enabled": False,
                 "transcripts_storage": None,
-                "data_collector": {
-                    "enabled": False,
-                    "ingress_server_url": None,
-                    "ingress_server_auth_token": None,
-                    "ingress_content_service_name": None,
-                    "collection_interval": DATA_COLLECTOR_COLLECTION_INTERVAL,
-                    "cleanup_after_send": True,
-                    "connection_timeout": DATA_COLLECTOR_CONNECTION_TIMEOUT,
-                },
             },
             "mcp_servers": [],
             "authentication": {

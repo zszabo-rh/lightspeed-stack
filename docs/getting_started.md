@@ -264,14 +264,7 @@ user_data_collection:
   feedback_storage: "/tmp/data/feedback"
   transcripts_enabled: true
   transcripts_storage: "/tmp/data/transcripts"
-  data_collector:
-    enabled: false
-    ingress_server_url: null
-    ingress_server_auth_token: null
-    ingress_content_service_name: null
-    collection_interval: 7200  # 2 hours in seconds
-    cleanup_after_send: true
-    connection_timeout_seconds: 30
+
 authentication:
   module: "noop"
 ```

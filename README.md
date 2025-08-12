@@ -42,10 +42,7 @@ Lightspeed Core Stack (LCS) is an AI-powered assistant that provides answers to 
     * [Utility to generate OpenAPI schema](#utility-to-generate-openapi-schema)
         * [Path](#path)
         * [Usage](#usage-1)
-    * [Data Collector Service](#data-collector-service)
-        * [Features](#features)
-        * [Configuration](#configuration-1)
-        * [Running the Service](#running-the-service)
+
 
 <!-- vim-markdown-toc -->
 
@@ -253,7 +250,6 @@ Usage: make <OPTIONS> ... <TARGETS>
 Available targets are:
 
 run                               Run the service locally
-run-data-collector                Run the data collector service
 test-unit                         Run the unit tests
 test-integration                  Run integration tests tests
 test-e2e                          Run BDD tests for the service
@@ -420,50 +416,6 @@ This script re-generated OpenAPI schema for the Lightspeed Service REST API.
 
 ```
 make schema
-```
-
-## Data Collector Service
-
-The data collector service is a standalone service that runs separately from the main web service. It is responsible for collecting and sending user data including feedback and transcripts to an ingress server for analysis and archival.
-
-### Features
-
-- **Periodic Collection**: Runs at configurable intervals
-- **Data Packaging**: Packages feedback and transcript files into compressed tar.gz archives
-- **Secure Transmission**: Sends data to a configured ingress server with optional authentication
-- **File Cleanup**: Optionally removes local files after successful transmission
-- **Error Handling**: Includes retry logic and comprehensive error handling
-
-### Configuration
-
-The data collector service is configured through the `user_data_collection.data_collector` section in your configuration file:
-
-```yaml
-user_data_collection:
-  feedback_enabled: true
-  feedback_storage: "/tmp/data/feedback"
-  transcripts_enabled: true
-  transcripts_storage: "/tmp/data/transcripts"
-  data_collector:
-    enabled: true
-    ingress_server_url: "https://your-ingress-server.com"
-    ingress_server_auth_token: "your-auth-token"
-    ingress_content_service_name: "lightspeed-team"
-    collection_interval: 7200  # 2 hours in seconds
-    cleanup_after_send: true
-    connection_timeout: 30
-```
-
-### Running the Service
-
-To run the data collector service:
-
-```bash
-# Using Python directly
-uv run src/lightspeed_stack.py --data-collector
-
-# Using Make target
-make run-data-collector
 ```
 
 

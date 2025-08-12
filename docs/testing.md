@@ -105,11 +105,9 @@ As specified in Definition of Done, new changes need to be covered by tests.
 │   ├── test_requests.py
 │   └── test_responses.py
 ├── runners
-│   ├── __init__.py
-│   ├── test_data_collector_runner.py
-│   └── test_uvicorn_runner.py
+│   ├── __init__.py
+│   └── test_uvicorn_runner.py
 ├── services
-│   └── test_data_collector.py
 ├── test_client.py
 ├── test_configuration.py
 ├── test_lightspeed_stack.py

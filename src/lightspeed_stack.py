@@ -10,7 +10,6 @@ import logging
 from rich.logging import RichHandler
 
 from runners.uvicorn import start_uvicorn
-from runners.data_collector import start_data_collector
 from configuration import configuration
 from client import AsyncLlamaStackClientHolder
 
@@ -48,13 +47,7 @@ def create_argument_parser() -> ArgumentParser:
         help="path to configuration file (default: lightspeed-stack.yaml)",
         default="lightspeed-stack.yaml",
     )
-    parser.add_argument(
-        "--data-collector",
-        dest="start_data_collector",
-        help="start data collector service instead of web service",
-        action="store_true",
-        default=False,
-    )
+
     return parser
 
 
@@ -76,10 +69,6 @@ def main() -> None:
 
     if args.dump_configuration:
         configuration.configuration.dump()
-    elif args.start_data_collector:
-        start_data_collector(
-            configuration.user_data_collection_configuration.data_collector
-        )
     else:
         start_uvicorn(configuration.service_configuration)
     logger.info("Lightspeed stack finished")
