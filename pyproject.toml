@@ -76,6 +76,7 @@ dev = [
     "types-cachetools>=6.1.0.20250717",
     "build>=1.2.2.post1",
     "twine>=6.1.0",
+    "openapi-to-md>=0.1.0b2",
 ]
 llslibdev = [
     "fastapi>=0.115.12",

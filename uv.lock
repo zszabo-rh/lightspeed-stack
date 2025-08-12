@@ -1091,6 +1091,7 @@ dev = [
     { name = "black" },
     { name = "build" },
     { name = "mypy" },
+    { name = "openapi-to-md" },
     { name = "pydocstyle" },
     { name = "pylint" },
     { name = "pyright" },
@@ -1152,6 +1153,7 @@ dev = [
     { name = "black", specifier = ">=25.1.0" },
     { name = "build", specifier = ">=1.2.2.post1" },
     { name = "mypy", specifier = ">=1.16.0" },
+    { name = "openapi-to-md", specifier = ">=0.1.0b2" },
     { name = "pydocstyle", specifier = ">=6.3.0" },
     { name = "pylint", specifier = ">=3.3.7" },
     { name = "pyright", specifier = ">=1.1.401" },
@@ -1793,6 +1795,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/03/30/f0fb7907a77e733bb801c7bdcde903500b31215141cdb261f04421e6fbec/openai-1.99.1.tar.gz", hash = "sha256:2c9d8e498c298f51bb94bcac724257a3a6cac6139ccdfc1186c6708f7a93120f", size = 497075, upload-time = "2025-08-05T19:42:36.131Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/54/15/9c85154ffd283abfc43309ff3aaa63c3fd02f7767ee684e73670f6c5ade2/openai-1.99.1-py3-none-any.whl", hash = "sha256:8eeccc69e0ece1357b51ca0d9fb21324afee09b20c3e5b547d02445ca18a4e03", size = 767827, upload-time = "2025-08-05T19:42:34.192Z" },
+]
+
+[[package]]
+name = "openapi-to-md"
+version = "0.1.0b2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "click" },
+    { name = "jinja2" },
+    { name = "pyyaml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/05/63/b5a5db0d78f3c9504b9233ac29cdd5dc1181639d6d896aa451f47daf73af/openapi_to_md-0.1.0b2.tar.gz", hash = "sha256:45478c80e3b462497bb9dbf5dad7ff2230ac3653904d36e8ee9c7615a8117097", size = 5280, upload-time = "2025-07-08T13:07:33.856Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c3/da/3234d86255d44ba5ca4a886b9d7eddfe31c6042172cfc4de894ffd04b81e/openapi_to_md-0.1.0b2-py3-none-any.whl", hash = "sha256:20a6a289c23e431c8d3db3fd1f6b68ccedb36820ef34a075322dee083b4dec56", size = 7774, upload-time = "2025-07-08T13:07:30.151Z" },
 ]
 
 [[package]]
