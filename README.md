@@ -13,36 +13,44 @@ Lightspeed Core Stack (LCS) is an AI-powered assistant that provides answers to 
 
 <!-- vim-markdown-toc GFM -->
 
+* [lightspeed-stack](#lightspeed-stack)
+  * [About The Project](#about-the-project)
 * [Architecture](#architecture)
 * [Prerequisites](#prerequisites)
 * [Installation](#installation)
 * [Configuration](#configuration)
-    * [Integration with Llama Stack](#integration-with-llama-stack)
-    * [Llama Stack as separate server](#llama-stack-as-separate-server)
-        * [Llama Stack project and configuration](#llama-stack-project-and-configuration)
-        * [Check connection to Llama Stack](#check-connection-to-llama-stack)
-    * [Llama Stack as client library](#llama-stack-as-client-library)
-    * [System prompt](#system-prompt)
-    * [Safety Shields](#safety-shields)
+  * [Integration with Llama Stack](#integration-with-llama-stack)
+  * [Llama Stack as separate server](#llama-stack-as-separate-server)
+    * [Llama Stack project and configuration](#llama-stack-project-and-configuration)
+    * [Check connection to Llama Stack](#check-connection-to-llama-stack)
+  * [Llama Stack as client library](#llama-stack-as-client-library)
+  * [System prompt](#system-prompt)
+  * [Safety Shields](#safety-shields)
+  * [Authentication](#authentication)
+    * [K8s based authentication](#k8s-based-authentication)
+    * [JSON Web Keyset based authentication](#json-web-keyset-based-authentication)
+    * [No-op authentication](#no-op-authentication)
 * [Usage](#usage)
-    * [Make targets](#make-targets)
-    * [Running Linux container image](#running-linux-container-image)
+  * [Make targets](#make-targets)
+  * [Running Linux container image](#running-linux-container-image)
 * [Endpoints](#endpoints)
-    * [OpenAPI specification](#openapi-specification)
-    * [Readiness Endpoint](#readiness-endpoint)
-    * [Liveness Endpoint](#liveness-endpoint)
+  * [OpenAPI specification](#openapi-specification)
+  * [Readiness Endpoint](#readiness-endpoint)
+  * [Liveness Endpoint](#liveness-endpoint)
 * [Publish the service as Python package on PyPI](#publish-the-service-as-python-package-on-pypi)
-    * [Generate distribution archives to be uploaded into Python registry](#generate-distribution-archives-to-be-uploaded-into-python-registry)
-    * [Upload distribution archives into selected Python registry](#upload-distribution-archives-into-selected-python-registry)
-    * [Packages on PyPI and Test PyPI](#packages-on-pypi-and-test-pypi)
+  * [Generate distribution archives to be uploaded into Python registry](#generate-distribution-archives-to-be-uploaded-into-python-registry)
+  * [Upload distribution archives into selected Python registry](#upload-distribution-archives-into-selected-python-registry)
+  * [Packages on PyPI and Test PyPI](#packages-on-pypi-and-test-pypi)
 * [Contributing](#contributing)
 * [Testing](#testing)
 * [License](#license)
 * [Additional tools](#additional-tools)
-    * [Utility to generate OpenAPI schema](#utility-to-generate-openapi-schema)
-        * [Path](#path)
-        * [Usage](#usage-1)
-
+  * [Utility to generate OpenAPI schema](#utility-to-generate-openapi-schema)
+    * [Path](#path)
+    * [Usage](#usage-1)
+* [Project structure](#project-structure)
+  * [Configuration classes](#configuration-classes)
+  * [REST API](#rest-api)
 
 <!-- vim-markdown-toc -->
 
@@ -226,6 +234,104 @@ utilized:
 1. If the `shield_id` starts with `output_`, it will be used for output only.
 1. If the `shield_id` starts with `inout_`, it will be used both for input and output.
 1. Otherwise, it will be used for input only.
+
+## Authentication
+
+Currently supported authentication modules are:
+*  `k8s` Kubernetes based authentication
+*  `jwk-token` JSON Web Keyset based authentication
+*  `noop` No operation authentication (default)
+*  `noop-with-token` No operation authentication with token
+
+### K8s based authentication
+
+K8s based authentication is suitable for running the Lightspeed Stack in Kubernetes environments.
+The user accessing the service must have a valid Kubernetes token and the appropriate RBAC permissions to access the service.
+The user must have `get` permission on the Kubernetes RBAC non-resource URL `/ls-access`. 
+Here is an example of granting `get` on `/ls-access` via a ClusterRole’s nonResourceURLs rule. 
+Example:
+```yaml
+# Allow GET on non-resource URL /ls-access
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: lightspeed-access
+rules:
+  - nonResourceURLs: ["/ls-access"]
+    verbs: ["get"]
+---
+# Bind to a user, group, or service account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: lightspeed-access-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: lightspeed-access
+subjects:
+  - kind: User            # or ServiceAccount, Group
+    name: SOME_USER_OR_SA
+    apiGroup: rbac.authorization.k8s.io
+```
+
+Configuring K8s based authentication requires the following steps:
+1. Enable K8s authentication module
+```yaml
+authentication:
+  module: "k8s"
+```
+2. Configure the Kubernetes authentication settings. 
+   When deploying Lightspeed Stack in a Kubernetes cluster, it is not required to specify cluster connection details.
+   It automatically picks up the in-cluster configuration or through a kubeconfig file.
+   This step is not neccessary.
+   When running outside a kubernetes cluster or connecting to external Kubernetes clusters, Lightspeed Stack requires the cluster connection details in the configuration file: 
+   - `k8s_cluster_api` Kubernetes Cluster API URL. The URL of the K8S/OCP API server where tokens are validated.
+   - `k8s_ca_cert_path` Path to the CA certificate file for clusters with self-signed certificates.
+   - `skip_tls_verification` Whether to skip TLS verification.
+```yaml
+authentication:
+  module: "k8s"
+  skip_tls_verification: false
+  k8s_cluster_api: "https://your-k8s-api-server:6443"
+  k8s_ca_cert_path: "/path/to/ca.crt"
+```
+
+### JSON Web Keyset based authentication
+
+JWK (JSON Web Keyset) based authentication is suitable for scenarios where you need to authenticate users based on tokens. This method is commonly used in web applications and APIs.
+
+To configure JWK based authentication, you need to specify the following settings in the configuration file:
+- `module` must be set to `jwk-token`
+- `jwk_config` JWK configuration settings must set at least `url` field:
+  - `url`: The URL of the JWK endpoint.
+  - `jwt_configuration`: JWT configuration settings.
+    - `user_id_claim`: The key of the user ID in JWT claim.
+    - `username_claim`: The key of the username in JWT claim.
+
+```yaml
+authentication:
+  module: "jwk-token"
+  jwk_config:
+    url: "https://your-jwk-url"
+    jwt_configuration:
+      user_id_claim: user_id
+      username_claim: username
+```
+
+### No-op authentication
+
+Lightspeed Stack provides 2 authentication module to bypass the authentication and authorization checks:
+- `noop` No operation authentication (default)
+- `noop-with-token` No operation authentication accepting a bearer token
+
+If authentication module is not specified, Lightspeed Stack will use `noop` by default.
+To activate `noop-with-token`, you need to specify it in the configuration file:
+
+```yaml
+authentication:
+  module: "noop-with-token"
+```
 
 # Usage
 
