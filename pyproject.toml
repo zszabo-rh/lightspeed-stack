@@ -53,6 +53,9 @@ distribution = true
 source = "file"
 path = "src/version.py"
 
+[project.scripts]
+lightspeed-stack = "lightspeed_stack:main"
+
 [project.urls]
 Homepage = "https://github.com/lightspeed-core/lightspeed-stack"
 Issues = "https://github.com/lightspeed-core/lightspeed-stack/issues"
