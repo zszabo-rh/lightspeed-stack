@@ -63,9 +63,9 @@ Handle requests to the /models endpoint.
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [ModelsResponse](#modelsresponse)
- |
+| 200 | Successful Response | [ModelsResponse](#modelsresponse) |
 | 503 | Connection to Llama Stack is broken |  |
+
 ## POST `/v1/query`
 
 > **Query Endpoint Handler**
@@ -84,15 +84,11 @@ Handle request to the /query endpoint.
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [QueryResponse](#queryresponse)
- |
-| 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse)
- |
-| 403 | User is not authorized | [ForbiddenResponse](#forbiddenresponse)
- |
+| 200 | Successful Response | [QueryResponse](#queryresponse) |
+| 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse) |
+| 403 | User is not authorized | [ForbiddenResponse](#forbiddenresponse) |
 | 503 | Service Unavailable |  |
-| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror)
- |
+| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## POST `/v1/streaming_query`
 
 > **Streaming Query Endpoint Handler**
@@ -112,8 +108,7 @@ Handle request to the /streaming_query endpoint.
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
 | 200 | Successful Response | ... |
-| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror)
- |
+| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## GET `/v1/config`
 
 > **Config Endpoint Handler**
@@ -134,8 +129,7 @@ Returns:
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [Configuration](#configuration)
- |
+| 200 | Successful Response | [Configuration](#configuration) |
 | 503 | Service Unavailable |  |
 ## POST `/v1/feedback`
 
@@ -165,16 +159,11 @@ Returns:
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Feedback received and stored | [FeedbackResponse](#feedbackresponse)
- |
-| 401 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse)
- |
-| 403 | Client does not have permission to access resource | [ForbiddenResponse](#forbiddenresponse)
- |
-| 500 | User feedback can not be stored | [ErrorResponse](#errorresponse)
- |
-| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror)
- |
+| 200 | Feedback received and stored | [FeedbackResponse](#feedbackresponse) |
+| 401 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse) |
+| 403 | Client does not have permission to access resource | [ForbiddenResponse](#forbiddenresponse) |
+| 500 | User feedback can not be stored | [ErrorResponse](#errorresponse) |
+| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## GET `/v1/feedback/status`
 
 > **Feedback Status**
@@ -192,8 +181,7 @@ Returns:
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [StatusResponse](#statusresponse)
- |
+| 200 | Successful Response | [StatusResponse](#statusresponse) |
 ## GET `/v1/conversations`
 
 > **Get Conversations List Endpoint Handler**
@@ -208,8 +196,7 @@ Handle request to retrieve all conversations for the authenticated user.
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [ConversationsListResponse](#conversationslistresponse)
- |
+| 200 | Successful Response | [ConversationsListResponse](#conversationslistresponse) |
 | 503 | Service Unavailable |  |
 ## GET `/v1/conversations/{conversation_id}`
 
@@ -230,12 +217,10 @@ Handle request to retrieve a conversation by ID.
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [ConversationResponse](#conversationresponse)
- |
+| 200 | Successful Response | [ConversationResponse](#conversationresponse) |
 | 404 | Not Found |  |
 | 503 | Service Unavailable |  |
-| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror)
- |
+| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## DELETE `/v1/conversations/{conversation_id}`
 
 > **Delete Conversation Endpoint Handler**
@@ -255,12 +240,10 @@ Handle request to delete a conversation by ID.
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [ConversationDeleteResponse](#conversationdeleteresponse)
- |
+| 200 | Successful Response | [ConversationDeleteResponse](#conversationdeleteresponse) |
 | 404 | Not Found |  |
 | 503 | Service Unavailable |  |
-| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror)
- |
+| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## GET `/readiness`
 
 > **Readiness Probe Get Method**
@@ -279,10 +262,8 @@ service is ready.
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Service is ready | [ReadinessResponse](#readinessresponse)
- |
-| 503 | Service is not ready | [ReadinessResponse](#readinessresponse)
- |
+| 200 | Service is ready | [ReadinessResponse](#readinessresponse) |
+| 503 | Service is not ready | [ReadinessResponse](#readinessresponse) |
 ## GET `/liveness`
 
 > **Liveness Probe Get Method**
@@ -300,10 +281,8 @@ Returns:
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Service is alive | [LivenessResponse](#livenessresponse)
- |
-| 503 | Service is not alive | [LivenessResponse](#livenessresponse)
- |
+| 200 | Service is alive | [LivenessResponse](#livenessresponse) |
+| 503 | Service is not alive | [LivenessResponse](#livenessresponse) |
 ## POST `/authorized`
 
 > **Authorized Endpoint Handler**
@@ -324,12 +303,9 @@ Returns:
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | The user is logged-in and authorized to access OLS | [AuthorizedResponse](#authorizedresponse)
- |
-| 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse)
- |
-| 403 | User is not authorized | [ForbiddenResponse](#forbiddenresponse)
- |
+| 200 | The user is logged-in and authorized to access OLS | [AuthorizedResponse](#authorizedresponse) |
+| 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse) |
+| 403 | User is not authorized | [ForbiddenResponse](#forbiddenresponse) |
 ## GET `/metrics`
 
 > **Metrics Endpoint Handler**
@@ -1051,3 +1027,4 @@ User data collection configuration.
 | loc | array |  |
 | msg | string |  |
 | type | string |  |
+
