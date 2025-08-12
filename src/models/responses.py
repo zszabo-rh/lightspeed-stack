@@ -470,3 +470,28 @@ class ConversationsListResponse(BaseModel):
             ]
         }
     }
+
+
+class ErrorResponse(BaseModel):
+    """Model representing error response for query endpoint."""
+
+    detail: dict[str, str]
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "detail": {
+                        "response": "Error while validation question",
+                        "cause": "Failed to handle request to https://bam-api.res.ibm.com/v2/text",
+                    },
+                },
+                {
+                    "detail": {
+                        "response": "Error retrieving conversation history",
+                        "cause": "Invalid conversation ID 1237-e89b-12d3-a456-426614174000",
+                    },
+                },
+            ]
+        }
+    }

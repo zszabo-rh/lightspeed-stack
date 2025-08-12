@@ -11,6 +11,7 @@ from auth import get_auth_dependency
 from auth.interface import AuthTuple
 from configuration import configuration
 from models.responses import (
+    ErrorResponse,
     FeedbackResponse,
     StatusResponse,
     UnauthorizedResponse,
@@ -23,16 +24,22 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/feedback", tags=["feedback"])
 auth_dependency = get_auth_dependency()
 
-# Response for the feedback endpoint
 feedback_response: dict[int | str, dict[str, Any]] = {
-    200: {"response": "Feedback received and stored"},
-    400: {
+    200: {
+        "description": "Feedback received and stored",
+        "model": FeedbackResponse,
+    },
+    401: {
         "description": "Missing or invalid credentials provided by client",
         "model": UnauthorizedResponse,
     },
     403: {
-        "description": "User is not authorized",
+        "description": "Client does not have permission to access resource",
         "model": ForbiddenResponse,
+    },
+    500: {
+        "description": "User feedback can not be stored",
+        "model": ErrorResponse,
     },
 }
 
