@@ -26,16 +26,7 @@ class "Customization" as src.models.config.Customization {
   system_prompt_path : Optional[FilePath]
   check_customization_model() -> Self
 }
-class "DataCollectorConfiguration" as src.models.config.DataCollectorConfiguration {
-  cleanup_after_send : bool
-  collection_interval : Annotated
-  connection_timeout : Annotated
-  enabled : bool
-  ingress_content_service_name : Optional[str]
-  ingress_server_auth_token : Optional[str]
-  ingress_server_url : Optional[str]
-  check_data_collector_configuration() -> Self
-}
+
 class "InferenceConfiguration" as src.models.config.InferenceConfiguration {
   default_model : Optional[str]
   default_provider : Optional[str]
@@ -78,14 +69,13 @@ class "TLSConfiguration" as src.models.config.TLSConfiguration {
   check_tls_configuration() -> Self
 }
 class "UserDataCollection" as src.models.config.UserDataCollection {
-  data_collector
   feedback_enabled : bool
   feedback_storage : Optional[str]
   transcripts_enabled : bool
   transcripts_storage : Optional[str]
   check_storage_location_is_set_when_needed() -> Self
 }
-src.models.config.DataCollectorConfiguration --* src.models.config.UserDataCollection : data_collector
+
 src.models.config.InferenceConfiguration --* src.models.config.Configuration : inference
 src.models.config.JwtConfiguration --* src.models.config.JwkConfiguration : jwt_configuration
 src.models.config.LlamaStackConfiguration --* src.models.config.Configuration : llama_stack

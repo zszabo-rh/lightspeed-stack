@@ -577,22 +577,6 @@ Service customization.
 | system_prompt |  |  |
 
 
-## DataCollectorConfiguration
-
-
-Data collector configuration for sending data to ingress server.
-
-
-| Field | Type | Description |
-|-------|------|-------------|
-| enabled | boolean |  |
-| ingress_server_url |  |  |
-| ingress_server_auth_token |  |  |
-| ingress_content_service_name |  |  |
-| collection_interval | integer |  |
-| cleanup_after_send | boolean |  |
-| connection_timeout | integer |  |
-
 
 ## DatabaseConfiguration
 
@@ -1016,7 +1000,6 @@ User data collection configuration.
 | feedback_storage |  |  |
 | transcripts_enabled | boolean |  |
 | transcripts_storage |  |  |
-| data_collector |  |  |
 
 
 ## ValidationError

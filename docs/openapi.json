@@ -1101,67 +1101,32 @@
                 "title": "Customization",
                 "description": "Service customization."
             },
-            "DataCollectorConfiguration": {
+            "DatabaseConfiguration": {
                 "properties": {
-                    "enabled": {
-                        "type": "boolean",
-                        "title": "Enabled",
-                        "default": false
-                    },
-                    "ingress_server_url": {
+                    "sqlite": {
                         "anyOf": [
                             {
-                                "type": "string"
+                                "$ref": "#/components/schemas/SQLiteDatabaseConfiguration"
                             },
                             {
                                 "type": "null"
                             }
-                        ],
-                        "title": "Ingress Server Url"
+                        ]
                     },
-                    "ingress_server_auth_token": {
+                    "postgres": {
                         "anyOf": [
                             {
-                                "type": "string"
+                                "$ref": "#/components/schemas/PostgreSQLDatabaseConfiguration"
                             },
                             {
                                 "type": "null"
                             }
-                        ],
-                        "title": "Ingress Server Auth Token"
-                    },
-                    "ingress_content_service_name": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Ingress Content Service Name"
-                    },
-                    "collection_interval": {
-                        "type": "integer",
-                        "exclusiveMinimum": 0.0,
-                        "title": "Collection Interval",
-                        "default": 7200
-                    },
-                    "cleanup_after_send": {
-                        "type": "boolean",
-                        "title": "Cleanup After Send",
-                        "default": true
-                    },
-                    "connection_timeout": {
-                        "type": "integer",
-                        "exclusiveMinimum": 0.0,
-                        "title": "Connection Timeout",
-                        "default": 30
+                        ]
                     }
                 },
                 "type": "object",
-                "title": "DataCollectorConfiguration",
-                "description": "Data collector configuration for sending data to ingress server."
+                "title": "DatabaseConfiguration",
+                "description": "Database configuration."
             },
             "DatabaseConfiguration": {
                 "properties": {
@@ -2122,15 +2087,6 @@
                             }
                         ],
                         "title": "Transcripts Storage"
-                    },
-                    "data_collector": {
-                        "$ref": "#/components/schemas/DataCollectorConfiguration",
-                        "default": {
-                            "enabled": false,
-                            "collection_interval": 7200,
-                            "cleanup_after_send": true,
-                            "connection_timeout": 30
-                        }
                     }
                 },
                 "type": "object",

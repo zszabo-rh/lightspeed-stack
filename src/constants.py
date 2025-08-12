@@ -47,10 +47,6 @@ DEFAULT_AUTHENTICATION_MODULE = AUTH_MOD_NOOP
 DEFAULT_JWT_UID_CLAIM = "user_id"
 DEFAULT_JWT_USER_NAME_CLAIM = "username"
 
-# Data collector constants
-DATA_COLLECTOR_COLLECTION_INTERVAL = 7200  # 2 hours in seconds
-DATA_COLLECTOR_CONNECTION_TIMEOUT = 30
-DATA_COLLECTOR_RETRY_INTERVAL = 300  # 5 minutes in seconds
 
 # PostgreSQL connection constants
 # See: https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNECT-SSLMODE
