@@ -261,6 +261,7 @@ check-types                       Checks type hints in sources
 security-check                    Check the project for security issues
 format                            Format the code into unified format
 schema                            Generate OpenAPI schema file
+openapi-doc                       Generate OpenAPI documentation
 requirements.txt                  Generate requirements.txt file containing hashes for all non-devel packages
 shellcheck                        Run shellcheck
 verify                            Run all linters
