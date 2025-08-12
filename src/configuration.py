@@ -3,6 +3,10 @@
 import logging
 from typing import Any, Optional
 
+# We want to support environment variable replacement in the configuration
+# similarly to how it is done in llama-stack, so we use their function directly
+from llama_stack.core.stack import replace_env_vars
+
 import yaml
 from models.config import (
     Configuration,
@@ -15,6 +19,7 @@ from models.config import (
     InferenceConfiguration,
     DatabaseConfiguration,
 )
+
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +43,7 @@ class AppConfig:
         """Load configuration from YAML file."""
         with open(filename, encoding="utf-8") as fin:
             config_dict = yaml.safe_load(fin)
+            config_dict = replace_env_vars(config_dict)
             logger.info("Loaded configuration: %s", config_dict)
             self.init_from_dict(config_dict)
 
