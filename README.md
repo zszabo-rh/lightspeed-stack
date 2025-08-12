@@ -9,6 +9,8 @@
 [![Tag](https://img.shields.io/github/v/tag/lightspeed-core/lightspeed-stack)](https://github.com/lightspeed-core/lightspeed-stack/releases/tag/0.1.3)
 
 Lightspeed Core Stack (LCS) is an AI-powered assistant that provides answers to product questions using backend LLM services, agents, and RAG databases.
+ 
+The service includes comprehensive user data collection capabilities for various types of user interaction data, which can be exported to Red Hat's Dataverse for analysis using the companion [lightspeed-to-dataverse-exporter](https://github.com/lightspeed-core/lightspeed-to-dataverse-exporter) service.
 
 
 <!-- vim-markdown-toc GFM -->
@@ -51,6 +53,8 @@ Lightspeed Core Stack (LCS) is an AI-powered assistant that provides answers to 
 * [Project structure](#project-structure)
   * [Configuration classes](#configuration-classes)
   * [REST API](#rest-api)
+* [Data Export Integration](#data-export-integration)
+
 
 <!-- vim-markdown-toc -->
 
@@ -197,6 +201,31 @@ user_data_collection:
   transcripts_enabled: true
   transcripts_storage: "/tmp/data/transcripts"
 ```
+
+## User data collection
+
+The Lightspeed Core Stack includes comprehensive user data collection capabilities to gather various types of user interaction data for analysis and improvement. This includes feedback, conversation transcripts, and other user interaction data.
+
+User data collection is configured in the `user_data_collection` section of the configuration file:
+
+```yaml
+user_data_collection:
+  feedback_enabled: true
+  feedback_storage: "/tmp/data/feedback"
+  transcripts_enabled: true
+  transcripts_storage: "/tmp/data/transcripts"
+```
+
+**Configuration options:**
+
+- `feedback_enabled`: Enable/disable collection of user feedback data
+- `feedback_storage`: Directory path where feedback JSON files are stored
+- `transcripts_enabled`: Enable/disable collection of conversation transcripts
+- `transcripts_storage`: Directory path where transcript JSON files are stored
+
+> **Note**: The data collection system is designed to be extensible. Additional data types can be configured and collected as needed for your specific use case.
+
+For data export integration with Red Hat's Dataverse, see the [Data Export Integration](#data-export-integration) section.
 
 ## System prompt
 
@@ -524,7 +553,27 @@ This script re-generated OpenAPI schema for the Lightspeed Service REST API.
 make schema
 ```
 
+# Data Export Integration
 
+The Lightspeed Core Stack integrates with the [lightspeed-to-dataverse-exporter](https://github.com/lightspeed-core/lightspeed-to-dataverse-exporter) service to automatically export various types of user interaction data to Red Hat's Dataverse for analysis.
+
+## Quick Integration
+
+1. **Enable data collection** in your `lightspeed-stack.yaml`:
+   ```yaml
+   user_data_collection:
+     feedback_enabled: true
+     feedback_storage: "/shared/data/feedback"
+     transcripts_enabled: true
+     transcripts_storage: "/shared/data/transcripts"
+   ```
+
+2. **Deploy the exporter service** pointing to the same data directories
+
+
+## Documentation
+
+For complete integration setup, deployment options, and configuration details, see [exporter repository](https://github.com/lightspeed-core/lightspeed-to-dataverse-exporter).
 
 # Project structure
 
