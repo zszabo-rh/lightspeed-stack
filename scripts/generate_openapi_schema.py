@@ -67,11 +67,14 @@ if __name__ == "__main__":
     # retrieve OpenAPI schema via initialized app
     open_api = get_openapi(
         title=app.title,
+        summary=app.summary,
         version=app.version,
         openapi_version=app.openapi_version,
         description=app.description,
         routes=app.routes,
         license_info=app.license_info,
+        servers=app.servers,
+        contact=app.contact,
     )
 
     # dump the schema into file

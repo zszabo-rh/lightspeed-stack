@@ -23,12 +23,21 @@ service_name = configuration.configuration.name
 
 app = FastAPI(
     title=f"{service_name} service - OpenAPI",
+    summary=f"{service_name} service API specification.",
     description=f"{service_name} service API specification.",
     version=version.__version__,
+    contact={
+        "name": "Pavel Tisnovsky",
+        "url": "https://github.com/tisnik/",
+        "email": "ptisnovs@redhat.com",
+    },
     license_info={
         "name": "Apache 2.0",
         "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
     },
+    servers=[
+        {"url": "http://localhost:8080/", "description": "Locally running service"}
+    ],
 )
 
 app.add_middleware(

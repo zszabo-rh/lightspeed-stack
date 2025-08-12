@@ -7,6 +7,7 @@ Lightspeed Core Service (LCS) service API specification.
 
 | URL | Description |
 |-----|-------------|
+| http://localhost:8080/ | Locally running service |
 
 
 # 🛠️ APIs
