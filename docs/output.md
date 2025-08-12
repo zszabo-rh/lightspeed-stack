@@ -165,11 +165,13 @@ Returns:
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [FeedbackResponse](#feedbackresponse)
+| 200 | Feedback received and stored | [FeedbackResponse](#feedbackresponse)
  |
-| 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse)
+| 401 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse)
  |
-| 403 | User is not authorized | [ForbiddenResponse](#forbiddenresponse)
+| 403 | Client does not have permission to access resource | [ForbiddenResponse](#forbiddenresponse)
+ |
+| 500 | User feedback can not be stored | [ErrorResponse](#errorresponse)
  |
 | 422 | Validation Error | [HTTPValidationError](#httpvalidationerror)
  |
@@ -604,6 +606,17 @@ Database configuration.
 |-------|------|-------------|
 | sqlite |  |  |
 | postgres |  |  |
+
+
+## ErrorResponse
+
+
+Model representing error response for query endpoint.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| detail | object |  |
 
 
 ## FeedbackCategory
