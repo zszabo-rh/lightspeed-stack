@@ -292,9 +292,7 @@ class Configuration(BaseModel):
     user_data_collection: UserDataCollection
     database: DatabaseConfiguration = DatabaseConfiguration()
     mcp_servers: list[ModelContextProtocolServer] = []
-    authentication: Optional[AuthenticationConfiguration] = (
-        AuthenticationConfiguration()
-    )
+    authentication: AuthenticationConfiguration = AuthenticationConfiguration()
     customization: Optional[Customization] = None
     inference: InferenceConfiguration = InferenceConfiguration()
 
