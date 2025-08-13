@@ -614,6 +614,53 @@ def test_dump_configuration_with_more_mcp_servers(tmp_path) -> None:
         ]
 
 
+def test_authentication_configuration_in_config() -> None:
+    """Test the authentication configuration in main config."""
+    cfg = Configuration(
+        name="test_name",
+        service=ServiceConfiguration(),
+        llama_stack=LlamaStackConfiguration(
+            use_as_library_client=True,
+            library_client_config_path="tests/configuration/run.yaml",
+        ),
+        user_data_collection=UserDataCollection(
+            feedback_enabled=False, feedback_storage=None
+        ),
+        mcp_servers=[],
+    )
+    assert cfg.authentication is not None
+    assert cfg.authentication.module == AUTH_MOD_NOOP
+    assert cfg.authentication.skip_tls_verification is False
+    assert cfg.authentication.k8s_ca_cert_path is None
+    assert cfg.authentication.k8s_cluster_api is None
+
+    cfg2 = Configuration(
+        name="test_name",
+        service=ServiceConfiguration(),
+        llama_stack=LlamaStackConfiguration(
+            use_as_library_client=True,
+            library_client_config_path="tests/configuration/run.yaml",
+        ),
+        user_data_collection=UserDataCollection(
+            feedback_enabled=False, feedback_storage=None
+        ),
+        mcp_servers=[],
+        authentication=AuthenticationConfiguration(
+            module=AUTH_MOD_K8S,
+            skip_tls_verification=True,
+            k8s_ca_cert_path="tests/configuration/server.crt",
+            k8s_cluster_api=None,
+        ),
+    )
+    assert cfg2.authentication is not None
+    assert cfg2.authentication.module == AUTH_MOD_K8S
+    assert cfg2.authentication.skip_tls_verification is True
+    assert cfg2.authentication.k8s_ca_cert_path == Path(
+        "tests/configuration/server.crt"
+    )
+    assert cfg2.authentication.k8s_cluster_api is None
+
+
 def test_authentication_configuration() -> None:
     """Test the AuthenticationConfiguration constructor."""
 
