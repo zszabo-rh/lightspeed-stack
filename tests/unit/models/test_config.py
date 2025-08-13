@@ -227,6 +227,22 @@ def test_tls_configuration() -> None:
     assert cfg.tls_key_password == Path("tests/configuration/password")
 
 
+def test_tls_configuration_in_service_configuration() -> None:
+    """Test the TLS configuration in service configuration."""
+    cfg = ServiceConfiguration(
+        tls_config=TLSConfiguration(
+            tls_certificate_path=Path("tests/configuration/server.crt"),
+            tls_key_path=Path("tests/configuration/server.key"),
+            tls_key_password=Path("tests/configuration/password"),
+        )
+    )
+    assert cfg is not None
+    assert cfg.tls_config is not None
+    assert cfg.tls_config.tls_certificate_path == Path("tests/configuration/server.crt")
+    assert cfg.tls_config.tls_key_path == Path("tests/configuration/server.key")
+    assert cfg.tls_config.tls_key_password == Path("tests/configuration/password")
+
+
 def test_tls_configuration_wrong_certificate_path() -> None:
     """Test the TLS configuration loading when some path is broken."""
     with pytest.raises(ValueError, match="Path does not point to a file"):
@@ -416,7 +432,13 @@ def test_dump_configuration(tmp_path) -> None:
     """
     cfg = Configuration(
         name="test_name",
-        service=ServiceConfiguration(),
+        service=ServiceConfiguration(
+            tls_config=TLSConfiguration(
+                tls_certificate_path=Path("tests/configuration/server.crt"),
+                tls_key_path=Path("tests/configuration/server.key"),
+                tls_key_password=Path("tests/configuration/password"),
+            )
+        ),
         llama_stack=LlamaStackConfiguration(
             use_as_library_client=True,
             library_client_config_path="tests/configuration/run.yaml",
@@ -462,9 +484,9 @@ def test_dump_configuration(tmp_path) -> None:
                 "color_log": True,
                 "access_log": True,
                 "tls_config": {
-                    "tls_certificate_path": None,
-                    "tls_key_path": None,
-                    "tls_key_password": None,
+                    "tls_certificate_path": "tests/configuration/server.crt",
+                    "tls_key_password": "tests/configuration/password",
+                    "tls_key_path": "tests/configuration/server.key",
                 },
             },
             "llama_stack": {
