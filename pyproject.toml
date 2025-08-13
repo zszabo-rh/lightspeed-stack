@@ -34,19 +34,30 @@ dependencies = [
     "aiohttp>=3.12.14",
     "authlib>=1.6.0",
     "email-validator>=2.2.0",
+    "fire>=0.7.0",
     # To check llama-stack API provider dependecies:
     #
     #    $ uv run llama stack list-providers
     #
+    # API agents: inline::meta-reference
+    "matplotlib>=3.10.0",
+    "pillow>=11.1.0",
+    "pandas>=2.2.3",
+    "scikit-learn>=1.5.2",
+    "psycopg2-binary>=2.9.10",
     # API inference: remote::vllm
-    "openai==1.99.1",
-    # API vector_io: inline::faiss
+    "openai==1.99.9",
+    # API inference: remote::gemini
+    "litellm>=1.75.5.post1",
+    # API vector_io:vzdalene,  inline::faiss
     "faiss-cpu>=1.11.0",
+    # API scoring: inline::basic
+    "requests>=2.32.4",
     # API datasetio: inline::localfs
     "sqlalchemy>=2.0.42",
     "aiosqlite>=0.21.0",
     # API telemetry: inline::meta-reference
-    "opentelemetry-api>=1.34.1",
+    "opentelemetry-sdk>=1.34.1",
     "opentelemetry-exporter-otlp>=1.34.1",
     # API tool_runtime: inline::rag-runtime
     "transformers>=4.34.0",
