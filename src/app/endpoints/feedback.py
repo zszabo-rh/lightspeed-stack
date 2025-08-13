@@ -60,7 +60,7 @@ def is_feedback_enabled() -> bool:
 
 async def assert_feedback_enabled(_request: Request) -> None:
     """
-    Ensures that feedback collection is enabled.
+    Ensure that feedback collection is enabled.
 
     Raises an HTTP 403 error if it is not.
 
@@ -126,7 +126,7 @@ def store_feedback(user_id: str, feedback: dict) -> None:
 
     Persist user feedback to a uniquely named JSON file in the
     configured local storage directory.
-    
+
     Parameters:
         user_id (str): Unique identifier of the user submitting feedback.
         feedback (dict): Feedback data to be stored, merged with user ID and timestamp.

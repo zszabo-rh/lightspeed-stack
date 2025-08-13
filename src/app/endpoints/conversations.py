@@ -218,7 +218,8 @@ async def get_conversation_endpoint_handler(
         conversation_id (str): Unique identifier of the conversation to retrieve.
 
     Returns:
-        ConversationResponse: Structured response containing the conversation ID and simplified chat history.
+        ConversationResponse: Structured response containing the conversation
+        ID and simplified chat history.
     """
     check_configuration_loaded(configuration)
 
