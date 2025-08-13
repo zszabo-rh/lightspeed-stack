@@ -204,7 +204,23 @@ async def get_conversation_endpoint_handler(
     conversation_id: str,
     auth: Any = Depends(auth_dependency),
 ) -> ConversationResponse:
-    """Handle request to retrieve a conversation by ID."""
+    """
+    Handle request to retrieve a conversation by ID.
+
+    Retrieve a conversation's chat history by its ID. Then fetches
+    the conversation session from the Llama Stack backend,
+    simplifies the session data to essential chat history, and
+    returns it in a structured response. Raises HTTP 400 for
+    invalid IDs, 404 if not found, 503 if the backend is
+    unavailable, and 500 for unexpected errors.
+
+    Parameters:
+        conversation_id (str): Unique identifier of the conversation to retrieve.
+
+    Returns:
+        ConversationResponse: Structured response containing the conversation
+        ID and simplified chat history.
+    """
     check_configuration_loaded(configuration)
 
     # Validate conversation ID format
@@ -286,7 +302,17 @@ async def delete_conversation_endpoint_handler(
     conversation_id: str,
     auth: Any = Depends(auth_dependency),
 ) -> ConversationDeleteResponse:
-    """Handle request to delete a conversation by ID."""
+    """
+    Handle request to delete a conversation by ID.
+
+    Validates the conversation ID format and attempts to delete the
+    corresponding session from the Llama Stack backend. Raises HTTP
+    errors for invalid IDs, not found conversations, connection
+    issues, or unexpected failures.
+
+    Returns:
+        ConversationDeleteResponse: Response indicating the result of the deletion operation.
+    """
     check_configuration_loaded(configuration)
 
     # Validate conversation ID format
