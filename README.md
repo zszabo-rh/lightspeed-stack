@@ -96,6 +96,7 @@ Llama Stack Client. It is a library available for Python, Swift, Node.js or
 Kotlin, which "wraps" the REST API stack in a suitable way, which is easier for
 many applications.
 
+
 ![Integration with Llama Stack](docs/core2llama-stack_interface.png)
 
 
@@ -123,7 +124,44 @@ user_data_collection:
   transcripts_storage: "/tmp/data/transcripts"
 ```
 
+### MCP Server and Tool Configuration
+
+**Note**: The `run.yaml` configuration is currently an implementation detail. In the future, all configuration will be available directly from the lightspeed-core config.
+
+#### Configuring MCP Servers
+
+MCP (Model Context Protocol) servers provide tools and capabilities to the AI agents. These are configured in the `mcp_servers` section of your `lightspeed-stack.yaml`:
+
+```yaml
+mcp_servers:
+  - name: "filesystem-tools"
+    provider_id: "model-context-protocol"
+    url: "http://localhost:3000"
+  - name: "git-tools"
+    provider_id: "model-context-protocol"
+    url: "http://localhost:3001"
+  - name: "database-tools"
+    provider_id: "model-context-protocol"
+    url: "http://localhost:3002"
+```
+
+**Important**: Only MCP servers defined in the `lightspeed-stack.yaml` configuration are available to the agents. Tools configured in the llama-stack `run.yaml` are not accessible to lightspeed-core agents.
+
+#### Configuring MCP Headers
+
+MCP headers allow you to pass authentication tokens, API keys, or other metadata to MCP servers. These are configured **per request** via the `MCP-HEADERS` HTTP header:
+
+```bash
+curl -X POST "http://localhost:8080/v1/query" \
+  -H "Content-Type: application/json" \
+  -H "MCP-HEADERS: {\"filesystem-tools\": {\"Authorization\": \"Bearer token123\"}}" \
+  -d '{"query": "List files in /tmp"}'
+```
+
+
 ### Llama Stack project and configuration
+
+**Note**: The `run.yaml` configuration is currently an implementation detail. In the future, all configuration will be available directly from the lightspeed-core config.
 
 To run Llama Stack in separate process, you need to have all dependencies installed. The easiest way how to do it is to create a separate repository with Llama Stack project file `pyproject.toml` and Llama Stack configuration file `run.yaml`. The project file might look like:
 
