@@ -109,7 +109,9 @@ async def get_agent(
         await client.agents.delete(agent_id=orphan_agent_id)
         sessions_response = await client.agents.session.list(agent_id=conversation_id)
         logger.info("session response: %s", sessions_response)
-        if not sessions_response or not sessions_response.data:
+        try:
+            session_id = str(sessions_response.data[0]["session_id"])
+        except IndexError as e:
             logger.error("No sessions found for conversation %s", conversation_id)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -117,8 +119,7 @@ async def get_agent(
                     "response": "Conversation not found",
                     "cause": f"Conversation {conversation_id} could not be retrieved.",
                 },
-            )
-        session_id = str(sessions_response.data[0]["session_id"])
+            ) from e
     else:
         conversation_id = agent.agent_id
         session_id = await agent.create_session(get_suid())

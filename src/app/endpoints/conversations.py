@@ -254,7 +254,7 @@ async def get_conversation_endpoint_handler(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={
                     "response": "Conversation not found",
-                    "cause": f"Conversation {conversation_id} could not be deleted: no sessions found",
+                    "cause": f"Conversation {conversation_id} could not be retrieved.",
                 },
             )
         session_id = str(agent_sessions[0].get("session_id"))
@@ -354,13 +354,12 @@ async def delete_conversation_endpoint_handler(
         agent_sessions = (await client.agents.session.list(agent_id=agent_id)).data
 
         if not agent_sessions:
-            logger.error("No sessions found for conversation %s", conversation_id)
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={
-                    "response": "Conversation not found",
-                    "cause": f"Conversation {conversation_id} could not be deleted: no sessions found",
-                },
+            # If no sessions are found, do not raise an error, just return a success response
+            logger.info("No sessions found for conversation %s", conversation_id)
+            return ConversationDeleteResponse(
+                conversation_id=conversation_id,
+                success=True,
+                response="Conversation deleted successfully",
             )
 
         session_id = str(agent_sessions[0].get("session_id"))
