@@ -399,7 +399,7 @@ async def streaming_query_endpoint_handler(  # pylint: disable=too-many-locals
     user_id, _user_name, token = auth
 
     user_conversation: UserConversation | None = None
-    if query_request.conversation_id is not None:
+    if query_request.conversation_id:
         user_conversation = validate_conversation_ownership(
             user_id=user_id, conversation_id=query_request.conversation_id
         )
