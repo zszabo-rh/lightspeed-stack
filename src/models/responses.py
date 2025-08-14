@@ -8,7 +8,30 @@ from pydantic import BaseModel, Field
 class ModelsResponse(BaseModel):
     """Model representing a response to models request."""
 
-    models: list[dict[str, Any]]
+    models: list[dict[str, Any]] = Field(
+        ...,
+        description="List of models available",
+        examples=[
+            {
+                "identifier": "openai/gpt-4-turbo",
+                "metadata": {},
+                "api_model_type": "llm",
+                "provider_id": "openai",
+                "type": "model",
+                "provider_resource_id": "gpt-4-turbo",
+                "model_type": "llm",
+            },
+            {
+                "identifier": "openai/gpt-3.5-turbo-0125",
+                "metadata": {},
+                "api_model_type": "llm",
+                "provider_id": "openai",
+                "type": "model",
+                "provider_resource_id": "gpt-3.5-turbo-0125",
+                "model_type": "llm",
+            },
+        ],
+    )
 
 
 # TODO(lucasagomes): a lot of fields to add to QueryResponse. For now
@@ -30,8 +53,18 @@ class QueryResponse(BaseModel):
         response: The response.
     """
 
-    conversation_id: Optional[str] = None
-    response: str
+    conversation_id: Optional[str] = Field(
+        None,
+        description="The optional conversation ID (UUID)",
+        examples=["c5260aec-4d82-4370-9fdf-05cf908b3f16"],
+    )
+
+    response: str = Field(
+        description="Response from LLM",
+        examples=[
+            "Kubernetes is an open-source container orchestration system for automating ..."
+        ],
+    )
 
     # provides examples for /docs endpoint
     model_config = {
@@ -62,8 +95,15 @@ class InfoResponse(BaseModel):
         ```
     """
 
-    name: str
-    version: str
+    name: str = Field(
+        description="Service name",
+        examples=["Lightspeed Stack"],
+    )
+
+    version: str = Field(
+        description="Service version",
+        examples=["0.1.0", "0.2.0", "1.0.0"],
+    )
 
     # provides examples for /docs endpoint
     model_config = {
@@ -483,7 +523,19 @@ class ConversationsListResponse(BaseModel):
 class ErrorResponse(BaseModel):
     """Model representing error response for query endpoint."""
 
-    detail: dict[str, str]
+    detail: dict[str, str] = Field(
+        description="Error details",
+        examples=[
+            {
+                "response": "Error while validation question",
+                "cause": "Failed to handle request to https://bam-api.res.ibm.com/v2/text",
+            },
+            {
+                "response": "Error retrieving conversation history",
+                "cause": "Invalid conversation ID 1237-e89b-12d3-a456-426614174000",
+            },
+        ],
+    )
 
     model_config = {
         "json_schema_extra": {
