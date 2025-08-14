@@ -8,6 +8,9 @@ import pytest
 
 from llama_stack_client import APIConnectionError
 from llama_stack_client.types import UserMessage  # type: ignore
+from llama_stack_client.types.shared.interleaved_content import (
+    TextContentItem,
+)
 
 from configuration import AppConfig
 from app.endpoints.query import (
@@ -16,8 +19,6 @@ from app.endpoints.query import (
     retrieve_response,
     validate_attachments_metadata,
     is_transcripts_enabled,
-    construct_transcripts_path,
-    store_transcript,
     get_rag_toolgroups,
     evaluate_model_hints,
 )
@@ -25,6 +26,7 @@ from app.endpoints.query import (
 from models.requests import QueryRequest, Attachment
 from models.config import ModelContextProtocolServer
 from models.database.conversations import UserConversation
+from utils.types import ToolCallSummary, TurnSummary
 
 MOCK_AUTH = ("mock_user_id", "mock_username", "mock_token")
 
@@ -122,13 +124,23 @@ async def _test_query_endpoint_handler(mocker, store_transcript_to_file=False):
     )
     mocker.patch("app.endpoints.query.configuration", mock_config)
 
-    llm_response = "LLM answer"
+    summary = TurnSummary(
+        llm_response="LLM answer",
+        tool_calls=[
+            ToolCallSummary(
+                id="123",
+                name="test-tool",
+                args="testing",
+                response="tool response",
+            )
+        ],
+    )
     conversation_id = "fake_conversation_id"
     query = "What is OpenStack?"
 
     mocker.patch(
         "app.endpoints.query.retrieve_response",
-        return_value=(llm_response, conversation_id),
+        return_value=(summary, conversation_id),
     )
     mocker.patch(
         "app.endpoints.query.select_model_and_provider_id",
@@ -148,7 +160,7 @@ async def _test_query_endpoint_handler(mocker, store_transcript_to_file=False):
     response = await query_endpoint_handler(query_request, auth=MOCK_AUTH)
 
     # Assert the response is as expected
-    assert response.response == llm_response
+    assert response.response == summary.llm_response
     assert response.conversation_id == conversation_id
 
     # Assert the metric for successful LLM calls is incremented
@@ -164,7 +176,7 @@ async def _test_query_endpoint_handler(mocker, store_transcript_to_file=False):
             query_is_valid=True,
             query=query,
             query_request=query_request,
-            response=llm_response,
+            summary=summary,
             attachments=[],
             rag_chunks=[],
             truncated=False,
@@ -412,7 +424,7 @@ async def test_retrieve_response_no_returned_message(prepare_agent_mocks, mocker
     )
 
     # fallback mechanism: check that the response is empty
-    assert response == ""
+    assert response.llm_response == ""
 
 
 @pytest.mark.asyncio
@@ -443,7 +455,7 @@ async def test_retrieve_response_message_without_content(prepare_agent_mocks, mo
     )
 
     # fallback mechanism: check that the response is empty
-    assert response == ""
+    assert response.llm_response == ""
 
 
 @pytest.mark.asyncio
@@ -470,13 +482,13 @@ async def test_retrieve_response_vector_db_available(prepare_agent_mocks, mocker
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    response, conversation_id = await retrieve_response(
+    summary, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
     # Assert that the metric for validation errors is NOT incremented
     mock_metric.inc.assert_not_called()
-    assert response == "LLM answer"
+    assert summary.llm_response == "LLM answer"
     assert conversation_id == "fake_conversation_id"
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(content="What is OpenStack?", role="user")],
@@ -508,11 +520,11 @@ async def test_retrieve_response_no_available_shields(prepare_agent_mocks, mocke
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    response, conversation_id = await retrieve_response(
+    summary, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
-    assert response == "LLM answer"
+    assert summary.llm_response == "LLM answer"
     assert conversation_id == "fake_conversation_id"
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(content="What is OpenStack?", role="user")],
@@ -557,11 +569,11 @@ async def test_retrieve_response_one_available_shield(prepare_agent_mocks, mocke
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    response, conversation_id = await retrieve_response(
+    summary, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
-    assert response == "LLM answer"
+    assert summary.llm_response == "LLM answer"
     assert conversation_id == "fake_conversation_id"
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(content="What is OpenStack?", role="user")],
@@ -609,11 +621,11 @@ async def test_retrieve_response_two_available_shields(prepare_agent_mocks, mock
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    response, conversation_id = await retrieve_response(
+    summary, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
-    assert response == "LLM answer"
+    assert summary.llm_response == "LLM answer"
     assert conversation_id == "fake_conversation_id"
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(content="What is OpenStack?", role="user")],
@@ -663,11 +675,11 @@ async def test_retrieve_response_four_available_shields(prepare_agent_mocks, moc
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    response, conversation_id = await retrieve_response(
+    summary, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
-    assert response == "LLM answer"
+    assert summary.llm_response == "LLM answer"
     assert conversation_id == "fake_conversation_id"
 
     # Verify get_agent was called with the correct parameters
@@ -719,11 +731,11 @@ async def test_retrieve_response_with_one_attachment(prepare_agent_mocks, mocker
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    response, conversation_id = await retrieve_response(
+    summary, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
-    assert response == "LLM answer"
+    assert summary.llm_response == "LLM answer"
     assert conversation_id == "fake_conversation_id"
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(content="What is OpenStack?", role="user")],
@@ -773,11 +785,11 @@ async def test_retrieve_response_with_two_attachments(prepare_agent_mocks, mocke
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    response, conversation_id = await retrieve_response(
+    summary, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
-    assert response == "LLM answer"
+    assert summary.llm_response == "LLM answer"
     assert conversation_id == "fake_conversation_id"
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(content="What is OpenStack?", role="user")],
@@ -828,11 +840,11 @@ async def test_retrieve_response_with_mcp_servers(prepare_agent_mocks, mocker):
     model_id = "fake_model_id"
     access_token = "test_token_123"
 
-    response, conversation_id = await retrieve_response(
+    summary, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
-    assert response == "LLM answer"
+    assert summary.llm_response == "LLM answer"
     assert conversation_id == "fake_conversation_id"
 
     # Verify get_agent was called with the correct parameters
@@ -897,11 +909,11 @@ async def test_retrieve_response_with_mcp_servers_empty_token(
     model_id = "fake_model_id"
     access_token = ""  # Empty token
 
-    response, conversation_id = await retrieve_response(
+    summary, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
-    assert response == "LLM answer"
+    assert summary.llm_response == "LLM answer"
     assert conversation_id == "fake_conversation_id"
 
     # Verify get_agent was called with the correct parameters
@@ -968,7 +980,7 @@ async def test_retrieve_response_with_mcp_servers_and_mcp_headers(
         },
     }
 
-    response, conversation_id = await retrieve_response(
+    summary, conversation_id = await retrieve_response(
         mock_client,
         model_id,
         query_request,
@@ -976,7 +988,7 @@ async def test_retrieve_response_with_mcp_servers_and_mcp_headers(
         mcp_headers=mcp_headers,
     )
 
-    assert response == "LLM answer"
+    assert summary.llm_response == "LLM answer"
     assert conversation_id == "fake_conversation_id"
 
     # Verify get_agent was called with the correct parameters
@@ -1033,6 +1045,9 @@ async def test_retrieve_response_shield_violation(prepare_agent_mocks, mocker):
         ),
     ]
     mock_agent.create_turn.return_value.steps = steps
+    mock_agent.create_turn.return_value.output_message.content = TextContentItem(
+        text="LLM answer", type="text"
+    )
     mock_client.shields.list.return_value = []
     mock_vector_db = mocker.Mock()
     mock_vector_db.identifier = "VectorDB-1"
@@ -1063,86 +1078,6 @@ async def test_retrieve_response_shield_violation(prepare_agent_mocks, mocker):
         documents=[],
         stream=False,
         toolgroups=get_rag_toolgroups(["VectorDB-1"]),
-    )
-
-
-def test_construct_transcripts_path(setup_configuration, mocker):
-    """Test the construct_transcripts_path function."""
-    # Update configuration for this test
-    setup_configuration.user_data_collection_configuration.transcripts_storage = (
-        "/tmp/transcripts"
-    )
-    mocker.patch("app.endpoints.query.configuration", setup_configuration)
-
-    user_id = "user123"
-    conversation_id = "123e4567-e89b-12d3-a456-426614174000"
-
-    path = construct_transcripts_path(user_id, conversation_id)
-
-    assert (
-        str(path) == "/tmp/transcripts/user123/123e4567-e89b-12d3-a456-426614174000"
-    ), "Path should be constructed correctly"
-
-
-def test_store_transcript(mocker):
-    """Test the store_transcript function."""
-
-    mocker.patch("builtins.open", mocker.mock_open())
-    mocker.patch(
-        "app.endpoints.query.construct_transcripts_path",
-        return_value=mocker.MagicMock(),
-    )
-
-    # Mock the JSON to assert the data is stored correctly
-    mock_json = mocker.patch("app.endpoints.query.json")
-
-    # Mock parameters
-    user_id = "user123"
-    conversation_id = "123e4567-e89b-12d3-a456-426614174000"
-    query = "What is OpenStack?"
-    model = "fake-model"
-    provider = "fake-provider"
-    query_request = QueryRequest(query=query, model=model, provider=provider)
-    response = "LLM answer"
-    query_is_valid = True
-    rag_chunks = []
-    truncated = False
-    attachments = []
-
-    store_transcript(
-        user_id,
-        conversation_id,
-        model,
-        provider,
-        query_is_valid,
-        query,
-        query_request,
-        response,
-        rag_chunks,
-        truncated,
-        attachments,
-    )
-
-    # Assert that the transcript was stored correctly
-    mock_json.dump.assert_called_once_with(
-        {
-            "metadata": {
-                "provider": "fake-provider",
-                "model": "fake-model",
-                "query_provider": query_request.provider,
-                "query_model": query_request.model,
-                "user_id": user_id,
-                "conversation_id": conversation_id,
-                "timestamp": mocker.ANY,
-            },
-            "redacted_query": query,
-            "query_is_valid": query_is_valid,
-            "llm_response": response,
-            "rag_chunks": rag_chunks,
-            "truncated": truncated,
-            "attachments": attachments,
-        },
-        mocker.ANY,
     )
 
 
@@ -1199,9 +1134,20 @@ async def test_auth_tuple_unpacking_in_query_endpoint_handler(mocker):
         "client.AsyncLlamaStackClientHolder.get_client", return_value=mock_client
     )
 
+    summary = TurnSummary(
+        llm_response="LLM answer",
+        tool_calls=[
+            ToolCallSummary(
+                id="123",
+                name="test-tool",
+                args="testing",
+                response="tool response",
+            )
+        ],
+    )
     mock_retrieve_response = mocker.patch(
         "app.endpoints.query.retrieve_response",
-        return_value=("test response", "test_conversation_id"),
+        return_value=(summary, "test_conversation_id"),
     )
 
     mocker.patch(
@@ -1235,13 +1181,23 @@ async def test_query_endpoint_handler_no_tools_true(mocker):
     mock_config.user_data_collection_configuration.transcripts_disabled = True
     mocker.patch("app.endpoints.query.configuration", mock_config)
 
-    llm_response = "LLM answer without tools"
+    summary = TurnSummary(
+        llm_response="LLM answer",
+        tool_calls=[
+            ToolCallSummary(
+                id="123",
+                name="test-tool",
+                args="testing",
+                response="tool response",
+            )
+        ],
+    )
     conversation_id = "fake_conversation_id"
     query = "What is OpenStack?"
 
     mocker.patch(
         "app.endpoints.query.retrieve_response",
-        return_value=(llm_response, conversation_id),
+        return_value=(summary, conversation_id),
     )
     mocker.patch(
         "app.endpoints.query.select_model_and_provider_id",
@@ -1256,7 +1212,7 @@ async def test_query_endpoint_handler_no_tools_true(mocker):
     response = await query_endpoint_handler(query_request, auth=MOCK_AUTH)
 
     # Assert the response is as expected
-    assert response.response == llm_response
+    assert response.response == summary.llm_response
     assert response.conversation_id == conversation_id
 
 
@@ -1274,13 +1230,23 @@ async def test_query_endpoint_handler_no_tools_false(mocker):
     mock_config.user_data_collection_configuration.transcripts_disabled = True
     mocker.patch("app.endpoints.query.configuration", mock_config)
 
-    llm_response = "LLM answer with tools"
+    summary = TurnSummary(
+        llm_response="LLM answer",
+        tool_calls=[
+            ToolCallSummary(
+                id="123",
+                name="test-tool",
+                args="testing",
+                response="tool response",
+            )
+        ],
+    )
     conversation_id = "fake_conversation_id"
     query = "What is OpenStack?"
 
     mocker.patch(
         "app.endpoints.query.retrieve_response",
-        return_value=(llm_response, conversation_id),
+        return_value=(summary, conversation_id),
     )
     mocker.patch(
         "app.endpoints.query.select_model_and_provider_id",
@@ -1295,7 +1261,7 @@ async def test_query_endpoint_handler_no_tools_false(mocker):
     response = await query_endpoint_handler(query_request, auth=MOCK_AUTH)
 
     # Assert the response is as expected
-    assert response.response == llm_response
+    assert response.response == summary.llm_response
     assert response.conversation_id == conversation_id
 
 
@@ -1329,11 +1295,11 @@ async def test_retrieve_response_no_tools_bypasses_mcp_and_rag(
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    response, conversation_id = await retrieve_response(
+    summary, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
-    assert response == "LLM answer"
+    assert summary.llm_response == "LLM answer"
     assert conversation_id == "fake_conversation_id"
 
     # Verify that agent.extra_headers is empty (no MCP headers)
@@ -1379,11 +1345,11 @@ async def test_retrieve_response_no_tools_false_preserves_functionality(
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    response, conversation_id = await retrieve_response(
+    summary, conversation_id = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
-    assert response == "LLM answer"
+    assert summary.llm_response == "LLM answer"
     assert conversation_id == "fake_conversation_id"
 
     # Verify that agent.extra_headers contains MCP headers
