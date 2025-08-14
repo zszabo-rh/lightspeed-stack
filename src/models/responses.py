@@ -527,16 +527,12 @@ class ErrorResponse(BaseModel):
         description="Error details",
         examples=[
             {
-                "detail": {
-                    "response": "Error while validation question",
-                    "cause": "Failed to handle request to https://bam-api.res.ibm.com/v2/text",
-                },
+                "response": "Error while validation question",
+                "cause": "Failed to handle request to https://bam-api.res.ibm.com/v2/text",
             },
             {
-                "detail": {
-                    "response": "Error retrieving conversation history",
-                    "cause": "Invalid conversation ID 1237-e89b-12d3-a456-426614174000",
-                },
+                "response": "Error retrieving conversation history",
+                "cause": "Invalid conversation ID 1237-e89b-12d3-a456-426614174000",
             },
         ],
     )

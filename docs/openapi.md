@@ -171,8 +171,11 @@ Returns:
 
 Handle feedback status requests.
 
+Return the current enabled status of the feedback
+functionality.
+
 Returns:
-    Response indicating the status of the feedback.
+    StatusResponse: Indicates whether feedback collection is enabled.
 
 
 
@@ -205,6 +208,20 @@ Handle request to retrieve all conversations for the authenticated user.
 
 Handle request to retrieve a conversation by ID.
 
+Retrieve a conversation's chat history by its ID. Then fetches
+the conversation session from the Llama Stack backend,
+simplifies the session data to essential chat history, and
+returns it in a structured response. Raises HTTP 400 for
+invalid IDs, 404 if not found, 503 if the backend is
+unavailable, and 500 for unexpected errors.
+
+Parameters:
+    conversation_id (str): Unique identifier of the conversation to retrieve.
+
+Returns:
+    ConversationResponse: Structured response containing the conversation
+    ID and simplified chat history.
+
 
 
 ### 🔗 Parameters
@@ -227,6 +244,14 @@ Handle request to retrieve a conversation by ID.
 > **Delete Conversation Endpoint Handler**
 
 Handle request to delete a conversation by ID.
+
+Validates the conversation ID format and attempts to delete the
+corresponding session from the Llama Stack backend. Raises HTTP
+errors for invalid IDs, not found conversations, connection
+issues, or unexpected failures.
+
+Returns:
+    ConversationDeleteResponse: Response indicating the result of the deletion operation.
 
 
 
@@ -391,8 +416,8 @@ Attributes:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| user_id | string |  |
-| username | string |  |
+| user_id | string | User ID, for example UUID |
+| username | string | User name |
 
 
 ## Configuration
@@ -556,8 +581,6 @@ Service customization.
 | system_prompt |  |  |
 
 
-
-
 ## DatabaseConfiguration
 
 
@@ -578,7 +601,7 @@ Model representing error response for query endpoint.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| detail | object |  |
+| detail | object | Error details |
 
 
 ## FeedbackCategory
@@ -710,8 +733,8 @@ Example:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| name | string |  |
-| version | string |  |
+| name | string | Service name |
+| version | string | Service version |
 
 
 ## JwkConfiguration
@@ -792,7 +815,7 @@ Model representing a response to models request.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| models | array |  |
+| models | array | List of models available |
 
 
 ## PostgreSQLDatabaseConfiguration
@@ -876,8 +899,8 @@ Attributes:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| conversation_id |  |  |
-| response | string |  |
+| conversation_id |  | The optional conversation ID (UUID) |
+| response | string | Response from LLM |
 
 
 ## ReadinessResponse
@@ -1012,4 +1035,3 @@ User data collection configuration.
 | loc | array |  |
 | msg | string |  |
 | type | string |  |
-

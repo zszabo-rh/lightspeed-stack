@@ -74,7 +74,7 @@
                     "models"
                 ],
                 "summary": "Models Endpoint Handler",
-                "description": "Handle requests to the /models endpoint.",
+                "description": "Handle requests to the /models endpoint.\n\nProcess GET requests to the /models endpoint, returning a list of available\nmodels from the Llama Stack service.\n\nRaises:\n    HTTPException: If unable to connect to the Llama Stack server or if\n    model retrieval fails for any reason.\n\nReturns:\n    ModelsResponse: An object containing the list of available models.",
                 "operationId": "models_endpoint_handler_v1_models_get",
                 "responses": {
                     "200": {
@@ -300,7 +300,7 @@
                     "feedback"
                 ],
                 "summary": "Feedback Endpoint Handler",
-                "description": "Handle feedback requests.\n\nArgs:\n    feedback_request: The request containing feedback information.\n    ensure_feedback_enabled: The feedback handler (FastAPI Depends) that\n        will handle feedback status checks.\n    auth: The Authentication handler (FastAPI Depends) that will\n        handle authentication Logic.\n\nReturns:\n    Response indicating the status of the feedback storage request.",
+                "description": "Handle feedback requests.\n\nProcesses a user feedback submission, storing the feedback and\nreturning a confirmation response.\n\nArgs:\n    feedback_request: The request containing feedback information.\n    ensure_feedback_enabled: The feedback handler (FastAPI Depends) that\n        will handle feedback status checks.\n    auth: The Authentication handler (FastAPI Depends) that will\n        handle authentication Logic.\n\nReturns:\n    Response indicating the status of the feedback storage request.\n\nRaises:\n    HTTPException: Returns HTTP 500 if feedback storage fails.",
                 "operationId": "feedback_endpoint_handler_v1_feedback_post",
                 "requestBody": {
                     "content": {
@@ -372,7 +372,7 @@
                     "feedback"
                 ],
                 "summary": "Feedback Status",
-                "description": "Handle feedback status requests.\n\nReturns:\n    Response indicating the status of the feedback.",
+                "description": "Handle feedback status requests.\n\nReturn the current enabled status of the feedback\nfunctionality.\n\nReturns:\n    StatusResponse: Indicates whether feedback collection is enabled.",
                 "operationId": "feedback_status_v1_feedback_status_get",
                 "responses": {
                     "200": {
@@ -441,7 +441,7 @@
                     "conversations"
                 ],
                 "summary": "Get Conversation Endpoint Handler",
-                "description": "Handle request to retrieve a conversation by ID.",
+                "description": "Handle request to retrieve a conversation by ID.\n\nRetrieve a conversation's chat history by its ID. Then fetches\nthe conversation session from the Llama Stack backend,\nsimplifies the session data to essential chat history, and\nreturns it in a structured response. Raises HTTP 400 for\ninvalid IDs, 404 if not found, 503 if the backend is\nunavailable, and 500 for unexpected errors.\n\nParameters:\n    conversation_id (str): Unique identifier of the conversation to retrieve.\n\nReturns:\n    ConversationResponse: Structured response containing the conversation\n    ID and simplified chat history.",
                 "operationId": "get_conversation_endpoint_handler_v1_conversations__conversation_id__get",
                 "parameters": [
                     {
@@ -513,7 +513,7 @@
                     "conversations"
                 ],
                 "summary": "Delete Conversation Endpoint Handler",
-                "description": "Handle request to delete a conversation by ID.",
+                "description": "Handle request to delete a conversation by ID.\n\nValidates the conversation ID format and attempts to delete the\ncorresponding session from the Llama Stack backend. Raises HTTP\nerrors for invalid IDs, not found conversations, connection\nissues, or unexpected failures.\n\nReturns:\n    ConversationDeleteResponse: Response indicating the result of the deletion operation.",
                 "operationId": "delete_conversation_endpoint_handler_v1_conversations__conversation_id__delete",
                 "parameters": [
                     {
@@ -807,11 +807,20 @@
                 "properties": {
                     "user_id": {
                         "type": "string",
-                        "title": "User Id"
+                        "title": "User Id",
+                        "description": "User ID, for example UUID",
+                        "examples": [
+                            "c5260aec-4d82-4370-9fdf-05cf908b3f16"
+                        ]
                     },
                     "username": {
                         "type": "string",
-                        "title": "Username"
+                        "title": "Username",
+                        "description": "User name",
+                        "examples": [
+                            "John Doe",
+                            "Adam Smith"
+                        ]
                     }
                 },
                 "type": "object",
@@ -860,14 +869,7 @@
                         "default": []
                     },
                     "authentication": {
-                        "anyOf": [
-                            {
-                                "$ref": "#/components/schemas/AuthenticationConfiguration"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
+                        "$ref": "#/components/schemas/AuthenticationConfiguration",
                         "default": {
                             "module": "noop",
                             "skip_tls_verification": false
@@ -1140,33 +1142,6 @@
                 "title": "DatabaseConfiguration",
                 "description": "Database configuration."
             },
-            "DatabaseConfiguration": {
-                "properties": {
-                    "sqlite": {
-                        "anyOf": [
-                            {
-                                "$ref": "#/components/schemas/SQLiteDatabaseConfiguration"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ]
-                    },
-                    "postgres": {
-                        "anyOf": [
-                            {
-                                "$ref": "#/components/schemas/PostgreSQLDatabaseConfiguration"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ]
-                    }
-                },
-                "type": "object",
-                "title": "DatabaseConfiguration",
-                "description": "Database configuration."
-            },
             "ErrorResponse": {
                 "properties": {
                     "detail": {
@@ -1174,7 +1149,18 @@
                             "type": "string"
                         },
                         "type": "object",
-                        "title": "Detail"
+                        "title": "Detail",
+                        "description": "Error details",
+                        "examples": [
+                            {
+                                "cause": "Failed to handle request to https://bam-api.res.ibm.com/v2/text",
+                                "response": "Error while validation question"
+                            },
+                            {
+                                "cause": "Invalid conversation ID 1237-e89b-12d3-a456-426614174000",
+                                "response": "Error retrieving conversation history"
+                            }
+                        ]
                     }
                 },
                 "type": "object",
@@ -1413,11 +1399,21 @@
                 "properties": {
                     "name": {
                         "type": "string",
-                        "title": "Name"
+                        "title": "Name",
+                        "description": "Service name",
+                        "examples": [
+                            "Lightspeed Stack"
+                        ]
                     },
                     "version": {
                         "type": "string",
-                        "title": "Version"
+                        "title": "Version",
+                        "description": "Service version",
+                        "examples": [
+                            "0.1.0",
+                            "0.2.0",
+                            "1.0.0"
+                        ]
                     }
                 },
                 "type": "object",
@@ -1576,7 +1572,28 @@
                             "type": "object"
                         },
                         "type": "array",
-                        "title": "Models"
+                        "title": "Models",
+                        "description": "List of models available",
+                        "examples": [
+                            {
+                                "api_model_type": "llm",
+                                "identifier": "openai/gpt-4-turbo",
+                                "metadata": {},
+                                "model_type": "llm",
+                                "provider_id": "openai",
+                                "provider_resource_id": "gpt-4-turbo",
+                                "type": "model"
+                            },
+                            {
+                                "api_model_type": "llm",
+                                "identifier": "openai/gpt-3.5-turbo-0125",
+                                "metadata": {},
+                                "model_type": "llm",
+                                "provider_id": "openai",
+                                "provider_resource_id": "gpt-3.5-turbo-0125",
+                                "type": "model"
+                            }
+                        ]
                     }
                 },
                 "type": "object",
@@ -1867,11 +1884,19 @@
                                 "type": "null"
                             }
                         ],
-                        "title": "Conversation Id"
+                        "title": "Conversation Id",
+                        "description": "The optional conversation ID (UUID)",
+                        "examples": [
+                            "c5260aec-4d82-4370-9fdf-05cf908b3f16"
+                        ]
                     },
                     "response": {
                         "type": "string",
-                        "title": "Response"
+                        "title": "Response",
+                        "description": "Response from LLM",
+                        "examples": [
+                            "Kubernetes is an open-source container orchestration system for automating ..."
+                        ]
                     }
                 },
                 "type": "object",

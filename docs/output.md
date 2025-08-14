@@ -56,6 +56,16 @@ Returns:
 
 Handle requests to the /models endpoint.
 
+Process GET requests to the /models endpoint, returning a list of available
+models from the Llama Stack service.
+
+Raises:
+    HTTPException: If unable to connect to the Llama Stack server or if
+    model retrieval fails for any reason.
+
+Returns:
+    ModelsResponse: An object containing the list of available models.
+
 
 
 
@@ -144,6 +154,9 @@ Returns:
 
 Handle feedback requests.
 
+Processes a user feedback submission, storing the feedback and
+returning a confirmation response.
+
 Args:
     feedback_request: The request containing feedback information.
     ensure_feedback_enabled: The feedback handler (FastAPI Depends) that
@@ -153,6 +166,9 @@ Args:
 
 Returns:
     Response indicating the status of the feedback storage request.
+
+Raises:
+    HTTPException: Returns HTTP 500 if feedback storage fails.
 
 
 
@@ -166,24 +182,22 @@ Returns:
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Feedback received and stored | [FeedbackResponse](#feedbackresponse)
- |
-| 401 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse)
- |
-| 403 | Client does not have permission to access resource | [ForbiddenResponse](#forbiddenresponse)
- |
-| 500 | User feedback can not be stored | [ErrorResponse](#errorresponse)
- |
-| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror)
- |
+| 200 | Feedback received and stored | [FeedbackResponse](#feedbackresponse) |
+| 401 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse) |
+| 403 | Client does not have permission to access resource | [ForbiddenResponse](#forbiddenresponse) |
+| 500 | User feedback can not be stored | [ErrorResponse](#errorresponse) |
+| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## GET `/v1/feedback/status`
 
 > **Feedback Status**
 
 Handle feedback status requests.
 
+Return the current enabled status of the feedback
+functionality.
+
 Returns:
-    Response indicating the status of the feedback.
+    StatusResponse: Indicates whether feedback collection is enabled.
 
 
 
@@ -193,8 +207,7 @@ Returns:
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [StatusResponse](#statusresponse)
- |
+| 200 | Successful Response | [StatusResponse](#statusresponse) |
 ## GET `/v1/conversations`
 
 > **Get Conversations List Endpoint Handler**
@@ -209,8 +222,7 @@ Handle request to retrieve all conversations for the authenticated user.
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [ConversationsListResponse](#conversationslistresponse)
- |
+| 200 | Successful Response | [ConversationsListResponse](#conversationslistresponse) |
 | 503 | Service Unavailable |  |
 ## GET `/v1/conversations/{conversation_id}`
 
@@ -218,6 +230,20 @@ Handle request to retrieve all conversations for the authenticated user.
 
 Handle request to retrieve a conversation by ID.
 
+Retrieve a conversation's chat history by its ID. Then fetches
+the conversation session from the Llama Stack backend,
+simplifies the session data to essential chat history, and
+returns it in a structured response. Raises HTTP 400 for
+invalid IDs, 404 if not found, 503 if the backend is
+unavailable, and 500 for unexpected errors.
+
+Parameters:
+    conversation_id (str): Unique identifier of the conversation to retrieve.
+
+Returns:
+    ConversationResponse: Structured response containing the conversation
+    ID and simplified chat history.
+
 
 
 ### 🔗 Parameters
@@ -231,18 +257,24 @@ Handle request to retrieve a conversation by ID.
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [ConversationResponse](#conversationresponse)
- |
+| 200 | Successful Response | [ConversationResponse](#conversationresponse) |
 | 404 | Not Found |  |
 | 503 | Service Unavailable |  |
-| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror)
- |
+| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## DELETE `/v1/conversations/{conversation_id}`
 
 > **Delete Conversation Endpoint Handler**
 
 Handle request to delete a conversation by ID.
 
+Validates the conversation ID format and attempts to delete the
+corresponding session from the Llama Stack backend. Raises HTTP
+errors for invalid IDs, not found conversations, connection
+issues, or unexpected failures.
+
+Returns:
+    ConversationDeleteResponse: Response indicating the result of the deletion operation.
+
 
 
 ### 🔗 Parameters
@@ -256,12 +288,10 @@ Handle request to delete a conversation by ID.
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [ConversationDeleteResponse](#conversationdeleteresponse)
- |
+| 200 | Successful Response | [ConversationDeleteResponse](#conversationdeleteresponse) |
 | 404 | Not Found |  |
 | 503 | Service Unavailable |  |
-| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror)
- |
+| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## GET `/readiness`
 
 > **Readiness Probe Get Method**
@@ -280,10 +310,8 @@ service is ready.
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Service is ready | [ReadinessResponse](#readinessresponse)
- |
-| 503 | Service is not ready | [ReadinessResponse](#readinessresponse)
- |
+| 200 | Service is ready | [ReadinessResponse](#readinessresponse) |
+| 503 | Service is not ready | [ReadinessResponse](#readinessresponse) |
 ## GET `/liveness`
 
 > **Liveness Probe Get Method**
@@ -301,10 +329,8 @@ Returns:
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Service is alive | [LivenessResponse](#livenessresponse)
- |
-| 503 | Service is not alive | [LivenessResponse](#livenessresponse)
- |
+| 200 | Service is alive | [LivenessResponse](#livenessresponse) |
+| 503 | Service is not alive | [LivenessResponse](#livenessresponse) |
 ## POST `/authorized`
 
 > **Authorized Endpoint Handler**
@@ -325,12 +351,9 @@ Returns:
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | The user is logged-in and authorized to access OLS | [AuthorizedResponse](#authorizedresponse)
- |
-| 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse)
- |
-| 403 | User is not authorized | [ForbiddenResponse](#forbiddenresponse)
- |
+| 200 | The user is logged-in and authorized to access OLS | [AuthorizedResponse](#authorizedresponse) |
+| 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse) |
+| 403 | User is not authorized | [ForbiddenResponse](#forbiddenresponse) |
 ## GET `/metrics`
 
 > **Metrics Endpoint Handler**
@@ -415,8 +438,8 @@ Attributes:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| user_id | string |  |
-| username | string |  |
+| user_id | string | User ID, for example UUID |
+| username | string | User name |
 
 
 ## Configuration
@@ -580,7 +603,6 @@ Service customization.
 | system_prompt |  |  |
 
 
-
 ## DatabaseConfiguration
 
 
@@ -601,7 +623,7 @@ Model representing error response for query endpoint.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| detail | object |  |
+| detail | object | Error details |
 
 
 ## FeedbackCategory
@@ -723,8 +745,8 @@ Example:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| name | string |  |
-| version | string |  |
+| name | string | Service name |
+| version | string | Service version |
 
 
 ## JwkConfiguration
@@ -805,7 +827,7 @@ Model representing a response to models request.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| models | array |  |
+| models | array | List of models available |
 
 
 ## PostgreSQLDatabaseConfiguration
@@ -889,8 +911,8 @@ Attributes:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| conversation_id |  |  |
-| response | string |  |
+| conversation_id |  | The optional conversation ID (UUID) |
+| response | string | Response from LLM |
 
 
 ## ReadinessResponse
