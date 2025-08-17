@@ -24,6 +24,22 @@ class TLSConfiguration(BaseModel):
         return self
 
 
+class CORSConfiguration(BaseModel):
+    """CORS configuration."""
+
+    allow_origins: list[str] = [
+        "*"
+    ]  # not AnyHttpUrl: we need to support "*" that is not valid URL
+    allow_credentials: bool = True
+    allow_methods: list[str] = ["*"]
+    allow_headers: list[str] = ["*"]
+
+    @model_validator(mode="after")
+    def check_cors_configuration(self) -> Self:
+        """Check CORS configuration."""
+        return self
+
+
 class SQLiteDatabaseConfiguration(BaseModel):
     """SQLite database configuration."""
 
@@ -106,6 +122,7 @@ class ServiceConfiguration(BaseModel):
     color_log: bool = True
     access_log: bool = True
     tls_config: TLSConfiguration = TLSConfiguration()
+    cors: CORSConfiguration = CORSConfiguration()
 
     @model_validator(mode="after")
     def check_service_configuration(self) -> Self:
