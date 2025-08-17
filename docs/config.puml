@@ -9,6 +9,13 @@ class "AuthenticationConfiguration" as src.models.config.AuthenticationConfigura
   skip_tls_verification : bool
   check_authentication_model() -> Self
 }
+class "CORSConfiguration" as src.models.config.CORSConfiguration {
+  allow_credentials : bool
+  allow_headers : list[str]
+  allow_methods : list[str]
+  allow_origins : list[str]
+  check_cors_configuration() -> Self
+}
 class "Configuration" as src.models.config.Configuration {
   authentication
   customization : Optional[Customization]
@@ -78,6 +85,7 @@ class "ServiceConfiguration" as src.models.config.ServiceConfiguration {
   access_log : bool
   auth_enabled : bool
   color_log : bool
+  cors
   host : str
   port : int
   tls_config
@@ -98,6 +106,7 @@ class "UserDataCollection" as src.models.config.UserDataCollection {
   check_storage_location_is_set_when_needed() -> Self
 }
 src.models.config.AuthenticationConfiguration --* src.models.config.Configuration : authentication
+src.models.config.CORSConfiguration --* src.models.config.ServiceConfiguration : cors
 src.models.config.DatabaseConfiguration --* src.models.config.Configuration : database
 src.models.config.InferenceConfiguration --* src.models.config.Configuration : inference
 src.models.config.JwtConfiguration --* src.models.config.JwkConfiguration : jwt_configuration
