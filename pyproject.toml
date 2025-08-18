@@ -136,7 +136,6 @@ llslibdev = [
     "trl>=0.18.2",
 ]
 
-
 build = [
     "build>=1.2.2.post1",
     "twine>=5.1.1",
@@ -160,3 +159,13 @@ build-backend = "pdm.backend"
 
 [tool.pylint."MESSAGES CONTROL"]
 disable = ["R0801"]
+
+# PyTorch has multiple wheel variants for different backends - cpu, gpu, etc.
+# By default on pypi.org is the gpu variant. Forces uv to use the cpu variant.
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torchvision = [{ index = "pytorch-cpu" }]
