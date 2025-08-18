@@ -3,7 +3,7 @@
 import json
 
 import requests
-from behave import given, then, when  # pyright: ignore[reportAttributeAccessIssue]
+from behave import then, when, step  # pyright: ignore[reportAttributeAccessIssue]
 from behave.runner import Context
 from tests.e2e.utils.utils import normalize_endpoint, validate_json
 
@@ -194,22 +194,19 @@ def check_prediction_result_ignoring_field(context: Context, field: str) -> None
     assert result == expected_body, f"got:\n{result}\nwant:\n{expected_body}"
 
 
-@given("REST API service hostname is {hostname:w}")
-@when("REST API service hostname is {hostname:w}")
+@step("REST API service hostname is {hostname:w}")
 def set_service_hostname(context: Context, hostname: str) -> None:
     """Set REST API hostname to be used in following steps."""
     context.hostname = hostname
 
 
-@given("REST API service port is {port:d}")
-@when("REST API service port is {port:d}")
+@step("REST API service port is {port:d}")
 def set_service_port(context: Context, port: int) -> None:
     """Set REST API port to be used in following steps."""
     context.port = port
 
 
-@given("REST API service prefix is {prefix}")
-@when("REST API service prefix is {prefix}")
+@step("REST API service prefix is {prefix}")
 def set_rest_api_prefix(context: Context, prefix: str) -> None:
     """Set REST API prefix to be used in following steps."""
     context.api_prefix = prefix
