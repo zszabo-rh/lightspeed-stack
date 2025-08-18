@@ -24,8 +24,8 @@ RUN pip3.12 install "uv==0.8.11"
 COPY ${LSC_SOURCE_DIR}/src ./src
 COPY ${LSC_SOURCE_DIR}/pyproject.toml ${LSC_SOURCE_DIR}/LICENSE ${LSC_SOURCE_DIR}/README.md ${LSC_SOURCE_DIR}/uv.lock ./
 
-RUN uv sync --locked --no-dev
-
+# Bundle additional dependencies for library mode.
+RUN uv sync --locked --no-dev --group llslibdev
 
 # Final image without uv package manager
 FROM registry.access.redhat.com/ubi9/python-312-minimal
