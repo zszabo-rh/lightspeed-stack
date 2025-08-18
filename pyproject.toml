@@ -72,6 +72,11 @@ dependencies = [
     "numpy==2.2.6",
     # API tool_runtime: remote::model-context-protocol
     "mcp>=1.9.4",
+    # Other
+    "autoevals>=0.0.129",
+    "torch==2.7.1",
+    "peft>=0.15.2",
+    "trl>=0.18.2",
 ]
 
 
@@ -94,6 +99,15 @@ path = "src/version.py"
 [project.urls]
 Homepage = "https://github.com/lightspeed-core/lightspeed-stack"
 Issues = "https://github.com/lightspeed-core/lightspeed-stack/issues"
+
+# PyTorch has multiple wheel variants for different backends - cpu, gpu, etc.
+# By default on pypi.org is the gpu variant. Forces uv to use the cpu variant.
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
 
 [dependency-groups]
 dev = [
@@ -129,7 +143,6 @@ llslibdev = [
     "sqlalchemy>=2.0.41",
     "faiss-cpu>=1.11.0",
     "mcp>=1.9.4",
-    "autoevals>=0.0.129",
     "psutil>=7.0.0",
     "torch>=2.7.1",
     "peft>=0.15.2",
@@ -159,13 +172,3 @@ build-backend = "pdm.backend"
 
 [tool.pylint."MESSAGES CONTROL"]
 disable = ["R0801"]
-
-# PyTorch has multiple wheel variants for different backends - cpu, gpu, etc.
-# By default on pypi.org is the gpu variant. Forces uv to use the cpu variant.
-[[tool.uv.index]]
-name = "pytorch-cpu"
-url = "https://download.pytorch.org/whl/cpu"
-explicit = true
-
-[tool.uv.sources]
-torchvision = [{ index = "pytorch-cpu" }]
