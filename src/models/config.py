@@ -30,13 +30,21 @@ class CORSConfiguration(BaseModel):
     allow_origins: list[str] = [
         "*"
     ]  # not AnyHttpUrl: we need to support "*" that is not valid URL
-    allow_credentials: bool = True
+    allow_credentials: bool = False
     allow_methods: list[str] = ["*"]
     allow_headers: list[str] = ["*"]
 
     @model_validator(mode="after")
     def check_cors_configuration(self) -> Self:
         """Check CORS configuration."""
+        # credentials are not allowed with wildcard origins per CORS/Fetch spec.
+        # see https://fastapi.tiangolo.com/tutorial/cors/
+        if self.allow_credentials and "*" in self.allow_origins:
+            raise ValueError(
+                "Invalid CORS configuration: allow_credentials can not be set to true when "
+                "allow origins contains '*' wildcard."
+                "Use explicit origins or disable credential."
+            )
         return self
 
 

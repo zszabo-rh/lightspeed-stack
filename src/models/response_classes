@@ -1,0 +1,12 @@
+class ProviderHealthStatus(BaseModel):
+class ReadinessResponse(BaseModel):
+class LivenessResponse(BaseModel):
+class NotAvailableResponse(BaseModel):
+class FeedbackResponse(BaseModel):
+class StatusResponse(BaseModel):
+class UnauthorizedResponse(BaseModel):
+class ForbiddenResponse(UnauthorizedResponse):
+class ConversationResponse(BaseModel):
+class ConversationDeleteResponse(BaseModel):
+class ConversationDetails(BaseModel):
+class ConversationsListResponse(BaseModel):
