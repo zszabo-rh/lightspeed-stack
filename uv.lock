@@ -1338,7 +1338,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 build = [
     { name = "build", specifier = ">=1.2.2.post1" },
-    { name = "twine", specifier = ">=5.1.1" },
+    { name = "twine", specifier = ">=6.1.0" },
 ]
 dev = [
     { name = "aiosqlite" },
