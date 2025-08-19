@@ -375,7 +375,7 @@ def is_input_shield(shield: Shield) -> bool:
     return _is_inout_shield(shield) or not is_output_shield(shield)
 
 
-async def retrieve_response(  # pylint: disable=too-many-locals
+async def retrieve_response(  # pylint: disable=too-many-locals,too-many-branches
     client: AsyncLlamaStackClient,
     model_id: str,
     query_request: QueryRequest,
@@ -493,7 +493,18 @@ async def retrieve_response(  # pylint: disable=too-many-locals
             metrics.llm_calls_validation_errors_total.inc()
             break
 
-    return str(response.output_message.content), conversation_id  # type: ignore[union-attr]
+    output_message = getattr(response, "output_message", None)
+    if output_message is not None:
+        content = getattr(output_message, "content", None)
+        if content is not None:
+            return str(content), conversation_id
+
+    # fallback
+    logger.warning(
+        "Response lacks output_message.content (conversation_id=%s)",
+        conversation_id,
+    )
+    return "", conversation_id
 
 
 def validate_attachments_metadata(attachments: list[Attachment]) -> None:
