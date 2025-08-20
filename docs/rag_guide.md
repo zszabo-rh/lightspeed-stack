@@ -61,7 +61,7 @@ Update the `run.yaml` file used by Llama Stack to point to:
 * Your downloaded **embedding model**
 * Your generated **vector database**
 
-Example:
+### FAISS example
 
 ```yaml
 models:
@@ -100,9 +100,112 @@ Where:
 - `db_path` is the path to the vector index (.db file in this case)
 - `vector_db_id` is the index ID used to generate the db
 
+See the full working [config example](examples/openai-faiss-run.yaml) for more details.
+
+### pgvector example
+
+This example shows how to configure a remote PostgreSQL database with the [pgvector](https://github.com/pgvector/pgvector) extension for storing embeddings.
+
+> You will need to install PostgreSQL with a matching version to pgvector, then log in with `psql` and enable the extension with:
+> ```sql
+> CREATE EXTENSION IF NOT EXISTS vector;
+> ```
+
+Update the connection details (`host`, `port`, `db`, `user`, `password`) to match your PostgreSQL setup.
+
+Each pgvector-backed table follows this schema:
+
+- `id` (`text`): UUID identifier of the chunk
+- `document` (`jsonb`): json containing content and metadata associated with the embedding  
+- `embedding` (`vector(n)`): the embedding vector, where `n` is the embedding dimension and will match the model's output size (e.g. 768 for `all-mpnet-base-v2`) 
+
+> [!NOTE]
+> The `vector_db_id` (e.g. `rhdocs`) is used to point to the table named `vector_store_rhdocs` in the specified database, which stores the vector embeddings.
+
+
+```yaml
+[...]
+providers:
+  [...]
+  vector_io:
+  - provider_id: pgvector-example 
+    provider_type: remote::pgvector
+    config:
+      host: localhost
+      port: 5432
+      db: pgvector_example # PostgreSQL database (psql -d pgvector_example)
+      user: lightspeed # PostgreSQL user
+      password: password123
+      kvstore:
+        type: sqlite
+        db_path: .llama/distributions/pgvector/pgvector_registry.db
+
+vector_dbs:
+- embedding_dimension: 768
+  embedding_model: sentence-transformers/all-mpnet-base-v2
+  provider_id: pgvector-example 
+  # A unique ID that becomes the PostgreSQL table name, prefixed with 'vector_store_'.
+  # e.g., 'rhdocs' will create the table 'vector_store_rhdocs'.
+  # If the table was already created, this value must match the ID used at creation.
+  vector_db_id: rhdocs
+```
+
+See the full working [config example](examples/openai-pgvector-run.yaml) for more details.
+
 ---
 
 ## Add an Inference Model (LLM)
+
+### vLLM on RHEL AI (Llama 3.1) example
+
+> [!NOTE]
+> The following example assumes that podman's CDI has been properly configured to [enable GPU support](https://podman-desktop.io/docs/podman/gpu).
+
+The [`vllm-openai`](https://hub.docker.com/r/vllm/vllm-openai) Docker image is used to serve the Llama-3.1-8B-Instruct model.  
+The following example shows how to run it on **RHEL AI** with `podman`:  
+
+```bash
+podman run \
+  --device "${CONTAINER_DEVICE}" \
+  --gpus ${GPUS} \
+  -v ~/.cache/huggingface:/root/.cache/huggingface \
+  --env "HUGGING_FACE_HUB_TOKEN=${HF_TOKEN}" \
+  -p ${EXPORTED_PORT}:8000 \
+  --ipc=host \
+  docker.io/vllm/vllm-openai:latest \
+  --model meta-llama/Llama-3.1-8B-Instruct \
+  --enable-auto-tool-choice \
+  --tool-call-parser llama3_json --chat-template examples/tool_chat_template_llama3.1_json.jinja
+```
+
+> The example command above enables tool calling for Llama 3.1 models.
+> For other supported models and configuration options, see the vLLM documentation:
+> [vLLM: Tool Calling](https://docs.vllm.ai/en/stable/features/tool_calling.html)
+
+After starting the container edit your `run.yaml` file, matching `model_id` with the model provided in the `podman run` command.
+
+```yaml
+[...]
+models:
+[...]
+- model_id: meta-llama/Llama-3.1-8B-Instruct # Same as the model name in the 'podman run' command
+  provider_id: vllm
+  model_type: llm
+  provider_model_id: null
+
+providers:
+  [...]
+  inference:
+  - provider_id: vllm
+    provider_type: remote::vllm
+    config:
+      url: http://localhost:${env.EXPORTED_PORT:=8000}/v1/ # Replace localhost with the url of the vLLM instance
+      api_token: <your-key-here> # if any
+```
+
+See the full working [config example](examples/vllm-llama-faiss-run.yaml) for more details.
+
+### OpenAI example
 
 Add a provider for your language model (e.g., OpenAI):
 
@@ -132,6 +235,24 @@ export OPENAI_API_KEY=<your-key-here>
 > [!NOTE]
 > When experimenting with different `models`, `providers` and `vector_dbs`, you might need to manually unregister the old ones with the Llama Stack client CLI (e.g. `llama-stack-client vector_dbs list`)
 
+
+See the full working [config example](examples/openai-faiss-run.yaml) for more details.
+
+### Azure OpenAI
+
+Not yet supported.
+
+### Ollama
+
+The `remote::ollama` provider can be used for inference. However, it does not support tool calling, including RAG.  
+While Ollama also exposes an OpenAI compatible endpoint that supports tool calling, it cannot be used with `llama-stack` due to current limitations in the `remote::openai` provider. 
+
+There is an [ongoing discussion](https://github.com/meta-llama/llama-stack/discussions/3034) about enabling tool calling with Ollama.  
+Currently, tool calling is not supported out of the box. Some experimental patches exist (including internal workarounds), but these are not officially released.  
+
+### vLLM Mistral
+
+The RAG tool calls where not working properly when experimenting with `mistralai/Mistral-7B-Instruct-v0.3` on vLLM.
 
 ---
 
