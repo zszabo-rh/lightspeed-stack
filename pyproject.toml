@@ -36,6 +36,7 @@ dependencies = [
     "email-validator>=2.2.0",
     "openai==1.99.9",
     "sqlalchemy>=2.0.42",
+    "semver<4.0.0",
 ]
 
 
@@ -91,6 +92,7 @@ dev = [
     "build>=1.2.2.post1",
     "twine>=6.1.0",
     "openapi-to-md>=0.1.0b2",
+    "pytest-subtests>=0.14.2",
 ]
 llslibdev = [
     # To check llama-stack API provider dependecies:
