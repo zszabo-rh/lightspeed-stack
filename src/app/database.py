@@ -109,6 +109,7 @@ def initialize_database() -> None:
 
     create_engine_kwargs = {
         "echo": echo,
+        "pool_pre_ping": True,
     }
 
     match db_config.db_type:
