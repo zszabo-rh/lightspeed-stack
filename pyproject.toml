@@ -113,6 +113,8 @@ llslibdev = [
     "nltk>=3.8.1",
     # API inference: remote::gemini
     "litellm>=1.75.5.post1",
+    # API inference: inline::sentence-transformers
+    "sentence-transformers>=5.0.0",
     # API vector_io: inline::faiss
     "faiss-cpu>=1.11.0",
     # API scoring: inline::basic
@@ -129,11 +131,12 @@ llslibdev = [
     "numpy==2.2.6",
     # API tool_runtime: remote::model-context-protocol
     "mcp>=1.9.4",
+    # API post_training: inline::huggingface
+    "torch==2.7.1",
+    "trl>=0.18.2",
+    "peft>=0.15.2",
     # Other
     "autoevals>=0.0.129",
-    "torch==2.7.1",
-    "peft>=0.15.2",
-    "trl>=0.18.2",
     "fire>=0.7.0",
     "opentelemetry-instrumentation>=0.55b0",
     "blobfile>=3.0.0",
