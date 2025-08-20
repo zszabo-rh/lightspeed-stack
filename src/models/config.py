@@ -72,8 +72,6 @@ class PostgreSQLDatabaseConfiguration(BaseModel):
         """Check PostgreSQL configuration."""
         if self.port > 65535:
             raise ValueError("Port value should be less than 65536")
-        if self.ca_cert_path is not None and not self.ca_cert_path.exists():
-            raise ValueError(f"CA certificate file does not exist: {self.ca_cert_path}")
         return self
 
 
