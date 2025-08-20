@@ -1,17 +1,39 @@
 """LLM query and response steps."""
 
 import requests
-from behave import then, when  # pyright: ignore[reportAttributeAccessIssue]
+from behave import then, step  # pyright: ignore[reportAttributeAccessIssue]
 from behave.runner import Context
 
 DEFAULT_LLM_TIMEOUT = 60
 
 
-@when('I ask question "{question}"')
-def ask_question(context: Context, question: str) -> None:
+@step('I change the system prompt to "{system_prompt}"')
+def change_system_prompt(context: Context, system_prompt: str) -> None:
+    """Change the system prompt."""
+    context.system_prompt = system_prompt
+    # TODO: add step implementation
+    assert context is not None
+
+
+@step('I modify the request body by removing the "{field}"')
+def remove_field_prompt(context: Context, field: str) -> None:
+    """Remove the field from the prompt."""
+    context.field = field
+    # TODO: add step implementation
+    assert context is not None
+
+
+@step("I wait for the response to be completed")
+def wait_for_complete_response(context: Context) -> None:
+    """Wait for the response to be complete."""
+    assert context is not None
+
+
+@step('I use "{endpoint}" to ask question "{question}"')
+def ask_question(context: Context, endpoint: str, question: str) -> None:
     """Call the service REST API endpoint with question."""
     base = f"http://{context.hostname}:{context.port}"
-    path = f"{context.api_prefix}/query".replace("//", "/")
+    path = f"{context.api_prefix}/{endpoint}".replace("//", "/")
     url = base + path
     data = {"query": question}
     context.response = requests.post(url, json=data, timeout=DEFAULT_LLM_TIMEOUT)
