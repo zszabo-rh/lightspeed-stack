@@ -27,6 +27,7 @@ The service includes comprehensive user data collection capabilities for various
         * [Llama Stack project and configuration](#llama-stack-project-and-configuration)
         * [Check connection to Llama Stack](#check-connection-to-llama-stack)
     * [Llama Stack as client library](#llama-stack-as-client-library)
+    * [Llama Stack version check](#llama-stack-version-check)
     * [User data collection](#user-data-collection)
     * [System prompt](#system-prompt)
     * [Safety Shields](#safety-shields)
@@ -242,6 +243,12 @@ user_data_collection:
   transcripts_enabled: true
   transcripts_storage: "/tmp/data/transcripts"
 ```
+
+## Llama Stack version check
+
+During Lightspeed Core Stack service startup, the Llama Stack version is retrieved. The version is tested against two constants `MINIMAL_SUPPORTED_LLAMA_STACK_VERSION` and `MAXIMAL_SUPPORTED_LLAMA_STACK_VERSION` which are defined in `src/constants.py`. If the actual Llama Stack version is outside the range defined by these two constants, the service won't start and administrator will be informed about this problem.
+
+
 
 ## User data collection
 
