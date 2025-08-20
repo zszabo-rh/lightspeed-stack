@@ -12,6 +12,7 @@ from rich.logging import RichHandler
 from runners.uvicorn import start_uvicorn
 from configuration import configuration
 from client import AsyncLlamaStackClientHolder
+from utils.llama_stack_version import check_llama_stack_version
 
 FORMAT = "%(message)s"
 logging.basicConfig(
@@ -66,6 +67,8 @@ def main() -> None:
     asyncio.run(
         AsyncLlamaStackClientHolder().load(configuration.configuration.llama_stack)
     )
+    client = AsyncLlamaStackClientHolder().get_client()
+    asyncio.run(check_llama_stack_version(client))
 
     if args.dump_configuration:
         configuration.configuration.dump()
