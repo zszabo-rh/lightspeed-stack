@@ -56,6 +56,9 @@ distribution = true
 source = "file"
 path = "src/version.py"
 
+[tool.behave]
+paths = ["tests/e2e/features"]
+
 [project.scripts]
 lightspeed-stack = "lightspeed_stack:main"
 
