@@ -127,9 +127,18 @@ class ProviderHealthStatus(BaseModel):
         message: Optional message about the health status.
     """
 
-    provider_id: str
-    status: str
-    message: Optional[str] = None
+    provider_id: str = Field(
+        description="The ID of the provider",
+    )
+    status: str = Field(
+        description="The health status",
+        examples=["ok", "unhealthy", "not_implemented"],
+    )
+    message: Optional[str] = Field(
+        None,
+        description="Optinal message about the health status",
+        examples=["ok"],
+    )
 
 
 class ReadinessResponse(BaseModel):
