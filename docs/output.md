@@ -74,14 +74,26 @@ Returns:
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [ModelsResponse](#modelsresponse)
- |
+| 200 | Successful Response | [ModelsResponse](#modelsresponse) |
 | 503 | Connection to Llama Stack is broken |  |
+
 ## POST `/v1/query`
 
 > **Query Endpoint Handler**
 
 Handle request to the /query endpoint.
+
+Processes a POST request to the /query endpoint, forwarding the
+user's query to a selected Llama Stack LLM or agent and
+returning the generated response.
+
+Validates configuration and authentication, selects the appropriate model
+and provider, retrieves the LLM response, updates metrics, and optionally
+stores a transcript of the interaction. Handles connection errors to the
+Llama Stack service by returning an HTTP 500 error.
+
+Returns:
+    QueryResponse: Contains the conversation ID and the LLM-generated response.
 
 
 
@@ -95,20 +107,31 @@ Handle request to the /query endpoint.
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [QueryResponse](#queryresponse)
- |
-| 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse)
- |
-| 403 | User is not authorized | [ForbiddenResponse](#forbiddenresponse)
- |
+| 200 | Successful Response | [QueryResponse](#queryresponse) |
+| 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse) |
+| 403 | User is not authorized | [ForbiddenResponse](#forbiddenresponse) |
 | 503 | Service Unavailable |  |
-| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror)
- |
+| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## POST `/v1/streaming_query`
 
 > **Streaming Query Endpoint Handler**
 
 Handle request to the /streaming_query endpoint.
+
+This endpoint receives a query request, authenticates the user,
+selects the appropriate model and provider, and streams
+incremental response events from the Llama Stack backend to the
+client. Events include start, token updates, tool calls, turn
+completions, errors, and end-of-stream metadata. Optionally
+stores the conversation transcript if enabled in configuration.
+
+Returns:
+    StreamingResponse: An HTTP streaming response yielding
+    SSE-formatted events for the query lifecycle.
+
+Raises:
+    HTTPException: Returns HTTP 500 if unable to connect to the
+    Llama Stack server.
 
 
 
@@ -123,8 +146,7 @@ Handle request to the /streaming_query endpoint.
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
 | 200 | Successful Response | ... |
-| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror)
- |
+| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## GET `/v1/config`
 
 > **Config Endpoint Handler**
@@ -145,8 +167,7 @@ Returns:
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [Configuration](#configuration)
- |
+| 200 | Successful Response | [Configuration](#configuration) |
 | 503 | Service Unavailable |  |
 ## POST `/v1/feedback`
 
@@ -440,6 +461,20 @@ Attributes:
 |-------|------|-------------|
 | user_id | string | User ID, for example UUID |
 | username | string | User name |
+
+
+## CORSConfiguration
+
+
+CORS configuration.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| allow_origins | array |  |
+| allow_credentials | boolean |  |
+| allow_methods | array |  |
+| allow_headers | array |  |
 
 
 ## Configuration
@@ -974,6 +1009,7 @@ Service configuration.
 | color_log | boolean |  |
 | access_log | boolean |  |
 | tls_config |  |  |
+| cors |  |  |
 
 
 ## StatusResponse

@@ -56,6 +56,16 @@ Returns:
 
 Handle requests to the /models endpoint.
 
+Process GET requests to the /models endpoint, returning a list of available
+models from the Llama Stack service.
+
+Raises:
+    HTTPException: If unable to connect to the Llama Stack server or if
+    model retrieval fails for any reason.
+
+Returns:
+    ModelsResponse: An object containing the list of available models.
+
 
 
 
@@ -72,6 +82,18 @@ Handle requests to the /models endpoint.
 > **Query Endpoint Handler**
 
 Handle request to the /query endpoint.
+
+Processes a POST request to the /query endpoint, forwarding the
+user's query to a selected Llama Stack LLM or agent and
+returning the generated response.
+
+Validates configuration and authentication, selects the appropriate model
+and provider, retrieves the LLM response, updates metrics, and optionally
+stores a transcript of the interaction. Handles connection errors to the
+Llama Stack service by returning an HTTP 500 error.
+
+Returns:
+    QueryResponse: Contains the conversation ID and the LLM-generated response.
 
 
 
@@ -95,6 +117,21 @@ Handle request to the /query endpoint.
 > **Streaming Query Endpoint Handler**
 
 Handle request to the /streaming_query endpoint.
+
+This endpoint receives a query request, authenticates the user,
+selects the appropriate model and provider, and streams
+incremental response events from the Llama Stack backend to the
+client. Events include start, token updates, tool calls, turn
+completions, errors, and end-of-stream metadata. Optionally
+stores the conversation transcript if enabled in configuration.
+
+Returns:
+    StreamingResponse: An HTTP streaming response yielding
+    SSE-formatted events for the query lifecycle.
+
+Raises:
+    HTTPException: Returns HTTP 500 if unable to connect to the
+    Llama Stack server.
 
 
 
@@ -138,6 +175,9 @@ Returns:
 
 Handle feedback requests.
 
+Processes a user feedback submission, storing the feedback and
+returning a confirmation response.
+
 Args:
     feedback_request: The request containing feedback information.
     ensure_feedback_enabled: The feedback handler (FastAPI Depends) that
@@ -147,6 +187,9 @@ Args:
 
 Returns:
     Response indicating the status of the feedback storage request.
+
+Raises:
+    HTTPException: Returns HTTP 500 if feedback storage fails.
 
 
 
@@ -418,6 +461,20 @@ Attributes:
 |-------|------|-------------|
 | user_id | string | User ID, for example UUID |
 | username | string | User name |
+
+
+## CORSConfiguration
+
+
+CORS configuration.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| allow_origins | array |  |
+| allow_credentials | boolean |  |
+| allow_methods | array |  |
+| allow_headers | array |  |
 
 
 ## Configuration
@@ -962,6 +1019,7 @@ Service configuration.
 | color_log | boolean |  |
 | access_log | boolean |  |
 | tls_config |  |  |
+| cors |  |  |
 
 
 ## StatusResponse

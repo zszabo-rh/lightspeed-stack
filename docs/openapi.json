@@ -121,7 +121,7 @@
                     "query"
                 ],
                 "summary": "Query Endpoint Handler",
-                "description": "Handle request to the /query endpoint.",
+                "description": "Handle request to the /query endpoint.\n\nProcesses a POST request to the /query endpoint, forwarding the\nuser's query to a selected Llama Stack LLM or agent and\nreturning the generated response.\n\nValidates configuration and authentication, selects the appropriate model\nand provider, retrieves the LLM response, updates metrics, and optionally\nstores a transcript of the interaction. Handles connection errors to the\nLlama Stack service by returning an HTTP 500 error.\n\nReturns:\n    QueryResponse: Contains the conversation ID and the LLM-generated response.",
                 "operationId": "query_endpoint_handler_v1_query_post",
                 "requestBody": {
                     "content": {
@@ -192,7 +192,7 @@
                     "streaming_query"
                 ],
                 "summary": "Streaming Query Endpoint Handler",
-                "description": "Handle request to the /streaming_query endpoint.",
+                "description": "Handle request to the /streaming_query endpoint.\n\nThis endpoint receives a query request, authenticates the user,\nselects the appropriate model and provider, and streams\nincremental response events from the Llama Stack backend to the\nclient. Events include start, token updates, tool calls, turn\ncompletions, errors, and end-of-stream metadata. Optionally\nstores the conversation transcript if enabled in configuration.\n\nReturns:\n    StreamingResponse: An HTTP streaming response yielding\n    SSE-formatted events for the query lifecycle.\n\nRaises:\n    HTTPException: Returns HTTP 500 if unable to connect to the\n    Llama Stack server.",
                 "operationId": "streaming_query_endpoint_handler_v1_streaming_query_post",
                 "requestBody": {
                     "content": {
@@ -836,6 +836,48 @@
                         "username": "user1"
                     }
                 ]
+            },
+            "CORSConfiguration": {
+                "properties": {
+                    "allow_origins": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Allow Origins",
+                        "default": [
+                            "*"
+                        ]
+                    },
+                    "allow_credentials": {
+                        "type": "boolean",
+                        "title": "Allow Credentials",
+                        "default": false
+                    },
+                    "allow_methods": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Allow Methods",
+                        "default": [
+                            "*"
+                        ]
+                    },
+                    "allow_headers": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Allow Headers",
+                        "default": [
+                            "*"
+                        ]
+                    }
+                },
+                "type": "object",
+                "title": "CORSConfiguration",
+                "description": "CORS configuration."
             },
             "Configuration": {
                 "properties": {
@@ -1612,6 +1654,7 @@
                     },
                     "port": {
                         "type": "integer",
+                        "exclusiveMinimum": 0.0,
                         "title": "Port",
                         "default": 5432
                     },
@@ -1969,6 +2012,7 @@
                     },
                     "port": {
                         "type": "integer",
+                        "exclusiveMinimum": 0.0,
                         "title": "Port",
                         "default": 8080
                     },
@@ -1979,6 +2023,7 @@
                     },
                     "workers": {
                         "type": "integer",
+                        "exclusiveMinimum": 0.0,
                         "title": "Workers",
                         "default": 1
                     },
@@ -1995,6 +2040,21 @@
                     "tls_config": {
                         "$ref": "#/components/schemas/TLSConfiguration",
                         "default": {}
+                    },
+                    "cors": {
+                        "$ref": "#/components/schemas/CORSConfiguration",
+                        "default": {
+                            "allow_origins": [
+                                "*"
+                            ],
+                            "allow_credentials": false,
+                            "allow_methods": [
+                                "*"
+                            ],
+                            "allow_headers": [
+                                "*"
+                            ]
+                        }
                     }
                 },
                 "type": "object",
