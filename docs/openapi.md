@@ -907,9 +907,9 @@ Attributes:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| provider_id | string |  |
-| status | string |  |
-| message |  |  |
+| provider_id | string | The ID of the provider |
+| status | string | The health status |
+| message |  | Optional message about the health status |
 
 
 ## QueryRequest
@@ -978,7 +978,7 @@ Example:
         providers=[
             ProviderHealthStatus(
                 provider_id="ollama",
-                status="Error",
+                status="unhealthy",
                 message="Server is unavailable"
             )
         ]

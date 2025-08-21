@@ -1718,11 +1718,18 @@
                 "properties": {
                     "provider_id": {
                         "type": "string",
-                        "title": "Provider Id"
+                        "title": "Provider Id",
+                        "description": "The ID of the provider"
                     },
                     "status": {
                         "type": "string",
-                        "title": "Status"
+                        "title": "Status",
+                        "description": "The health status",
+                        "examples": [
+                            "ok",
+                            "unhealthy",
+                            "not_implemented"
+                        ]
                     },
                     "message": {
                         "anyOf": [
@@ -1733,7 +1740,12 @@
                                 "type": "null"
                             }
                         ],
-                        "title": "Message"
+                        "title": "Message",
+                        "description": "Optional message about the health status",
+                        "examples": [
+                            "All systems operational",
+                            "Llama Stack is unavailable"
+                        ]
                     }
                 },
                 "type": "object",
@@ -1980,7 +1992,7 @@
                     "providers"
                 ],
                 "title": "ReadinessResponse",
-                "description": "Model representing response to a readiness request.\n\nAttributes:\n    ready: If service is ready.\n    reason: The reason for the readiness.\n    providers: List of unhealthy providers in case of readiness failure.\n\nExample:\n    ```python\n    readiness_response = ReadinessResponse(\n        ready=False,\n        reason=\"Service is not ready\",\n        providers=[\n            ProviderHealthStatus(\n                provider_id=\"ollama\",\n                status=\"Error\",\n                message=\"Server is unavailable\"\n            )\n        ]\n    )\n    ```",
+                "description": "Model representing response to a readiness request.\n\nAttributes:\n    ready: If service is ready.\n    reason: The reason for the readiness.\n    providers: List of unhealthy providers in case of readiness failure.\n\nExample:\n    ```python\n    readiness_response = ReadinessResponse(\n        ready=False,\n        reason=\"Service is not ready\",\n        providers=[\n            ProviderHealthStatus(\n                provider_id=\"ollama\",\n                status=\"unhealthy\",\n                message=\"Server is unavailable\"\n            )\n        ]\n    )\n    ```",
                 "examples": [
                     {
                         "providers": [],

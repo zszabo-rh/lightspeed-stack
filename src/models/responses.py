@@ -127,9 +127,18 @@ class ProviderHealthStatus(BaseModel):
         message: Optional message about the health status.
     """
 
-    provider_id: str
-    status: str
-    message: Optional[str] = None
+    provider_id: str = Field(
+        description="The ID of the provider",
+    )
+    status: str = Field(
+        description="The health status",
+        examples=["ok", "unhealthy", "not_implemented"],
+    )
+    message: Optional[str] = Field(
+        None,
+        description="Optional message about the health status",
+        examples=["All systems operational", "Llama Stack is unavailable"],
+    )
 
 
 class ReadinessResponse(BaseModel):
@@ -148,7 +157,7 @@ class ReadinessResponse(BaseModel):
             providers=[
                 ProviderHealthStatus(
                     provider_id="ollama",
-                    status="Error",
+                    status="unhealthy",
                     message="Server is unavailable"
                 )
             ]
