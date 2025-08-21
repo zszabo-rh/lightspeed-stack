@@ -35,6 +35,7 @@ The service includes comprehensive user data collection capabilities for various
         * [K8s based authentication](#k8s-based-authentication)
         * [JSON Web Keyset based authentication](#json-web-keyset-based-authentication)
         * [No-op authentication](#no-op-authentication)
+* [RAG Configuration](#rag-configuration)
 * [Usage](#usage)
     * [Make targets](#make-targets)
     * [Running Linux container image](#running-linux-container-image)
@@ -451,7 +452,21 @@ service:
 Credentials are not allowed with wildcard origins per CORS/Fetch spec.
 See https://fastapi.tiangolo.com/tutorial/cors/
 
+# RAG Configuration
 
+The [guide to RAG setup](docs/rag_guide.md) provides guidance on setting up RAG and includes tested examples for both inference and vector store integration.
+
+## Example configurations for inference
+
+The following configurations are llama-stack config examples from production deployments:
+
+- [Granite on vLLM example](examples/vllm-granite-run.yaml)
+- [Qwen3 on vLLM example](examples/vllm-qwen3-run.yaml)
+- [Gemini example](examples/gemini-run.yaml)
+- [VertexAI example](examples/vertexai-run.yaml)
+
+> [!NOTE]
+> RAG functionality is **not tested** for these configurations.
 
 # Usage
 
