@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+"""Generate documentation for all modules from Lightspeed Stack core service."""
+
 import os
 
 import ast
@@ -15,7 +17,10 @@ for path in Path("src").rglob("*"):
 
         try:
             with open("README.md", "w", encoding="utf-8", newline="\n") as indexfile:
-                print(f"# List of source files stored in `{directory}` directory", file=indexfile)
+                print(
+                    f"# List of source files stored in `{directory}` directory",
+                    file=indexfile,
+                )
                 print("", file=indexfile)
                 files = sorted(os.listdir())
 
