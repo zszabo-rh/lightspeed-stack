@@ -20,6 +20,7 @@ from models.responses import (
     UnauthorizedResponse,
     ForbiddenResponse,
 )
+from models.requests import FeedbackRequest, FeedbackToggleRequest
 from utils.suid import get_suid
 
 logger = logging.getLogger(__name__)
@@ -174,3 +175,34 @@ def feedback_status() -> StatusResponse:
     return StatusResponse(
         functionality="feedback", status={"enabled": feedback_status_enabled}
     )
+
+@router.post("/toggle")
+def feedback_toggle(feedback_toggle_request: FeedbackToggleRequest) -> StatusResponse:
+    """
+    Handle feedback toggle requests.
+
+    Returns the current enbaled status of the feedback functionality after it has been
+    updated to the desired value from the request.
+
+    Returns:
+        StatusResponse: Indicates whether feedback is enabled.
+    """
+    feedback_status = toggle_feedback_status(feedback_toggle_request)
+    return StatusResponse(
+        functionality="feedback", status={"enabled": feedback_status}
+    )
+
+def toggle_feedback_status(req: FeedbackToggleRequest) -> bool:
+    """
+    Toggles the feedback boolean stored in the configuration.
+    This toggling is temporary until the service is interrupted as it will not edit
+    any configuration files.
+
+    Parameters:
+        req (FeedbackToggleRequest): The request received with a boolean for the new value.
+
+    Returns:
+        bool: The current enabled status of feedback.
+    """
+    configuration.user_data_collection_configuration.feedback_enabled = req.get_value()
+    return is_feedback_enabled()

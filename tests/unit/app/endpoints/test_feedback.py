@@ -10,7 +10,9 @@ from app.endpoints.feedback import (
     feedback_endpoint_handler,
     store_feedback,
     feedback_status,
+    feedback_toggle
 )
+from models.requests import FeedbackToggleRequest
 from tests.unit.utils.auth_helpers import mock_authorization_resolvers
 
 
@@ -201,5 +203,50 @@ def test_feedback_status():
     configuration.user_data_collection_configuration.feedback_enabled = True
 
     response = feedback_status()
+    assert response.functionality == "feedback"
+    assert response.status == {"enabled": True}
+
+def test_feedback_toggle_enabled():
+    """Test that feedback_toggle processes feedback toggle for disabled status payloads."""
+
+    configuration.user_data_collection_configuration.feedback_enabled = True
+
+    feedback_toggle_request = FeedbackToggleRequest(status=False)
+
+    response = feedback_toggle(
+        feedback_toggle_request=feedback_toggle_request
+    )
+
+    assert response.functionality == "feedback"
+    assert response.status == {"enabled": False}
+
+def test_feedback_toggle_disabled():
+    """Test that feedback_toggle processes feedback toggle for enabled status payloads."""
+
+    configuration.user_data_collection_configuration.feedback_enabled = False
+
+    feedback_toggle_request = FeedbackToggleRequest(status=True)
+
+    response = feedback_toggle(
+        feedback_toggle_request=feedback_toggle_request
+    )
+
+    assert response.functionality == "feedback"
+    assert response.status == {"enabled": True}
+
+def test_feedback_toggle_equivalent():
+    """
+        Test that feedback_toggle processes feedback toggle for status payloads with the same value
+        as what is presently set.
+    """
+
+    configuration.user_data_collection_configuration.feedback_enabled = True
+
+    feedback_toggle_request = FeedbackToggleRequest(status=True)
+
+    response = feedback_toggle(
+        feedback_toggle_request=feedback_toggle_request
+    )
+
     assert response.functionality == "feedback"
     assert response.status == {"enabled": True}

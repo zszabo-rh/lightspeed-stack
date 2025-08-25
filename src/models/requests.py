@@ -380,3 +380,26 @@ class FeedbackRequest(BaseModel):
                 "'sentiment', 'user_feedback', or 'categories'"
             )
         return self
+
+class FeedbackToggleRequest(BaseModel):
+    """Model representing a feedback toggle request.
+
+    Attributes:
+        status: Boolean controlling what the Feedback status should be.
+
+    Example:
+        ```python
+        feedback_request = FeedbackRequest(
+            status=false
+        )
+        ```
+    """
+
+    status: bool = Field(
+        False,
+        description="Desired state of feedback enablement, must be False or True",
+        examples=[True, False],
+    )
+
+    def get_value(self):
+        return self.status
