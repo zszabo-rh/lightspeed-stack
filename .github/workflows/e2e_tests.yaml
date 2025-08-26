@@ -169,6 +169,7 @@ jobs:
                   checkpoint_format: huggingface
                   device: cpu
                   distributed_backend: null
+                  dpo_output_dir: '.'
                 provider_id: huggingface
                 provider_type: inline::huggingface
               safety:
