@@ -1,10 +1,10 @@
 # List of source files stored in `src/` directory
 
 ## [__init__.py](__init__.py)
-Main classes for the Lightspeed-stack.
+Main classes for the Lightspeed Core Stack REST API service.
 
 ## [client.py](client.py)
-LLama stack client retrieval.
+LLama Stack client retrieval class.
 
 ## [configuration.py](configuration.py)
 Configuration loader.
@@ -13,7 +13,7 @@ Configuration loader.
 Constants used in business logic.
 
 ## [lightspeed_stack.py](lightspeed_stack.py)
-Lightspeed stack.
+Entry point to the Lightspeed Core Stack REST API service.
 
 ## [log.py](log.py)
 Log utilities.

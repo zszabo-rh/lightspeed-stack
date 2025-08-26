@@ -1,4 +1,4 @@
-"""Lightspeed stack.
+"""Entry point to the Lightspeed Core Stack REST API service.
 
 This source file contains entry point to the service. It is implemented in the
 main() function.
