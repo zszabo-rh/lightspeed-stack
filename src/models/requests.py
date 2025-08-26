@@ -381,6 +381,7 @@ class FeedbackRequest(BaseModel):
             )
         return self
 
+
 class FeedbackToggleRequest(BaseModel):
     """Model representing a feedback toggle request.
 
@@ -401,5 +402,6 @@ class FeedbackToggleRequest(BaseModel):
         examples=[True, False],
     )
 
-    def get_value(self):
+    def get_value(self) -> bool:
+        """Return the value of the status attribute."""
         return self.status
