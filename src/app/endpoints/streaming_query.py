@@ -134,7 +134,7 @@ def stream_end_event(metadata_map: dict) -> str:
 def stream_build_event(chunk: Any, chunk_id: int, metadata_map: dict) -> Iterator[str]:
     """Build a streaming event from a chunk response.
 
-    This function processes chunks from the LLama Stack streaming response and formats
+    This function processes chunks from the Llama Stack streaming response and formats
     them into Server-Sent Events (SSE) format for the client. It handles two main
     event types:
 
@@ -142,7 +142,7 @@ def stream_build_event(chunk: Any, chunk_id: int, metadata_map: dict) -> Iterato
     2. step_complete: Contains information about completed tool execution steps
 
     Args:
-        chunk: The streaming chunk from LLama Stack containing event data
+        chunk: The streaming chunk from Llama Stack containing event data
         chunk_id: The current chunk ID counter (gets incremented for each token)
 
     Returns:
@@ -544,7 +544,7 @@ async def streaming_query_endpoint_handler(  # pylint: disable=too-many-locals
     # log Llama Stack configuration, but without sensitive information
     llama_stack_config = configuration.llama_stack_configuration.model_copy()
     llama_stack_config.api_key = "********"
-    logger.info("LLama stack config: %s", llama_stack_config)
+    logger.info("Llama stack config: %s", llama_stack_config)
 
     user_id, _user_name, token = auth
 

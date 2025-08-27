@@ -1,4 +1,4 @@
-"""LLama Stack client retrieval class."""
+"""Llama Stack client retrieval class."""
 
 import logging
 
