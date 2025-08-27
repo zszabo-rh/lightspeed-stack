@@ -182,7 +182,7 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
         mocker.Mock(identifier="model2", model_type="llm", provider_id="provider2"),
     ]
 
-    # Construct the streaming response from LLama Stack.
+    # Construct the streaming response from Llama Stack.
     # We cannot use 'mock' as 'hasattr(mock, "xxx")' adds the missing
     # attribute and therefore makes checks to see whether it is missing fail.
     mock_streaming_response = mocker.AsyncMock()

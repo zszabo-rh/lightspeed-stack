@@ -84,7 +84,7 @@ async def test_models_endpoint_handler_improper_llama_stack_configuration(mocker
     with pytest.raises(HTTPException) as e:
         await models_endpoint_handler(request=request, auth=auth)
         assert e.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-        assert e.detail["response"] == "LLama stack is not configured"
+        assert e.detail["response"] == "Llama stack is not configured"
 
 
 @pytest.mark.asyncio

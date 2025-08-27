@@ -114,23 +114,23 @@ def test_llama_stack_wrong_configuration_constructor_no_url() -> None:
     """
     with pytest.raises(
         ValueError,
-        match="LLama stack URL is not specified and library client mode is not specified",
+        match="Llama stack URL is not specified and library client mode is not specified",
     ):
         LlamaStackConfiguration()
 
 
 def test_llama_stack_wrong_configuration_constructor_library_mode_off() -> None:
-    """Test the LLamaStackConfiguration constructor."""
+    """Test the LlamaStackConfiguration constructor."""
     with pytest.raises(
         ValueError,
-        match="LLama stack URL is not specified and library client mode is not enabled",
+        match="Llama stack URL is not specified and library client mode is not enabled",
     ):
         LlamaStackConfiguration(use_as_library_client=False)
 
 
 def test_llama_stack_wrong_configuration_no_config_file() -> None:
-    """Test the LLamaStackConfiguration constructor."""
-    m = "LLama stack library client mode is enabled but a configuration file path is not specified"
+    """Test the LlamaStackConfiguration constructor."""
+    m = "Llama stack library client mode is enabled but a configuration file path is not specified"
     with pytest.raises(ValueError, match=m):
         LlamaStackConfiguration(use_as_library_client=True)
 
