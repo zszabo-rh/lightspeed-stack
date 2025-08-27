@@ -1,7 +1,6 @@
 """Manage authentication flow for FastAPI endpoints with JWK based JWT auth."""
 
 import logging
-import json
 from asyncio import Lock
 from typing import Any, Callable
 
@@ -191,4 +190,4 @@ class JwkTokenAuthDependency(AuthInterface):  # pylint: disable=too-few-public-m
 
         logger.info("Successfully authenticated user %s (ID: %s)", username, user_id)
 
-        return user_id, username, json.dumps(claims)
+        return user_id, username, user_token

@@ -3,8 +3,6 @@
 """Unit tests for functions defined in auth/jwk_token.py"""
 
 import time
-import json
-import base64
 
 import pytest
 from fastapi import HTTPException, Request
@@ -174,19 +172,12 @@ def set_auth_header(request: Request, token: str):
     request.scope["headers"] = new_headers
 
 
-def get_claims(token: str):
-    """Extract claims from a JWT token without validating it."""
-    payload = token.split(".")[1]
-    padded = payload + "=" * (-len(payload) % 4)
-    return json.loads(base64.urlsafe_b64decode(padded))
-
-
-def ensure_test_user_id_and_name(auth_tuple, token):
+def ensure_test_user_id_and_name(auth_tuple, expected_token):
     """Utility to ensure that the values in the auth tuple match the test values."""
-    user_id, username, token_claims = auth_tuple
+    user_id, username, token = auth_tuple
     assert user_id == TEST_USER_ID
     assert username == TEST_USER_NAME
-    assert json.loads(token_claims) == get_claims(token)
+    assert token == expected_token
 
 
 async def test_valid(

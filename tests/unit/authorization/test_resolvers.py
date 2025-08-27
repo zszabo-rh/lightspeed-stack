@@ -1,7 +1,21 @@
 """Unit tests for the authorization resolvers."""
 
+import json
+import base64
+
 from authorization.resolvers import JwtRolesResolver, GenericAccessResolver
 from models.config import JwtRoleRule, AccessRule, JsonPathOperator, Action
+
+
+def claims_to_token(claims: dict) -> str:
+    """Convert JWT claims dictionary to a JSON string token."""
+
+    string_claims = json.dumps(claims)
+    b64_encoded_claims = (
+        base64.urlsafe_b64encode(string_claims.encode()).decode().rstrip("=")
+    )
+
+    return f"foo_header.{b64_encoded_claims}.foo_signature"
 
 
 class TestJwtRolesResolver:
@@ -33,7 +47,7 @@ class TestJwtRolesResolver:
         }
 
         # Mock auth tuple with JWT claims as third element
-        auth = ("user", "token", str(jwt_claims).replace("'", '"'))
+        auth = ("user", "token", claims_to_token(jwt_claims))
         roles = await jwt_resolver.resolve_roles(auth)
         assert "employee" in roles
 
@@ -57,7 +71,7 @@ class TestJwtRolesResolver:
         }
 
         # Mock auth tuple with JWT claims as third element
-        auth = ("user", "token", str(jwt_claims).replace("'", '"'))
+        auth = ("user", "token", claims_to_token(jwt_claims))
         roles = await jwt_resolver.resolve_roles(auth)
         assert len(roles) == 0
 
