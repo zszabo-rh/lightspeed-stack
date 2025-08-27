@@ -179,11 +179,11 @@ class LlamaStackConfiguration(BaseModel):
         if self.url is None:
             if self.use_as_library_client is None:
                 raise ValueError(
-                    "LLama stack URL is not specified and library client mode is not specified"
+                    "Llama stack URL is not specified and library client mode is not specified"
                 )
             if self.use_as_library_client is False:
                 raise ValueError(
-                    "LLama stack URL is not specified and library client mode is not enabled"
+                    "Llama stack URL is not specified and library client mode is not enabled"
                 )
         if self.use_as_library_client is None:
             self.use_as_library_client = False
@@ -191,7 +191,7 @@ class LlamaStackConfiguration(BaseModel):
             if self.library_client_config_path is None:
                 # pylint: disable=line-too-long
                 raise ValueError(
-                    "LLama stack library client mode is enabled but a configuration file path is not specified"  # noqa: E501
+                    "Llama stack library client mode is enabled but a configuration file path is not specified"  # noqa: E501
                 )
             # the configuration file must exists and be regular readable file
             checks.file_check(
