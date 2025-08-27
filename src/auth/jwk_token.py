@@ -19,7 +19,7 @@ import aiohttp
 from constants import (
     DEFAULT_VIRTUAL_PATH,
 )
-from auth.interface import AuthInterface
+from auth.interface import NO_AUTH_TUPLE, AuthInterface, AuthTuple
 from auth.utils import extract_user_token
 from models.config import JwkConfiguration
 
@@ -120,10 +120,12 @@ class JwkTokenAuthDependency(AuthInterface):  # pylint: disable=too-few-public-m
         self.virtual_path: str = virtual_path
         self.config: JwkConfiguration = config
 
-    async def __call__(self, request: Request) -> tuple[str, str, str]:
+    async def __call__(self, request: Request) -> AuthTuple:
         """Authenticate the JWT in the headers against the keys from the JWK url."""
-        user_token = extract_user_token(request.headers)
+        if not request.headers.get("Authorization"):
+            return NO_AUTH_TUPLE
 
+        user_token = extract_user_token(request.headers)
         jwk_set = await get_jwk_set(str(self.config.url))
 
         try:

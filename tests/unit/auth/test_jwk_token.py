@@ -12,6 +12,7 @@ from pydantic import AnyHttpUrl
 from authlib.jose import JsonWebKey, JsonWebToken
 
 from auth.jwk_token import JwkTokenAuthDependency, _jwk_cache
+from constants import DEFAULT_USER_NAME, DEFAULT_USER_UID, NO_USER_TOKEN
 from models.config import JwkConfiguration, JwtConfiguration
 
 TEST_USER_ID = "test-user-123"
@@ -267,11 +268,11 @@ async def test_no_auth_header(
 
     dependency = JwkTokenAuthDependency(default_jwk_configuration)
 
-    with pytest.raises(HTTPException) as exc_info:
-        await dependency(no_token_request)
+    user_id, username, token_claims = await dependency(no_token_request)
 
-    assert exc_info.value.status_code == 400
-    assert exc_info.value.detail == "No Authorization header found"
+    assert user_id == DEFAULT_USER_UID
+    assert username == DEFAULT_USER_NAME
+    assert token_claims == NO_USER_TOKEN
 
 
 async def test_no_bearer(
