@@ -388,6 +388,48 @@
                 }
             }
         },
+        "/v1/feedback/toggle": {
+            "post": {
+                "tags": [
+                    "feedback"
+                ],
+                "summary": "Feedback Toggle",
+                "description": "Handle feedback toggle requests.\n\nReturns the current enbaled status of the feedback functionality after it has been\nupdated to the desired value from the request.\n\nReturns:\n    StatusResponse: Indicates whether feedback is enabled.",
+                "operationId": "feedback_toggle_v1_feedback_toggle_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/FeedbackToggleRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StatusResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/v1/conversations": {
             "get": {
                 "tags": [
@@ -1445,6 +1487,23 @@
                         "response": "feedback received"
                     }
                 ]
+            },
+            "FeedbackToggleRequest": {
+                "properties": {
+                    "status": {
+                        "type": "boolean",
+                        "title": "Status",
+                        "description": "Desired state of feedback enablement, must be False or True",
+                        "default": false,
+                        "examples": [
+                            true,
+                            false
+                        ]
+                    }
+                },
+                "type": "object",
+                "title": "FeedbackToggleRequest",
+                "description": "Model representing a feedback toggle request.\n\nAttributes:\n    status: Boolean controlling what the Feedback status should be.\n\nExample:\n    ```python\n    feedback_request = FeedbackRequest(\n        status=false\n    )\n    ```"
             },
             "ForbiddenResponse": {
                 "properties": {
