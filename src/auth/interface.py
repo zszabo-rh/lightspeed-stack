@@ -9,11 +9,15 @@ from abc import ABC, abstractmethod
 
 from fastapi import Request
 
+from constants import DEFAULT_USER_NAME, DEFAULT_USER_UID, NO_USER_TOKEN
+
 UserID = str
 UserName = str
 Token = str
 
 AuthTuple = tuple[UserID, UserName, Token]
+
+NO_AUTH_TUPLE: AuthTuple = (DEFAULT_USER_UID, DEFAULT_USER_NAME, NO_USER_TOKEN)
 
 
 class AuthInterface(ABC):  # pylint: disable=too-few-public-methods

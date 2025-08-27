@@ -9,6 +9,7 @@ from jsonpath_ng import parse
 
 from auth.interface import AuthTuple
 from models.config import JwtRoleRule, AccessRule, JsonPathOperator, Action
+import constants
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +72,10 @@ class JwtRolesResolver(RolesResolver):  # pylint: disable=too-few-public-methods
     def _get_claims(auth: AuthTuple) -> dict[str, Any]:
         """Get the JWT claims from the auth tuple."""
         _, _, token = auth
+        if token == constants.NO_USER_TOKEN:
+            # No claims for guests
+            return {}
+
         jwt_claims = json.loads(token)
 
         if not jwt_claims:
