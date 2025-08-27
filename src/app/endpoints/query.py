@@ -174,7 +174,9 @@ async def query_endpoint_handler(
     """
     check_configuration_loaded(configuration)
 
-    llama_stack_config = configuration.llama_stack_configuration
+    # log Llama Stack configuration, but without sensitive information
+    llama_stack_config = configuration.llama_stack_configuration.model_copy()
+    llama_stack_config.api_key = "********"
     logger.info("LLama stack config: %s", llama_stack_config)
 
     user_id, _, token = auth

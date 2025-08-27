@@ -541,7 +541,9 @@ async def streaming_query_endpoint_handler(  # pylint: disable=too-many-locals
 
     check_configuration_loaded(configuration)
 
-    llama_stack_config = configuration.llama_stack_configuration
+    # log Llama Stack configuration, but without sensitive information
+    llama_stack_config = configuration.llama_stack_configuration.model_copy()
+    llama_stack_config.api_key = "********"
     logger.info("LLama stack config: %s", llama_stack_config)
 
     user_id, _user_name, token = auth
