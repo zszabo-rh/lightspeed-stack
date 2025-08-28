@@ -573,7 +573,8 @@ class ErrorResponse(BaseModel):
 
 
 class FeedbackStatusUpdateResponse(BaseModel):
-    """Model representing a response to a feedback status update request.
+    """
+    Model representing a response to a feedback status update request.
 
     Attributes:
         status: The previous and current status of the service and who updated it.

@@ -190,6 +190,7 @@ async def update_feedback_status(
 
     Takes a request with the desired state of the feedback status.
     Returns the updated state of the feedback status based on the request's value.
+    These changes are for the life of the service and are on a per-worker basis.
 
     Returns:
         StatusResponse: Indicates whether feedback is enabled.
