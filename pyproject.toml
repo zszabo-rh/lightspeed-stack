@@ -97,6 +97,7 @@ dev = [
     "twine>=6.1.0",
     "openapi-to-md>=0.1.0b2",
     "pytest-subtests>=0.14.2",
+    "bandit>=1.8.6",
 ]
 llslibdev = [
     # To check llama-stack API provider dependecies:
