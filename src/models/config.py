@@ -372,7 +372,8 @@ class AuthenticationConfiguration(BaseModel):
             raise ValueError(
                 "JWK configuration is only available for JWK token authentication module"
             )
-        assert self.jwk_config is not None, "JWK configuration should not be None"
+        if self.jwk_config is None:
+            raise ValueError("JWK configuration should not be None")
         return self.jwk_config
 
 

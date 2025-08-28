@@ -1,7 +1,7 @@
 """Unit tests for functions defined in src/configuration.py."""
 
 import pytest
-from configuration import AppConfig
+from configuration import AppConfig, LogicError
 from models.config import ModelContextProtocolServer
 
 
@@ -290,63 +290,49 @@ def test_mcp_servers_property_with_servers() -> None:
 def test_configuration_not_loaded():
     """Test that accessing configuration before loading raises an error."""
     cfg = AppConfig()
-    with pytest.raises(
-        AssertionError, match="logic error: configuration is not loaded"
-    ):
+    with pytest.raises(LogicError, match="logic error: configuration is not loaded"):
         cfg.configuration  # pylint: disable=pointless-statement
 
 
 def test_service_configuration_not_loaded():
     """Test that accessing service_configuration before loading raises an error."""
     cfg = AppConfig()
-    with pytest.raises(
-        AssertionError, match="logic error: configuration is not loaded"
-    ):
+    with pytest.raises(LogicError, match="logic error: configuration is not loaded"):
         cfg.service_configuration  # pylint: disable=pointless-statement
 
 
 def test_llama_stack_configuration_not_loaded():
     """Test that accessing llama_stack_configuration before loading raises an error."""
     cfg = AppConfig()
-    with pytest.raises(
-        AssertionError, match="logic error: configuration is not loaded"
-    ):
+    with pytest.raises(LogicError, match="logic error: configuration is not loaded"):
         cfg.llama_stack_configuration  # pylint: disable=pointless-statement
 
 
 def test_user_data_collection_configuration_not_loaded():
     """Test that accessing user_data_collection_configuration before loading raises an error."""
     cfg = AppConfig()
-    with pytest.raises(
-        AssertionError, match="logic error: configuration is not loaded"
-    ):
+    with pytest.raises(LogicError, match="logic error: configuration is not loaded"):
         cfg.user_data_collection_configuration  # pylint: disable=pointless-statement
 
 
 def test_mcp_servers_not_loaded():
     """Test that accessing mcp_servers before loading raises an error."""
     cfg = AppConfig()
-    with pytest.raises(
-        AssertionError, match="logic error: configuration is not loaded"
-    ):
+    with pytest.raises(LogicError, match="logic error: configuration is not loaded"):
         cfg.mcp_servers  # pylint: disable=pointless-statement
 
 
 def test_authentication_configuration_not_loaded():
     """Test that accessing authentication_configuration before loading raises an error."""
     cfg = AppConfig()
-    with pytest.raises(
-        AssertionError, match="logic error: configuration is not loaded"
-    ):
+    with pytest.raises(LogicError, match="logic error: configuration is not loaded"):
         cfg.authentication_configuration  # pylint: disable=pointless-statement
 
 
 def test_customization_not_loaded():
     """Test that accessing customization before loading raises an error."""
     cfg = AppConfig()
-    with pytest.raises(
-        AssertionError, match="logic error: configuration is not loaded"
-    ):
+    with pytest.raises(LogicError, match="logic error: configuration is not loaded"):
         cfg.customization  # pylint: disable=pointless-statement
 
 
