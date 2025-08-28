@@ -27,6 +27,13 @@ COPY ${LSC_SOURCE_DIR}/pyproject.toml ${LSC_SOURCE_DIR}/LICENSE ${LSC_SOURCE_DIR
 # Bundle additional dependencies for library mode.
 RUN uv sync --locked --no-dev --group llslibdev
 
+# Explicitly remove some packages to mitigate some CVEs
+# - GHSA-wj6h-64fc-37mp: python-ecdsa package won't fix it upstream.
+#   This package is required by python-jose. python-jose supports multiple
+#   backends. By default it uses python-cryptography package instead of
+#   python-ecdsa. It is safe to remove python-ecdsa package.
+RUN uv pip uninstall ecdsa
+
 # Final image without uv package manager
 FROM registry.access.redhat.com/ubi9/python-312-minimal
 ARG APP_ROOT=/app-root
