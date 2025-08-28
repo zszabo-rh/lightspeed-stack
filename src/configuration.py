@@ -56,45 +56,46 @@ class AppConfig:
         """Initialize configuration from a dictionary."""
         self._configuration = Configuration(**config_dict)
 
-    def check_configuration_loaded(self):
-        """Check that configuration is loaded, raise exception instead."""
-        if self._configuration is None:
-            raise LogicError("logic error: configuration is not loaded")
-
     @property
     def configuration(self) -> Configuration:
         """Return the whole configuration."""
-        self.check_configuration_loaded()
+        if self._configuration is None:
+            raise LogicError("logic error: configuration is not loaded")
         return self._configuration
 
     @property
     def service_configuration(self) -> ServiceConfiguration:
         """Return service configuration."""
-        self.check_configuration_loaded()
+        if self._configuration is None:
+            raise LogicError("logic error: configuration is not loaded")
         return self._configuration.service
 
     @property
     def llama_stack_configuration(self) -> LlamaStackConfiguration:
         """Return Llama stack configuration."""
-        self.check_configuration_loaded()
+        if self._configuration is None:
+            raise LogicError("logic error: configuration is not loaded")
         return self._configuration.llama_stack
 
     @property
     def user_data_collection_configuration(self) -> UserDataCollection:
         """Return user data collection configuration."""
-        self.check_configuration_loaded()
+        if self._configuration is None:
+            raise LogicError("logic error: configuration is not loaded")
         return self._configuration.user_data_collection
 
     @property
     def mcp_servers(self) -> list[ModelContextProtocolServer]:
         """Return model context protocol servers configuration."""
-        self.check_configuration_loaded()
+        if self._configuration is None:
+            raise LogicError("logic error: configuration is not loaded")
         return self._configuration.mcp_servers
 
     @property
     def authentication_configuration(self) -> AuthenticationConfiguration:
         """Return authentication configuration."""
-        self.check_configuration_loaded()
+        if self._configuration is None:
+            raise LogicError("logic error: configuration is not loaded")
 
         if self._configuration.authentication is None:
             raise LogicError("logic error: authentication configuration is not loaded")
@@ -104,7 +105,8 @@ class AppConfig:
     @property
     def authorization_configuration(self) -> AuthorizationConfiguration:
         """Return authorization configuration or default no-op configuration."""
-        self.check_configuration_loaded()
+        if self._configuration is None:
+            raise LogicError("logic error: configuration is not loaded")
 
         if self._configuration.authorization is None:
             return AuthorizationConfiguration()
@@ -114,19 +116,22 @@ class AppConfig:
     @property
     def customization(self) -> Optional[Customization]:
         """Return customization configuration."""
-        self.check_configuration_loaded()
+        if self._configuration is None:
+            raise LogicError("logic error: configuration is not loaded")
         return self._configuration.customization
 
     @property
     def inference(self) -> InferenceConfiguration:
         """Return inference configuration."""
-        self.check_configuration_loaded()
+        if self._configuration is None:
+            raise LogicError("logic error: configuration is not loaded")
         return self._configuration.inference
 
     @property
     def database_configuration(self) -> DatabaseConfiguration:
         """Return database configuration."""
-        self.check_configuration_loaded()
+        if self._configuration is None:
+            raise LogicError("logic error: configuration is not loaded")
         return self._configuration.database
 
 
