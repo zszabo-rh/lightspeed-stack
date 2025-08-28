@@ -15,10 +15,15 @@ The service includes comprehensive user data collection capabilities for various
 
 <!-- vim-markdown-toc GFM -->
 
+* [lightspeed-stack](#lightspeed-stack)
+    * [About The Project](#about-the-project)
 * [Architecture](#architecture)
 * [Prerequisites](#prerequisites)
 * [Installation](#installation)
+* [Run LCS locally](#run-lcs-locally)
 * [Configuration](#configuration)
+    * [LLM Compatibility](#llm-compatibility)
+    * [Set LLM provider and model](#set-llm-provider-and-model)
     * [Integration with Llama Stack](#integration-with-llama-stack)
     * [Llama Stack as separate server](#llama-stack-as-separate-server)
         * [MCP Server and Tool Configuration](#mcp-server-and-tool-configuration)
@@ -62,7 +67,7 @@ The service includes comprehensive user data collection capabilities for various
     * [Utility to generate OpenAPI schema](#utility-to-generate-openapi-schema)
         * [Path](#path)
         * [Usage](#usage-1)
-    * [Utility to generate documentation from source codes](#utility-to-generate-documentation-from-source-codes)
+    * [Utility to generate documentation from source code](#utility-to-generate-documentation-from-source-code)
         * [Path](#path-1)
         * [Usage](#usage-2)
 * [Data Export Integration](#data-export-integration)
@@ -98,9 +103,60 @@ Installation steps depends on operation system. Please look at instructions for 
 - [Linux installation](https://lightspeed-core.github.io/lightspeed-stack/installation_linux)
 - [macOS installation](https://lightspeed-core.github.io/lightspeed-stack/installation_macos)
 
+# Run LCS locally
+
+To quickly get hands on LCS, we can run it using the default configurations provided in this repository: 
+0. install dependencies using [uv](https://docs.astral.sh/uv/getting-started/installation/) `uv sync --group dev --group llslibdev`
+1. check Llama stack settings in [run.yaml](run.yaml), make sure we can access the provider and the model, the server shoud listen to port 8321.
+2. export the LLM token env var that Llama stack requires. for OpenAI, we set the env var by `export OPENAI_API_KEY=sk-xxxxx`
+3. start Llama stack server `uv run llama stack run run.yaml`
+4. check the LCS settings in [lightspeed-stack.yaml](lightspeed-stack.yaml). `llama_stack.url` should be `url: http://localhost:8321`
+5. start LCS server `make run`
+6. access LCS web UI at [http://localhost:8080/](http://localhost:8080/)
+
 
 # Configuration
 
+## LLM Compatibility
+
+Lightspeed Core Stack (LCS) supports the large language models from the providers listed below. 
+
+| Provider | Model                                          | Tool Calling | provider_type  | Example                                                                    |
+| -------- | ---------------------------------------------- | ------------ | -------------- | -------------------------------------------------------------------------- |
+| OpenAI   | gpt-5, gpt-4o, gpt4-turbo, gpt-4.1, o1, o3, o4 | Yes          | remote::openai | [1](examples/openai-faiss-run.yaml) [2](examples/openai-pgvector-run.yaml) |
+| OpenAI   | gpt-3.5-turbo, gpt-4                           | No           | remote::openai |                                                                            |
+
+The "provider_type" is used in the llama stack configuration file when refering to the provider.
+
+For details of OpenAI model capabilities, please refer to https://platform.openai.com/docs/models/compare
+
+
+## Set LLM provider and model
+
+The LLM provider and model are set in the configuration file for Llama Stack. This repository has a Llama stack configuration file [run.yaml](examples/run.yaml) that can serve as a good example.
+
+The LLM providers are set in the section `providers.inference`. This example adds a inference provider "openai" to the llama stack. To use environment variables as configuration values, we can use the syntax `${env.ENV_VAR_NAME}`. 
+
+For more details, please refer to [llama stack documentation](https://llama-stack.readthedocs.io/en/latest/distributions/configuration.html#providers). Here is a list of llamastack supported providers and their configuration details: [llama stack providers](https://llama-stack.readthedocs.io/en/latest/providers/inference/index.html#providers)
+
+```yaml
+inference:
+    - provider_id: openai
+      provider_type: remote::openai
+      config:
+        api_key: ${env.OPENAI_API_KEY}
+        url: ${env.SERVICE_URL}
+```
+
+The section `models` is a list of models offered by the inference provider. Attention that the field `model_id` is a user chosen name for referring to the model locally, the field `provider_model_id` refers to the model name on the provider side. The field `provider_id` must refer to one of the inference providers we defined in the provider list above.
+
+```yaml
+models:
+  - model_id: gpt-4-turbo
+    provider_id: openai
+    model_type: llm
+    provider_model_id: gpt-4-turbo
+```
 
 
 ## Integration with Llama Stack
