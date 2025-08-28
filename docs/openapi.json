@@ -386,21 +386,19 @@
                         }
                     }
                 }
-            }
-        },
-        "/v1/feedback/toggle": {
-            "post": {
+            },
+            "put": {
                 "tags": [
                     "feedback"
                 ],
-                "summary": "Feedback Toggle",
-                "description": "Handle feedback toggle requests.\n\nReturns the current enbaled status of the feedback functionality after it has been\nupdated to the desired value from the request.\n\nReturns:\n    StatusResponse: Indicates whether feedback is enabled.",
-                "operationId": "feedback_toggle_v1_feedback_toggle_post",
+                "summary": "Update Feedback Status",
+                "description": "Handle feedback status update requests.\n\nTakes a request with the desired state of the feedback status.\nReturns the updated state of the feedback status based on the request's value.\n\nReturns:\n    StatusResponse: Indicates whether feedback is enabled.",
+                "operationId": "update_feedback_status_v1_feedback_status_put",
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/FeedbackToggleRequest"
+                                "$ref": "#/components/schemas/FeedbackStatusUpdateRequest"
                             }
                         }
                     },
@@ -412,7 +410,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/StatusResponse"
+                                    "$ref": "#/components/schemas/FeedbackStatusUpdateResponse"
                                 }
                             }
                         }
@@ -1488,7 +1486,7 @@
                     }
                 ]
             },
-            "FeedbackToggleRequest": {
+            "FeedbackStatusUpdateRequest": {
                 "properties": {
                     "status": {
                         "type": "boolean",
@@ -1502,8 +1500,32 @@
                     }
                 },
                 "type": "object",
-                "title": "FeedbackToggleRequest",
-                "description": "Model representing a feedback toggle request.\n\nAttributes:\n    status: Boolean controlling what the Feedback status should be.\n\nExample:\n    ```python\n    feedback_request = FeedbackRequest(\n        status=false\n    )\n    ```"
+                "title": "FeedbackStatusUpdateRequest",
+                "description": "Model representing a feedback status update request.\n\nAttributes:\n    status: Value of the desired feedback enabled state.\n\nExample:\n    ```python\n    feedback_request = FeedbackRequest(\n        status=false\n    )\n    ```"
+            },
+            "FeedbackStatusUpdateResponse": {
+                "properties": {
+                    "status": {
+                        "additionalProperties": true,
+                        "type": "object",
+                        "title": "Status"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "status"
+                ],
+                "title": "FeedbackStatusUpdateResponse",
+                "description": "Model representing a response to a feedback status update request.\n\nAttributes:\n    status: The previous and current status of the service and who updated it.\n\nExample:\n    ```python\n    status_response = StatusResponse(\n        status={\n            \"previous_status\": true,\n            \"updated_status\": false,\n            \"updated_by\": \"user/test\"\n        },\n    )\n    ```",
+                "examples": [
+                    {
+                        "status": {
+                            "previous_status": true,
+                            "updated_by": "user/test",
+                            "updated_status": false
+                        }
+                    }
+                ]
             },
             "ForbiddenResponse": {
                 "properties": {

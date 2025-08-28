@@ -9,10 +9,9 @@ from app.endpoints.feedback import (
     assert_feedback_enabled,
     feedback_endpoint_handler,
     store_feedback,
-    feedback_status,
-    feedback_toggle,
+    update_feedback_status,
 )
-from models.requests import FeedbackToggleRequest
+from models.requests import FeedbackStatusUpdateRequest
 from tests.unit.utils.auth_helpers import mock_authorization_resolvers
 
 
@@ -198,52 +197,33 @@ def test_store_feedback_on_io_error(mocker, feedback_request_data):
         store_feedback(user_id, feedback_request_data)
 
 
-def test_feedback_status():
-    """Test that feedback_status returns the correct status response."""
+async def test_update_feedback_status_different():
+    """Test that update_feedback_status returns the correct status with an update."""
     configuration.user_data_collection_configuration.feedback_enabled = True
 
-    response = feedback_status()
-    assert response.functionality == "feedback"
-    assert response.status == {"enabled": True}
+    req = FeedbackStatusUpdateRequest(status=False)
+    resp = await update_feedback_status(
+        req,
+        auth=("test_user_id", "test_username", "test_token"),
+    )
+    assert resp.status == {
+        "previous_status": True,
+        "updated_status": False,
+        "updated_by": "test_user_id",
+    }
 
 
-def test_feedback_toggle_enabled():
-    """Test that feedback_toggle processes feedback toggle for disabled status payloads."""
-
+async def test_update_feedback_status_no_change():
+    """Test that update_feedback_status returns the correct status with no update."""
     configuration.user_data_collection_configuration.feedback_enabled = True
 
-    feedback_toggle_request = FeedbackToggleRequest(status=False)
-
-    response = feedback_toggle(feedback_toggle_request=feedback_toggle_request)
-
-    assert response.functionality == "feedback"
-    assert response.status == {"enabled": False}
-
-
-def test_feedback_toggle_disabled():
-    """Test that feedback_toggle processes feedback toggle for enabled status payloads."""
-
-    configuration.user_data_collection_configuration.feedback_enabled = False
-
-    feedback_toggle_request = FeedbackToggleRequest(status=True)
-
-    response = feedback_toggle(feedback_toggle_request=feedback_toggle_request)
-
-    assert response.functionality == "feedback"
-    assert response.status == {"enabled": True}
-
-
-def test_feedback_toggle_equivalent():
-    """
-    Test that feedback_toggle processes feedback toggle for status payloads with the same value
-    as what is presently set.
-    """
-
-    configuration.user_data_collection_configuration.feedback_enabled = True
-
-    feedback_toggle_request = FeedbackToggleRequest(status=True)
-
-    response = feedback_toggle(feedback_toggle_request=feedback_toggle_request)
-
-    assert response.functionality == "feedback"
-    assert response.status == {"enabled": True}
+    req = FeedbackStatusUpdateRequest(status=True)
+    resp = await update_feedback_status(
+        req,
+        auth=("test_user_id", "test_username", "test_token"),
+    )
+    assert resp.status == {
+        "previous_status": True,
+        "updated_status": True,
+        "updated_by": "test_user_id",
+    }

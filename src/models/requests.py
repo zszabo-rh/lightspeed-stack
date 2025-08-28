@@ -382,11 +382,11 @@ class FeedbackRequest(BaseModel):
         return self
 
 
-class FeedbackToggleRequest(BaseModel):
-    """Model representing a feedback toggle request.
+class FeedbackStatusUpdateRequest(BaseModel):
+    """Model representing a feedback status update request.
 
     Attributes:
-        status: Boolean controlling what the Feedback status should be.
+        status: Value of the desired feedback enabled state.
 
     Example:
         ```python

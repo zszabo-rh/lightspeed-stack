@@ -570,3 +570,39 @@ class ErrorResponse(BaseModel):
             ]
         }
     }
+
+
+class FeedbackStatusUpdateResponse(BaseModel):
+    """Model representing a response to a feedback status update request.
+
+    Attributes:
+        status: The previous and current status of the service and who updated it.
+
+    Example:
+        ```python
+        status_response = StatusResponse(
+            status={
+                "previous_status": true,
+                "updated_status": false,
+                "updated_by": "user/test"
+            },
+        )
+        ```
+    """
+
+    status: dict
+
+    # provides examples for /docs endpoint
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "status": {
+                        "previous_status": True,
+                        "updated_status": False,
+                        "updated_by": "user/test",
+                    },
+                }
+            ]
+        }
+    }

@@ -1,6 +1,7 @@
 """Handler for REST API endpoint for user feedback."""
 
 import logging
+import threading
 from typing import Annotated, Any
 from pathlib import Path
 import json
@@ -12,20 +13,21 @@ from auth.interface import AuthTuple
 from authorization.middleware import authorize
 from configuration import configuration
 from models.config import Action
-from models.requests import FeedbackRequest
+from models.requests import FeedbackRequest, FeedbackStatusUpdateRequest
 from models.responses import (
     ErrorResponse,
     FeedbackResponse,
+    FeedbackStatusUpdateResponse,
     StatusResponse,
     UnauthorizedResponse,
     ForbiddenResponse,
 )
-from models.requests import FeedbackToggleRequest
 from utils.suid import get_suid
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/feedback", tags=["feedback"])
 auth_dependency = get_auth_dependency()
+feedback_status_lock = threading.Lock()
 
 # Response for the feedback endpoint
 feedback_response: dict[int | str, dict[str, Any]] = {
@@ -177,33 +179,39 @@ def feedback_status() -> StatusResponse:
     )
 
 
-@router.post("/toggle")
-def feedback_toggle(feedback_toggle_request: FeedbackToggleRequest) -> StatusResponse:
+@router.put("/status")
+@authorize(Action.ADMIN)
+async def update_feedback_status(
+    feedback_update_request: FeedbackStatusUpdateRequest,
+    auth: Annotated[AuthTuple, Depends(auth_dependency)],
+) -> FeedbackStatusUpdateResponse:
     """
-    Handle feedback toggle requests.
+    Handle feedback status update requests.
 
-    Returns the current enbaled status of the feedback functionality after it has been
-    updated to the desired value from the request.
+    Takes a request with the desired state of the feedback status.
+    Returns the updated state of the feedback status based on the request's value.
 
     Returns:
         StatusResponse: Indicates whether feedback is enabled.
     """
-    fetched_status = toggle_feedback_status(feedback_toggle_request)
-    return StatusResponse(functionality="feedback", status={"enabled": fetched_status})
+    user_id, _, _ = auth
+    requested_status = feedback_update_request.get_value()
 
+    with feedback_status_lock:
+        previous_status = (
+            configuration.user_data_collection_configuration.feedback_enabled
+        )
+        configuration.user_data_collection_configuration.feedback_enabled = (
+            requested_status
+        )
+        updated_status = (
+            configuration.user_data_collection_configuration.feedback_enabled
+        )
 
-def toggle_feedback_status(req: FeedbackToggleRequest) -> bool:
-    """
-    Toggles the feedback boolean stored in the configuration.
-
-    This toggling is temporary until the service is interrupted as it will not edit
-    any configuration files.
-
-    Parameters:
-        req (FeedbackToggleRequest): The request received with a boolean for the new value.
-
-    Returns:
-        bool: The current enabled status of feedback.
-    """
-    configuration.user_data_collection_configuration.feedback_enabled = req.get_value()
-    return is_feedback_enabled()
+    return FeedbackStatusUpdateResponse(
+        status={
+            "previous_status": previous_status,
+            "updated_status": updated_status,
+            "updated_by": user_id,
+        }
+    )
