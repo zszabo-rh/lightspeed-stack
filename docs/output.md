@@ -26,8 +26,7 @@ Handle request to the / endpoint.
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | string
- |
+| 200 | Successful Response | string |
 ## GET `/v1/info`
 
 > **Info Endpoint Handler**
@@ -48,8 +47,7 @@ Returns:
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [InfoResponse](#inforesponse)
- |
+| 200 | Successful Response | [InfoResponse](#inforesponse) |
 ## GET `/v1/models`
 
 > **Models Endpoint Handler**
@@ -76,7 +74,6 @@ Returns:
 |-------------|-------------|-----------|
 | 200 | Successful Response | [ModelsResponse](#modelsresponse) |
 | 503 | Connection to Llama Stack is broken |  |
-
 ## POST `/v1/query`
 
 > **Query Endpoint Handler**
@@ -396,8 +393,7 @@ Prometheus format.
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | string
- |
+| 200 | Successful Response | string |
 ---
 
 # 📋 Components
