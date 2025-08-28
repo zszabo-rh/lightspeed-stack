@@ -1,8 +1,9 @@
 """Authorization resolvers for role evaluation and access control."""
 
 from abc import ABC, abstractmethod
-import json
 import logging
+import base64
+import json
 from typing import Any
 
 from jsonpath_ng import parse
@@ -36,6 +37,17 @@ class NoopRolesResolver(RolesResolver):  # pylint: disable=too-few-public-method
         """Return an empty list of roles."""
         _ = auth  # Unused
         return set()
+
+
+def unsafe_get_claims(token: str) -> dict[str, Any]:
+    """Get claims from a token without validating the signature.
+
+    A somewhat hacky way to get JWT claims without verifying the signature.
+    We assume verification has already been done during authentication.
+    """
+    payload = token.split(".")[1]
+    padded = payload + "=" * (-len(payload) % 4)
+    return json.loads(base64.urlsafe_b64decode(padded))
 
 
 class JwtRolesResolver(RolesResolver):  # pylint: disable=too-few-public-methods
@@ -76,7 +88,7 @@ class JwtRolesResolver(RolesResolver):  # pylint: disable=too-few-public-methods
             # No claims for guests
             return {}
 
-        jwt_claims = json.loads(token)
+        jwt_claims = unsafe_get_claims(token)
 
         if not jwt_claims:
             raise RoleResolutionError(
