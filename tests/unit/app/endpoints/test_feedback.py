@@ -9,8 +9,9 @@ from app.endpoints.feedback import (
     assert_feedback_enabled,
     feedback_endpoint_handler,
     store_feedback,
-    feedback_status,
+    update_feedback_status,
 )
+from models.requests import FeedbackStatusUpdateRequest
 from tests.unit.utils.auth_helpers import mock_authorization_resolvers
 
 
@@ -196,10 +197,33 @@ def test_store_feedback_on_io_error(mocker, feedback_request_data):
         store_feedback(user_id, feedback_request_data)
 
 
-def test_feedback_status():
-    """Test that feedback_status returns the correct status response."""
+async def test_update_feedback_status_different():
+    """Test that update_feedback_status returns the correct status with an update."""
     configuration.user_data_collection_configuration.feedback_enabled = True
 
-    response = feedback_status()
-    assert response.functionality == "feedback"
-    assert response.status == {"enabled": True}
+    req = FeedbackStatusUpdateRequest(status=False)
+    resp = await update_feedback_status(
+        req,
+        auth=("test_user_id", "test_username", "test_token"),
+    )
+    assert resp.status == {
+        "previous_status": True,
+        "updated_status": False,
+        "updated_by": "test_user_id",
+    }
+
+
+async def test_update_feedback_status_no_change():
+    """Test that update_feedback_status returns the correct status with no update."""
+    configuration.user_data_collection_configuration.feedback_enabled = True
+
+    req = FeedbackStatusUpdateRequest(status=True)
+    resp = await update_feedback_status(
+        req,
+        auth=("test_user_id", "test_username", "test_token"),
+    )
+    assert resp.status == {
+        "previous_status": True,
+        "updated_status": True,
+        "updated_by": "test_user_id",
+    }

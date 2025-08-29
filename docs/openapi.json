@@ -386,6 +386,46 @@
                         }
                     }
                 }
+            },
+            "put": {
+                "tags": [
+                    "feedback"
+                ],
+                "summary": "Update Feedback Status",
+                "description": "Handle feedback status update requests.\n\nTakes a request with the desired state of the feedback status.\nReturns the updated state of the feedback status based on the request's value.\nThese changes are for the life of the service and are on a per-worker basis.\n\nReturns:\n    StatusResponse: Indicates whether feedback is enabled.",
+                "operationId": "update_feedback_status_v1_feedback_status_put",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/FeedbackStatusUpdateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FeedbackStatusUpdateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/v1/conversations": {
@@ -712,6 +752,7 @@
                         "title": "Actions"
                     }
                 },
+                "additionalProperties": false,
                 "type": "object",
                 "required": [
                     "role",
@@ -843,6 +884,7 @@
                         ]
                     }
                 },
+                "additionalProperties": false,
                 "type": "object",
                 "title": "AuthenticationConfiguration",
                 "description": "Authentication configuration."
@@ -857,6 +899,7 @@
                         "title": "Access Rules"
                     }
                 },
+                "additionalProperties": false,
                 "type": "object",
                 "title": "AuthorizationConfiguration",
                 "description": "Authorization configuration."
@@ -933,6 +976,7 @@
                         ]
                     }
                 },
+                "additionalProperties": false,
                 "type": "object",
                 "title": "CORSConfiguration",
                 "description": "CORS configuration."
@@ -1000,6 +1044,7 @@
                         "default": {}
                     }
                 },
+                "additionalProperties": false,
                 "type": "object",
                 "required": [
                     "name",
@@ -1223,6 +1268,7 @@
                         "title": "System Prompt"
                     }
                 },
+                "additionalProperties": false,
                 "type": "object",
                 "title": "Customization",
                 "description": "Service customization."
@@ -1250,6 +1296,7 @@
                         ]
                     }
                 },
+                "additionalProperties": false,
                 "type": "object",
                 "title": "DatabaseConfiguration",
                 "description": "Database configuration."
@@ -1446,6 +1493,47 @@
                     }
                 ]
             },
+            "FeedbackStatusUpdateRequest": {
+                "properties": {
+                    "status": {
+                        "type": "boolean",
+                        "title": "Status",
+                        "description": "Desired state of feedback enablement, must be False or True",
+                        "default": false,
+                        "examples": [
+                            true,
+                            false
+                        ]
+                    }
+                },
+                "type": "object",
+                "title": "FeedbackStatusUpdateRequest",
+                "description": "Model representing a feedback status update request.\n\nAttributes:\n    status: Value of the desired feedback enabled state.\n\nExample:\n    ```python\n    feedback_request = FeedbackRequest(\n        status=false\n    )\n    ```"
+            },
+            "FeedbackStatusUpdateResponse": {
+                "properties": {
+                    "status": {
+                        "additionalProperties": true,
+                        "type": "object",
+                        "title": "Status"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "status"
+                ],
+                "title": "FeedbackStatusUpdateResponse",
+                "description": "Model representing a response to a feedback status update request.\n\nAttributes:\n    status: The previous and current status of the service and who updated it.\n\nExample:\n    ```python\n    status_response = StatusResponse(\n        status={\n            \"previous_status\": true,\n            \"updated_status\": false,\n            \"updated_by\": \"user/test\"\n        },\n    )\n    ```",
+                "examples": [
+                    {
+                        "status": {
+                            "previous_status": true,
+                            "updated_by": "user/test",
+                            "updated_status": false
+                        }
+                    }
+                ]
+            },
             "ForbiddenResponse": {
                 "properties": {
                     "detail": {
@@ -1503,6 +1591,7 @@
                         "title": "Default Provider"
                     }
                 },
+                "additionalProperties": false,
                 "type": "object",
                 "title": "InferenceConfiguration",
                 "description": "Inference configuration."
@@ -1569,6 +1658,7 @@
                         }
                     }
                 },
+                "additionalProperties": false,
                 "type": "object",
                 "required": [
                     "url"
@@ -1596,6 +1686,7 @@
                         "title": "Role Rules"
                     }
                 },
+                "additionalProperties": false,
                 "type": "object",
                 "title": "JwtConfiguration",
                 "description": "JWT configuration."
@@ -1625,6 +1716,7 @@
                         "title": "Roles"
                     }
                 },
+                "additionalProperties": false,
                 "type": "object",
                 "required": [
                     "jsonpath",
@@ -1701,6 +1793,7 @@
                         "title": "Library Client Config Path"
                     }
                 },
+                "additionalProperties": false,
                 "type": "object",
                 "title": "LlamaStackConfiguration",
                 "description": "Llama stack configuration."
@@ -1721,6 +1814,7 @@
                         "title": "Url"
                     }
                 },
+                "additionalProperties": false,
                 "type": "object",
                 "required": [
                     "name",
@@ -1828,6 +1922,7 @@
                         "title": "Ca Cert Path"
                     }
                 },
+                "additionalProperties": false,
                 "type": "object",
                 "required": [
                     "db",
@@ -2131,6 +2226,7 @@
                         "title": "Db Path"
                     }
                 },
+                "additionalProperties": false,
                 "type": "object",
                 "required": [
                     "db_path"
@@ -2192,6 +2288,7 @@
                         }
                     }
                 },
+                "additionalProperties": false,
                 "type": "object",
                 "title": "ServiceConfiguration",
                 "description": "Service configuration."
@@ -2263,6 +2360,7 @@
                         "title": "Tls Key Password"
                     }
                 },
+                "additionalProperties": false,
                 "type": "object",
                 "title": "TLSConfiguration",
                 "description": "TLS configuration."
@@ -2321,6 +2419,7 @@
                         "title": "Transcripts Storage"
                     }
                 },
+                "additionalProperties": false,
                 "type": "object",
                 "title": "UserDataCollection",
                 "description": "User data collection configuration."

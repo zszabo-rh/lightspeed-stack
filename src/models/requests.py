@@ -380,3 +380,28 @@ class FeedbackRequest(BaseModel):
                 "'sentiment', 'user_feedback', or 'categories'"
             )
         return self
+
+
+class FeedbackStatusUpdateRequest(BaseModel):
+    """Model representing a feedback status update request.
+
+    Attributes:
+        status: Value of the desired feedback enabled state.
+
+    Example:
+        ```python
+        feedback_request = FeedbackRequest(
+            status=false
+        )
+        ```
+    """
+
+    status: bool = Field(
+        False,
+        description="Desired state of feedback enablement, must be False or True",
+        examples=[True, False],
+    )
+
+    def get_value(self) -> bool:
+        """Return the value of the status attribute."""
+        return self.status

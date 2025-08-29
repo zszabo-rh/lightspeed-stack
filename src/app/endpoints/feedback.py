@@ -1,6 +1,7 @@
 """Handler for REST API endpoint for user feedback."""
 
 import logging
+import threading
 from typing import Annotated, Any
 from pathlib import Path
 import json
@@ -12,10 +13,11 @@ from auth.interface import AuthTuple
 from authorization.middleware import authorize
 from configuration import configuration
 from models.config import Action
-from models.requests import FeedbackRequest
+from models.requests import FeedbackRequest, FeedbackStatusUpdateRequest
 from models.responses import (
     ErrorResponse,
     FeedbackResponse,
+    FeedbackStatusUpdateResponse,
     StatusResponse,
     UnauthorizedResponse,
     ForbiddenResponse,
@@ -25,6 +27,7 @@ from utils.suid import get_suid
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/feedback", tags=["feedback"])
 auth_dependency = get_auth_dependency()
+feedback_status_lock = threading.Lock()
 
 # Response for the feedback endpoint
 feedback_response: dict[int | str, dict[str, Any]] = {
@@ -173,4 +176,43 @@ def feedback_status() -> StatusResponse:
     feedback_status_enabled = is_feedback_enabled()
     return StatusResponse(
         functionality="feedback", status={"enabled": feedback_status_enabled}
+    )
+
+
+@router.put("/status")
+@authorize(Action.ADMIN)
+async def update_feedback_status(
+    feedback_update_request: FeedbackStatusUpdateRequest,
+    auth: Annotated[AuthTuple, Depends(auth_dependency)],
+) -> FeedbackStatusUpdateResponse:
+    """
+    Handle feedback status update requests.
+
+    Takes a request with the desired state of the feedback status.
+    Returns the updated state of the feedback status based on the request's value.
+    These changes are for the life of the service and are on a per-worker basis.
+
+    Returns:
+        StatusResponse: Indicates whether feedback is enabled.
+    """
+    user_id, _, _ = auth
+    requested_status = feedback_update_request.get_value()
+
+    with feedback_status_lock:
+        previous_status = (
+            configuration.user_data_collection_configuration.feedback_enabled
+        )
+        configuration.user_data_collection_configuration.feedback_enabled = (
+            requested_status
+        )
+        updated_status = (
+            configuration.user_data_collection_configuration.feedback_enabled
+        )
+
+    return FeedbackStatusUpdateResponse(
+        status={
+            "previous_status": previous_status,
+            "updated_status": updated_status,
+            "updated_by": user_id,
+        }
     )
