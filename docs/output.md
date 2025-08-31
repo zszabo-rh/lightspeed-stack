@@ -226,6 +226,33 @@ Returns:
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
 | 200 | Successful Response | [StatusResponse](#statusresponse) |
+## PUT `/v1/feedback/status`
+
+> **Update Feedback Status**
+
+Handle feedback status update requests.
+
+Takes a request with the desired state of the feedback status.
+Returns the updated state of the feedback status based on the request's value.
+These changes are for the life of the service and are on a per-worker basis.
+
+Returns:
+    FeedbackStatusUpdateResponse: Indicates whether feedback is enabled.
+
+
+
+
+
+### 📦 Request Body 
+
+[FeedbackStatusUpdateRequest](#feedbackstatusupdaterequest)
+
+### ✅ Responses
+
+| Status Code | Description | Component |
+|-------------|-------------|-----------|
+| 200 | Successful Response | [FeedbackStatusUpdateResponse](#feedbackstatusupdateresponse) |
+| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## GET `/v1/conversations`
 
 > **Get Conversations List Endpoint Handler**
@@ -758,6 +785,52 @@ Example:
 | Field | Type | Description |
 |-------|------|-------------|
 | response | string |  |
+
+
+## FeedbackStatusUpdateRequest
+
+
+Model representing a feedback status update request.
+
+Attributes:
+    status: Value of the desired feedback enabled state.
+
+Example:
+    ```python
+    feedback_request = FeedbackRequest(
+        status=false
+    )
+    ```
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| status | boolean | Desired state of feedback enablement, must be False or True |
+
+
+## FeedbackStatusUpdateResponse
+
+
+Model representing a response to a feedback status update request.
+
+Attributes:
+    status: The previous and current status of the service and who updated it.
+
+Example:
+    ```python
+    status_response = StatusResponse(
+        status={
+            "previous_status": true,
+            "updated_status": false,
+            "updated_by": "user/test"
+        },
+    )
+    ```
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| status | object |  |
 
 
 ## ForbiddenResponse
