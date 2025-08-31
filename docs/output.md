@@ -48,6 +48,7 @@ Returns:
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
 | 200 | Successful Response | [InfoResponse](#inforesponse) |
+| 500 | Internal Server Error |  |
 ## GET `/v1/models`
 
 > **Models Endpoint Handler**
@@ -872,13 +873,15 @@ Model representing a response to an info request.
 
 Attributes:
     name: Service name.
-    version: Service version.
+    service_version: Service version.
+    llama_stack_version: Llama Stack version.
 
 Example:
     ```python
     info_response = InfoResponse(
         name="Lightspeed Stack",
-        version="1.0.0",
+        service_version="1.0.0",
+        llama_stack_version="0.2.18",
     )
     ```
 
@@ -886,7 +889,8 @@ Example:
 | Field | Type | Description |
 |-------|------|-------------|
 | name | string | Service name |
-| version | string | Service version |
+| service_version | string | Service version |
+| llama_stack_version | string | Llama Stack version |
 
 
 ## JsonPathOperator

@@ -63,7 +63,15 @@
                             }
                         },
                         "name": "Service name",
-                        "version": "Service version"
+                        "service_version": "Service version",
+                        "llama_stack_version": "Llama Stack version"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "detail": {
+                            "response": "Unable to connect to Llama Stack",
+                            "cause": "Connection error."
+                        }
                     }
                 }
             }
@@ -1606,28 +1614,40 @@
                             "Lightspeed Stack"
                         ]
                     },
-                    "version": {
+                    "service_version": {
                         "type": "string",
-                        "title": "Version",
+                        "title": "Service Version",
                         "description": "Service version",
                         "examples": [
                             "0.1.0",
                             "0.2.0",
                             "1.0.0"
                         ]
+                    },
+                    "llama_stack_version": {
+                        "type": "string",
+                        "title": "Llama Stack Version",
+                        "description": "Llama Stack version",
+                        "examples": [
+                            "0.2.1",
+                            "0.2.2",
+                            "0.2.18"
+                        ]
                     }
                 },
                 "type": "object",
                 "required": [
                     "name",
-                    "version"
+                    "service_version",
+                    "llama_stack_version"
                 ],
                 "title": "InfoResponse",
-                "description": "Model representing a response to an info request.\n\nAttributes:\n    name: Service name.\n    version: Service version.\n\nExample:\n    ```python\n    info_response = InfoResponse(\n        name=\"Lightspeed Stack\",\n        version=\"1.0.0\",\n    )\n    ```",
+                "description": "Model representing a response to an info request.\n\nAttributes:\n    name: Service name.\n    service_version: Service version.\n    llama_stack_version: Llama Stack version.\n\nExample:\n    ```python\n    info_response = InfoResponse(\n        name=\"Lightspeed Stack\",\n        service_version=\"1.0.0\",\n        llama_stack_version=\"0.2.18\",\n    )\n    ```",
                 "examples": [
                     {
+                        "llama_stack_version": "1.0.0",
                         "name": "Lightspeed Stack",
-                        "version": "1.0.0"
+                        "service_version": "1.0.0"
                     }
                 ]
             },
