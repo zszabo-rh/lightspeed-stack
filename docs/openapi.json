@@ -392,7 +392,7 @@
                     "feedback"
                 ],
                 "summary": "Update Feedback Status",
-                "description": "Handle feedback status update requests.\n\nTakes a request with the desired state of the feedback status.\nReturns the updated state of the feedback status based on the request's value.\nThese changes are for the life of the service and are on a per-worker basis.\n\nReturns:\n    StatusResponse: Indicates whether feedback is enabled.",
+                "description": "Handle feedback status update requests.\n\nTakes a request with the desired state of the feedback status.\nReturns the updated state of the feedback status based on the request's value.\nThese changes are for the life of the service and are on a per-worker basis.\n\nReturns:\n    FeedbackStatusUpdateResponse: Indicates whether feedback is enabled.",
                 "operationId": "update_feedback_status_v1_feedback_status_put",
                 "requestBody": {
                     "content": {
