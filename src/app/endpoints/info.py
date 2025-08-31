@@ -8,10 +8,10 @@ from fastapi import Depends
 from llama_stack_client import APIConnectionError
 
 from auth.interface import AuthTuple
-from client import AsyncLlamaStackClientHolder
 from auth import get_auth_dependency
 from authorization.middleware import authorize
 from configuration import configuration
+from client import AsyncLlamaStackClientHolder
 from models.config import Action
 from models.responses import InfoResponse
 from version import __version__
