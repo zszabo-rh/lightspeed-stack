@@ -3,10 +3,12 @@
 import logging
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request, status
 from fastapi import Depends
+from llama_stack_client import APIConnectionError
 
 from auth.interface import AuthTuple
+from client import AsyncLlamaStackClientHolder
 from auth import get_auth_dependency
 from authorization.middleware import authorize
 from configuration import configuration
@@ -49,4 +51,24 @@ async def info_endpoint_handler(
     # Nothing interesting in the request
     _ = request
 
-    return InfoResponse(name=configuration.configuration.name, version=__version__)
+    try:
+        # try to get Llama Stack client
+        client = AsyncLlamaStackClientHolder().get_client()
+        # retrieve version
+        llama_stack_version_object = await client.inspect.version()
+        llama_stack_version = llama_stack_version_object.version
+        return InfoResponse(
+            name=configuration.configuration.name,
+            service_version=__version__,
+            llama_stack_version=llama_stack_version,
+        )
+    # connection to Llama Stack server
+    except APIConnectionError as e:
+        logger.error("Unable to connect to Llama Stack: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "response": "Unable to connect to Llama Stack",
+                "cause": str(e),
+            },
+        ) from e

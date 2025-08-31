@@ -84,13 +84,15 @@ class InfoResponse(BaseModel):
 
     Attributes:
         name: Service name.
-        version: Service version.
+        service_version: Service version.
+        llama_stack_version: Llama Stack version.
 
     Example:
         ```python
         info_response = InfoResponse(
             name="Lightspeed Stack",
-            version="1.0.0",
+            service_version="1.0.0",
+            llama_stack_version="0.2.18",
         )
         ```
     """
@@ -100,9 +102,14 @@ class InfoResponse(BaseModel):
         examples=["Lightspeed Stack"],
     )
 
-    version: str = Field(
+    service_version: str = Field(
         description="Service version",
         examples=["0.1.0", "0.2.0", "1.0.0"],
+    )
+
+    llama_stack_version: str = Field(
+        description="Llama Stack version",
+        examples=["0.2.1", "0.2.2", "0.2.18"],
     )
 
     # provides examples for /docs endpoint
@@ -111,7 +118,8 @@ class InfoResponse(BaseModel):
             "examples": [
                 {
                     "name": "Lightspeed Stack",
-                    "version": "1.0.0",
+                    "service_version": "1.0.0",
+                    "llama_stack_version": "1.0.0",
                 }
             ]
         }
