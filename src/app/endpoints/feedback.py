@@ -193,7 +193,7 @@ async def update_feedback_status(
     These changes are for the life of the service and are on a per-worker basis.
 
     Returns:
-        StatusResponse: Indicates whether feedback is enabled.
+        FeedbackStatusUpdateResponse: Indicates whether feedback is enabled.
     """
     user_id, _, _ = auth
     requested_status = feedback_update_request.get_value()
