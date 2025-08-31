@@ -25,7 +25,14 @@ auth_dependency = get_auth_dependency()
 get_info_responses: dict[int | str, dict[str, Any]] = {
     200: {
         "name": "Service name",
-        "version": "Service version",
+        "service_version": "Service version",
+        "llama_stack_version": "Llama Stack version",
+    },
+    500: {
+        "detail": {
+            "response": "Unable to connect to Llama Stack",
+            "cause": "Connection error.",
+        }
     },
 }
 
