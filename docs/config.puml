@@ -1,5 +1,12 @@
 @startuml classes
 set namespaceSeparator none
+class "AccessRule" as src.models.config.AccessRule {
+  actions : list[Action]
+  role : str
+}
+class "Action" as src.models.config.Action {
+  name
+}
 class "AuthenticationConfiguration" as src.models.config.AuthenticationConfiguration {
   jwk_config : Optional[JwkConfiguration]
   jwk_configuration
@@ -8,6 +15,9 @@ class "AuthenticationConfiguration" as src.models.config.AuthenticationConfigura
   module : str
   skip_tls_verification : bool
   check_authentication_model() -> Self
+}
+class "AuthorizationConfiguration" as src.models.config.AuthorizationConfiguration {
+  access_rules : Optional[list[AccessRule]]
 }
 class "CORSConfiguration" as src.models.config.CORSConfiguration {
   allow_credentials : bool
@@ -18,6 +28,7 @@ class "CORSConfiguration" as src.models.config.CORSConfiguration {
 }
 class "Configuration" as src.models.config.Configuration {
   authentication
+  authorization : Optional[AuthorizationConfiguration]
   customization : Optional[Customization]
   database
   inference
@@ -27,6 +38,9 @@ class "Configuration" as src.models.config.Configuration {
   service
   user_data_collection
   dump(filename: str) -> None
+}
+class "ConfigurationBase" as src.models.config.ConfigurationBase {
+  model_config
 }
 class "Customization" as src.models.config.Customization {
   disable_query_system_prompt : bool
@@ -46,13 +60,26 @@ class "InferenceConfiguration" as src.models.config.InferenceConfiguration {
   default_provider : Optional[str]
   check_default_model_and_provider() -> Self
 }
+class "JsonPathOperator" as src.models.config.JsonPathOperator {
+  name
+}
 class "JwkConfiguration" as src.models.config.JwkConfiguration {
   jwt_configuration
   url : AnyHttpUrl
 }
 class "JwtConfiguration" as src.models.config.JwtConfiguration {
+  role_rules : Optional[list[JwtRoleRule]]
   user_id_claim : str
   username_claim : str
+}
+class "JwtRoleRule" as src.models.config.JwtRoleRule {
+  jsonpath : str
+  negate : bool
+  operator
+  roles : list[str]
+  value : Any
+  check_jsonpath() -> Self
+  check_roles() -> Self
 }
 class "LlamaStackConfiguration" as src.models.config.LlamaStackConfiguration {
   api_key : Optional[str]
@@ -105,10 +132,29 @@ class "UserDataCollection" as src.models.config.UserDataCollection {
   transcripts_storage : Optional[str]
   check_storage_location_is_set_when_needed() -> Self
 }
+src.models.config.AccessRule --|> src.models.config.ConfigurationBase
+src.models.config.AuthenticationConfiguration --|> src.models.config.ConfigurationBase
+src.models.config.AuthorizationConfiguration --|> src.models.config.ConfigurationBase
+src.models.config.CORSConfiguration --|> src.models.config.ConfigurationBase
+src.models.config.Configuration --|> src.models.config.ConfigurationBase
+src.models.config.Customization --|> src.models.config.ConfigurationBase
+src.models.config.DatabaseConfiguration --|> src.models.config.ConfigurationBase
+src.models.config.InferenceConfiguration --|> src.models.config.ConfigurationBase
+src.models.config.JwkConfiguration --|> src.models.config.ConfigurationBase
+src.models.config.JwtConfiguration --|> src.models.config.ConfigurationBase
+src.models.config.JwtRoleRule --|> src.models.config.ConfigurationBase
+src.models.config.LlamaStackConfiguration --|> src.models.config.ConfigurationBase
+src.models.config.ModelContextProtocolServer --|> src.models.config.ConfigurationBase
+src.models.config.PostgreSQLDatabaseConfiguration --|> src.models.config.ConfigurationBase
+src.models.config.SQLiteDatabaseConfiguration --|> src.models.config.ConfigurationBase
+src.models.config.ServiceConfiguration --|> src.models.config.ConfigurationBase
+src.models.config.TLSConfiguration --|> src.models.config.ConfigurationBase
+src.models.config.UserDataCollection --|> src.models.config.ConfigurationBase
 src.models.config.AuthenticationConfiguration --* src.models.config.Configuration : authentication
 src.models.config.CORSConfiguration --* src.models.config.ServiceConfiguration : cors
 src.models.config.DatabaseConfiguration --* src.models.config.Configuration : database
 src.models.config.InferenceConfiguration --* src.models.config.Configuration : inference
+src.models.config.JsonPathOperator --* src.models.config.JwtRoleRule : operator
 src.models.config.JwtConfiguration --* src.models.config.JwkConfiguration : jwt_configuration
 src.models.config.LlamaStackConfiguration --* src.models.config.Configuration : llama_stack
 src.models.config.SQLiteDatabaseConfiguration --* src.models.config.DatabaseConfiguration : sqlite
