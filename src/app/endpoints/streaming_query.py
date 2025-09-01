@@ -154,18 +154,24 @@ def stream_build_event(chunk: Any, chunk_id: int, metadata_map: dict) -> Iterato
     event_type = chunk.event.payload.event_type
     step_type = getattr(chunk.event.payload, "step_type", None)
 
-    if event_type in {"turn_start", "turn_awaiting_input"}:
-        yield from _handle_turn_start_event(chunk_id)
-    elif event_type == "turn_complete":
-        yield from _handle_turn_complete_event(chunk, chunk_id)
-    elif step_type == "shield_call":
-        yield from _handle_shield_event(chunk, chunk_id)
-    elif step_type == "inference":
-        yield from _handle_inference_event(chunk, chunk_id)
-    elif step_type == "tool_execution":
-        yield from _handle_tool_execution_event(chunk, chunk_id, metadata_map)
-    else:
-        yield from _handle_heartbeat_event(chunk_id)
+    match (event_type, step_type):
+        case (("turn_start" | "turn_awaiting_input"), _):
+            yield from _handle_turn_start_event(chunk_id)
+        case ("turn_complete", _):
+            yield from _handle_turn_complete_event(chunk, chunk_id)
+        case (_, "shield_call"):
+            yield from _handle_shield_event(chunk, chunk_id)
+        case (_, "inference"):
+            yield from _handle_inference_event(chunk, chunk_id)
+        case (_, "tool_execution"):
+            yield from _handle_tool_execution_event(chunk, chunk_id, metadata_map)
+        case _:
+            logger.debug(
+                "Unhandled event combo: event_type=%s, step_type=%s",
+                event_type,
+                step_type,
+            )
+            yield from _handle_heartbeat_event(chunk_id)
 
 
 # -----------------------------------
