@@ -4,6 +4,7 @@ import logging
 from functools import wraps, lru_cache
 from typing import Any, Callable, Tuple
 from fastapi import HTTPException, status
+from starlette.requests import Request
 
 from authorization.resolvers import (
     AccessResolver,
@@ -64,7 +65,9 @@ def get_authorization_resolvers() -> Tuple[RolesResolver, AccessResolver]:
             )
 
 
-async def _perform_authorization_check(action: Action, kwargs: dict[str, Any]) -> None:
+async def _perform_authorization_check(
+    action: Action, args: tuple[Any, ...], kwargs: dict[str, Any]
+) -> None:
     """Perform authorization check - common logic for all decorators."""
     role_resolver, access_resolver = get_authorization_resolvers()
 
@@ -93,12 +96,16 @@ async def _perform_authorization_check(action: Action, kwargs: dict[str, Any]) -
 
     authorized_actions = access_resolver.get_actions(user_roles)
 
-    try:
-        request = kwargs["request"]
-        request.state.authorized_actions = authorized_actions
-    except KeyError:
-        # This endpoint doesn't seem care about the authorized actions, so no need to set it
-        pass
+    req: Request | None = None
+    if "request" in kwargs and isinstance(kwargs["request"], Request):
+        req = kwargs["request"]
+    else:
+        for arg in args:
+            if isinstance(arg, Request):
+                req = arg
+                break
+    if req is not None:
+        req.state.authorized_actions = authorized_actions
 
 
 def authorize(action: Action) -> Callable:
@@ -107,7 +114,7 @@ def authorize(action: Action) -> Callable:
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
-            await _perform_authorization_check(action, kwargs)
+            await _perform_authorization_check(action, args, kwargs)
             return await func(*args, **kwargs)
 
         return wrapper

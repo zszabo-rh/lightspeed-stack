@@ -9,6 +9,7 @@ from llama_stack_client.lib.agents.agent import AsyncAgent
 import constants
 from models.requests import QueryRequest
 from models.database.conversations import UserConversation
+from models.config import Action
 from app.database import get_session
 from configuration import AppConfig
 from utils.suid import get_suid
@@ -82,6 +83,29 @@ def get_system_prompt(query_request: QueryRequest, config: AppConfig) -> str:
 
     # default system prompt has the lowest precedence
     return constants.DEFAULT_SYSTEM_PROMPT
+
+
+def validate_model_provider_override(
+    query_request: QueryRequest, authorized_actions: set[Action] | frozenset[Action]
+) -> None:
+    """Validate whether model/provider overrides are allowed by RBAC.
+
+    Raises HTTP 403 if the request includes model or provider and the caller
+    lacks Action.MODEL_OVERRIDE permission.
+    """
+    if (query_request.model is not None or query_request.provider is not None) and (
+        Action.MODEL_OVERRIDE not in authorized_actions
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "response": (
+                    "This instance does not permit overriding model/provider in the query request "
+                    "(missing permission: MODEL_OVERRIDE). Please remove the model and provider "
+                    "fields from your request."
+                )
+            },
+        )
 
 
 # # pylint: disable=R0913,R0917

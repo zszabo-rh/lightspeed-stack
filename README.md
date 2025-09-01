@@ -369,6 +369,10 @@ customization:
   disable_query_system_prompt: true
 ```
 
+### Control model/provider overrides via authorization
+
+By default, clients may specify `model` and `provider` in `/v1/query` and `/v1/streaming_query`. Override is permitted only to callers granted the `MODEL_OVERRIDE` action via the authorization rules. Requests that include `model` or `provider` without this permission are rejected with HTTP 403.
+
 ## Safety Shields
 
 A single Llama Stack configuration file can include multiple safety shields, which are utilized in agent

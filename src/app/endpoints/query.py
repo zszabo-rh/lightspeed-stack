@@ -35,6 +35,7 @@ from utils.endpoints import (
     get_agent,
     get_system_prompt,
     validate_conversation_ownership,
+    validate_model_provider_override,
 )
 from utils.mcp_headers import mcp_headers_dependency, handle_mcp_headers_with_toolgroups
 from utils.transcripts import store_transcript
@@ -173,6 +174,9 @@ async def query_endpoint_handler(
         QueryResponse: Contains the conversation ID and the LLM-generated response.
     """
     check_configuration_loaded(configuration)
+
+    # Enforce RBAC: optionally disallow overriding model/provider in requests
+    validate_model_provider_override(query_request, request.state.authorized_actions)
 
     # log Llama Stack configuration, but without sensitive information
     llama_stack_config = configuration.llama_stack_configuration.model_copy()

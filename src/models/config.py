@@ -311,6 +311,8 @@ class Action(str, Enum):
     GET_CONFIG = "get_config"
 
     INFO = "info"
+    # Allow overriding model/provider via request
+    MODEL_OVERRIDE = "model_override"
 
 
 class AccessRule(ConfigurationBase):
