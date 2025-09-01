@@ -150,7 +150,6 @@ def stream_build_event(chunk: Any, chunk_id: int, metadata_map: dict) -> Iterato
     """
     if hasattr(chunk, "error"):
         yield from _handle_error_event(chunk, chunk_id)
-        return
 
     event_type = chunk.event.payload.event_type
     step_type = getattr(chunk.event.payload, "step_type", None)
