@@ -58,6 +58,13 @@ docs/config.png:	docs/config.puml ## Generate an image with configuration graph
 	mv classes.png config.png && \
 	popd
 
+docs/config.svg:	docs/config.puml ## Generate an SVG with configuration graph
+	pushd docs && \
+	java -jar ${PATH_TO_PLANTUML}/plantuml.jar --theme rose config.puml -tsvg && \
+	xmllint --format classes.svg > config.svg && \
+	rm classes.svg && \
+	popd
+
 shellcheck: ## Run shellcheck
 	wget -qO- "https://github.com/koalaman/shellcheck/releases/download/stable/shellcheck-stable.linux.x86_64.tar.xz" | tar -xJv \
 	shellcheck --version
