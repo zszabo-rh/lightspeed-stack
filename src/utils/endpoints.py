@@ -18,6 +18,23 @@ from utils.types import GraniteToolParser
 logger = logging.getLogger("utils.endpoints")
 
 
+def delete_conversation(conversation_id: str) -> None:
+    """Delete a conversation according to its ID."""
+    with get_session() as session:
+        db_conversation = (
+            session.query(UserConversation).filter_by(id=conversation_id).first()
+        )
+        if db_conversation:
+            session.delete(db_conversation)
+            session.commit()
+            logger.info("Deleted conversation %s from local database", conversation_id)
+        else:
+            logger.info(
+                "Conversation %s not found in local database, it may have already been deleted",
+                conversation_id,
+            )
+
+
 def validate_conversation_ownership(
     user_id: str, conversation_id: str, others_allowed: bool = False
 ) -> UserConversation | None:

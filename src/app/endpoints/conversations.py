@@ -20,7 +20,11 @@ from models.responses import (
     ConversationsListResponse,
     ConversationDetails,
 )
-from utils.endpoints import check_configuration_loaded, validate_conversation_ownership
+from utils.endpoints import (
+    check_configuration_loaded,
+    delete_conversation,
+    validate_conversation_ownership,
+)
 from utils.suid import check_suid
 
 logger = logging.getLogger("app.endpoints.handlers")
@@ -247,13 +251,27 @@ async def get_conversation_endpoint_handler(
 
     user_id, _, _ = auth
 
-    validate_conversation_ownership(
+    user_conversation = validate_conversation_ownership(
         user_id=user_id,
         conversation_id=conversation_id,
         others_allowed=(
             Action.READ_OTHERS_CONVERSATIONS in request.state.authorized_actions
         ),
     )
+
+    if user_conversation is None:
+        logger.warning(
+            "User %s attempted to read conversation %s they don't own",
+            user_id,
+            conversation_id,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "response": "Access denied",
+                "cause": "You do not have permission to read this conversation",
+            },
+        )
 
     agent_id = conversation_id
     logger.info("Retrieving conversation %s", conversation_id)
@@ -355,13 +373,27 @@ async def delete_conversation_endpoint_handler(
 
     user_id, _, _ = auth
 
-    validate_conversation_ownership(
+    user_conversation = validate_conversation_ownership(
         user_id=user_id,
         conversation_id=conversation_id,
         others_allowed=(
             Action.DELETE_OTHERS_CONVERSATIONS in request.state.authorized_actions
         ),
     )
+
+    if user_conversation is None:
+        logger.warning(
+            "User %s attempted to delete conversation %s they don't own",
+            user_id,
+            conversation_id,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "response": "Access denied",
+                "cause": "You do not have permission to delete this conversation",
+            },
+        )
 
     agent_id = conversation_id
     logger.info("Deleting conversation %s", conversation_id)
@@ -386,6 +418,8 @@ async def delete_conversation_endpoint_handler(
         await client.agents.session.delete(agent_id=agent_id, session_id=session_id)
 
         logger.info("Successfully deleted conversation %s", conversation_id)
+
+        delete_conversation(conversation_id=conversation_id)
 
         return ConversationDeleteResponse(
             conversation_id=conversation_id,
