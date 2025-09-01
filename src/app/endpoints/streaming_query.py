@@ -134,12 +134,14 @@ def stream_end_event(metadata_map: dict) -> str:
 def stream_build_event(chunk: Any, chunk_id: int, metadata_map: dict) -> Iterator[str]:
     """Build a streaming event from a chunk response.
 
-    This function processes chunks from the Llama Stack streaming response and formats
-    them into Server-Sent Events (SSE) format for the client. It handles two main
-    event types:
+    This function processes chunks from the Llama Stack streaming response and
+    formats them into Server-Sent Events (SSE) format for the client. It
+    dispatches on (event_type, step_type):
 
-    1. step_progress: Contains text deltas from the model inference process
-    2. step_complete: Contains information about completed tool execution steps
+    1. turn_start, turn_awaiting_input -> start token
+    2. turn_complete -> final output message
+    3. step_* with step_type in {"shield_call", "inference", "tool_execution"} -> delegated handlers
+    4. anything else -> heartbeat
 
     Args:
         chunk: The streaming chunk from Llama Stack containing event data
