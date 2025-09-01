@@ -9,8 +9,10 @@ Currently four events have been registered:
 
 import subprocess
 import time
-from behave.model import Scenario
+from behave.model import Scenario, Feature
 from behave.runner import Context
+
+from tests.e2e.utils.utils import switch_config_and_restart
 
 try:
     import os  # noqa: F401
@@ -82,5 +84,22 @@ def after_scenario(context: Context, scenario: Scenario) -> None:
             print(f"Warning: Could not restore Llama Stack connection: {e}")
 
 
-def before_feature(context: Context, feature: Scenario) -> None:
+def before_feature(context: Context, feature: Feature) -> None:
     """Run before each feature file is exercised."""
+    if "Authorized" in feature.tags:
+        context.backup_file = switch_config_and_restart(
+            "lightspeed-stack.yaml",
+            "tests/e2e/configuration/lightspeed-stack-auth-noop-token.yaml",
+            "lightspeed-stack",
+        )
+
+
+def after_feature(context: Context, feature: Feature) -> None:
+    """Run after each feature file is exercised."""
+    if "Authorized" in feature.tags:
+        switch_config_and_restart(
+            "lightspeed-stack.yaml",
+            context.backup_file,
+            "lightspeed-stack",
+            cleanup=True,
+        )

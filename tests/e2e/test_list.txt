@@ -1,5 +1,6 @@
 features/smoketests.feature
-features/authorized.feature
+features/authorized_noop.feature
+features/authorized_noop_token.feature
 features/conversations.feature
 features/feedback.feature
 features/health.feature
