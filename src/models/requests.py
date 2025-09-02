@@ -46,6 +46,7 @@ class Attachment(BaseModel):
 
     # provides examples for /docs endpoint
     model_config = {
+        "extra": "forbid",
         "json_schema_extra": {
             "examples": [
                 {
@@ -64,7 +65,7 @@ class Attachment(BaseModel):
                     "content": "foo: bar",
                 },
             ]
-        }
+        },
     }
 
 
@@ -284,7 +285,7 @@ class FeedbackRequest(BaseModel):
         examples=[-1, 1],
     )
 
-    # Optional user feedback limited to 1–4096 characters to prevent abuse.
+    # Optional user feedback limited to 1-4096 characters to prevent abuse.
     user_feedback: Optional[str] = Field(
         default=None,
         max_length=4096,
@@ -304,6 +305,7 @@ class FeedbackRequest(BaseModel):
 
     # provides examples for /docs endpoint
     model_config = {
+        "extra": "forbid",
         "json_schema_extra": {
             "examples": [
                 {
@@ -331,7 +333,7 @@ class FeedbackRequest(BaseModel):
                     "categories": ["incomplete", "not_relevant"],
                 },
             ]
-        }
+        },
     }
 
     @field_validator("conversation_id")
@@ -401,6 +403,9 @@ class FeedbackStatusUpdateRequest(BaseModel):
         description="Desired state of feedback enablement, must be False or True",
         examples=[True, False],
     )
+
+    # Reject unknown fields
+    model_config = {"extra": "forbid"}
 
     def get_value(self) -> bool:
         """Return the value of the status attribute."""
