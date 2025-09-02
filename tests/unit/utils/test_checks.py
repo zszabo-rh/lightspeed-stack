@@ -109,3 +109,15 @@ def test_is_valid_profile():
         result = checks.is_valid_profile(fetched_module)
 
     assert result is True
+
+
+def test_invalid_profile():
+    """Test if an imported profile is valid (expect invalid)"""
+    module_path = "tests/profiles/test_three/profile.py"
+    module_name = "profile"
+    fetched_module = checks.import_python_module(module_name, module_path)
+    result = False
+    if fetched_module:
+        result = checks.is_valid_profile(fetched_module)
+
+    assert result is False

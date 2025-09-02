@@ -31,12 +31,25 @@ def file_check(path: FilePath, desc: str) -> None:
 
 def import_python_module(profile_name: str, profile_path: str) -> ModuleType | None:
     """Import a Python module from a file path."""
+    if not profile_path.endswith(".py"):
+        return None
     spec = importlib.util.spec_from_file_location(profile_name, profile_path)
-    if spec and spec.loader:
-        module = importlib.util.module_from_spec(spec)
+    if not spec or not spec.loader:
+        return None
+    module = importlib.util.module_from_spec(spec)
+    try:
         spec.loader.exec_module(module)
-        return module
-    return None
+    except (
+        SyntaxError,
+        ImportError,
+        ModuleNotFoundError,
+        NameError,
+        AttributeError,
+        TypeError,
+        ValueError,
+    ):
+        return None
+    return module
 
 
 def is_valid_profile(profile_module: ModuleType) -> bool:
@@ -48,4 +61,7 @@ def is_valid_profile(profile_module: ModuleType) -> bool:
     if not isinstance(profile_config, dict):
         return False
 
-    return "system_prompts" in profile_config
+    if not profile_config.get("system_prompts"):
+        return False
+
+    return isinstance(profile_config.get("system_prompts"), dict)
