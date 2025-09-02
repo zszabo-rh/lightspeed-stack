@@ -72,10 +72,8 @@ class JwtRolesResolver(RolesResolver):  # pylint: disable=too-few-public-methods
         return (
             set(rule.roles)
             if JwtRolesResolver._evaluate_operator(
-                rule.negate,
+                rule,
                 [match.value for match in parse(rule.jsonpath).find(jwt_claims)],
-                rule.operator,
-                rule.value,
             )
             else set()
         )
@@ -99,19 +97,26 @@ class JwtRolesResolver(RolesResolver):  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _evaluate_operator(
-        negate: bool, match: Any, operator: JsonPathOperator, value: Any
+        rule: JwtRoleRule, match: Any
     ) -> bool:  # pylint: disable=too-many-branches
-        """Evaluate an operator against a match and value."""
+        """Evaluate an operator against a match and rule."""
         result = False
-        match operator:
+        match rule.operator:
             case JsonPathOperator.EQUALS:
-                result = match == value
+                result = match == rule.value
             case JsonPathOperator.CONTAINS:
-                result = value in match
+                result = rule.value in match
             case JsonPathOperator.IN:
-                result = match in value
+                result = match in rule.value
+            case JsonPathOperator.MATCH:
+                # Use the pre-compiled regex pattern for better performance
+                if rule.compiled_regex is not None:
+                    result = any(
+                        isinstance(item, str) and bool(rule.compiled_regex.search(item))
+                        for item in match
+                    )
 
-        if negate:
+        if rule.negate:
             result = not result
 
         return result
