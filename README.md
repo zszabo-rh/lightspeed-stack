@@ -560,17 +560,23 @@ Available targets are:
 run                               Run the service locally
 test-unit                         Run the unit tests
 test-integration                  Run integration tests tests
-test-e2e                          Run BDD tests for the service
+test-e2e                          Run end to end tests for the service
 check-types                       Checks type hints in sources
 security-check                    Check the project for security issues
 format                            Format the code into unified format
 schema                            Generate OpenAPI schema file
 openapi-doc                       Generate OpenAPI documentation
 requirements.txt                  Generate requirements.txt file containing hashes for all non-devel packages
+doc                               Generate documentation for developers
 docs/config.puml                  Generate PlantUML class diagram for configuration
 docs/config.png                   Generate an image with configuration graph
 docs/config.svg                   Generate an SVG with configuration graph
 shellcheck                        Run shellcheck
+black                             Check source code using Black code formatter
+pylint                            Check source code using Pylint static code analyser
+pyright                           Check source code using Pyright static type checker
+docstyle                          Check the docstring style using Docstyle checker
+ruff                              Check source code using Ruff linter
 verify                            Run all linters
 distribution-archives             Generate distribution archives to be uploaded into Python registry
 upload-distribution-archives      Upload distribution archives into Python registry

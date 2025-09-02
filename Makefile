@@ -20,7 +20,7 @@ test-integration: ## Run integration tests tests
 	@echo "Reports will be written to ${ARTIFACT_DIR}"
 	COVERAGE_FILE="${ARTIFACT_DIR}/.coverage.integration" uv run python -m pytest tests/integration --cov=src --cov-report term-missing --cov-report "json:${ARTIFACT_DIR}/coverage_integration.json" --junit-xml="${ARTIFACT_DIR}/junit_integration.xml" --cov-fail-under=10
 
-test-e2e: ## Run BDD tests for the service
+test-e2e: ## Run end to end tests for the service
 	PYTHONDONTWRITEBYTECODE=1 uv run behave --tags=-skip -D dump_errors=true @tests/e2e/test_list.txt \
 
 check-types: ## Checks type hints in sources
@@ -45,7 +45,7 @@ openapi-doc:	docs/openapi.json scripts/fix_openapi_doc.py	## Generate OpenAPI do
 requirements.txt:	pyproject.toml pdm.lock ## Generate requirements.txt file containing hashes for all non-devel packages
 	pdm export --prod --format requirements --output requirements.txt --no-extras --without evaluation
 
-doc:
+doc:	## Generate documentation for developers
 	scripts/gen_doc.py
 
 docs/config.puml:	src/models/config.py ## Generate PlantUML class diagram for configuration
@@ -70,22 +70,22 @@ shellcheck: ## Run shellcheck
 	shellcheck --version
 	shellcheck -- */*.sh
 
-black:
+black:	## Check source code using Black code formatter
 	uv run black --check .
 
-pylint:
+pylint:	## Check source code using Pylint static code analyser
 	uv run pylint src tests
 
-pyright:
+pyright:	## Check source code using Pyright static type checker
 	uv run pyright src
 
-docstyle:
+docstyle:	## Check the docstring style using Docstyle checker
 	uv run pydocstyle -v src
 
-ruff:
+ruff:	## Check source code using Ruff linter
 	uv run ruff check . --per-file-ignores=tests/*:S101 --per-file-ignores=scripts/*:S101
 
-verify: ## Run all linters
+verify:	## Run all linters
 	$(MAKE) black
 	$(MAKE) pylint
 	$(MAKE) pyright
@@ -93,11 +93,11 @@ verify: ## Run all linters
 	$(MAKE) docstyle
 	$(MAKE) check-types
 
-distribution-archives: ## Generate distribution archives to be uploaded into Python registry
+distribution-archives:	## Generate distribution archives to be uploaded into Python registry
 	rm -rf dist
 	uv run python -m build
 
-upload-distribution-archives: ## Upload distribution archives into Python registry
+upload-distribution-archives:	## Upload distribution archives into Python registry
 	uv run python -m twine upload --repository ${PYTHON_REGISTRY} dist/*
 
 help: ## Show this help screen
