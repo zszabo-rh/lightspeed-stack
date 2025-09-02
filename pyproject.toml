@@ -22,21 +22,33 @@ requires-python = ">=3.12,<3.14"
 readme = "README.md"
 license = {file = "LICENSE"}
 dependencies = [
+    # Used for HTTP service base
     "fastapi>=0.115.12",
     "uvicorn>=0.34.3",
+    # Used by auth/k8s integration
     "kubernetes>=30.1.0",
+    # Used to call Llama Stack APIs
     "llama-stack==0.2.18",
     "llama-stack-client==0.2.18",
+    # Used by Logger
     "rich>=14.0.0",
+    # Used by JWK token auth handler
     "cachetools>=6.1.0",
+    # Used for metric exporter
     "prometheus-client>=0.22.1",
+    # Used for Bearer token extraction
     "starlette>=0.47.1",
+    # Used by JWK token auth handler
     "aiohttp>=3.12.14",
     "authlib>=1.6.0",
+    # OpenAPI exporter
     "email-validator>=2.2.0",
     "openai==1.99.9",
+    # Used by database interface
     "sqlalchemy>=2.0.42",
+    # Used by Llama Stack version checker
     "semver<4.0.0",
+    # Used by authorization resolvers
     "jsonpath-ng>=1.6.1",
 ]
 
