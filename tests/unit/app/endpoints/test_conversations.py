@@ -563,6 +563,9 @@ class TestDeleteConversationEndpoint:
         mocker.patch("app.endpoints.conversations.check_suid", return_value=True)
         mocker.patch("app.endpoints.conversations.validate_conversation_ownership")
 
+        # Mock the delete_conversation function
+        mocker.patch("app.endpoints.conversations.delete_conversation")
+
         # Mock AsyncLlamaStackClientHolder
         mock_client = mocker.AsyncMock()
         # Ensure the endpoint sees an existing session so it proceeds to delete
