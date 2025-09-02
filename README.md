@@ -567,6 +567,9 @@ format                            Format the code into unified format
 schema                            Generate OpenAPI schema file
 openapi-doc                       Generate OpenAPI documentation
 requirements.txt                  Generate requirements.txt file containing hashes for all non-devel packages
+docs/config.puml                  Generate PlantUML class diagram for configuration
+docs/config.png                   Generate an image with configuration graph
+docs/config.svg                   Generate an SVG with configuration graph
 shellcheck                        Run shellcheck
 verify                            Run all linters
 distribution-archives             Generate distribution archives to be uploaded into Python registry
