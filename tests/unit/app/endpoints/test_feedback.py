@@ -197,7 +197,7 @@ def test_store_feedback_on_io_error(mocker, feedback_request_data):
         store_feedback(user_id, feedback_request_data)
 
 
-async def test_update_feedback_status_different():
+async def test_update_feedback_status_different(mocker):
     """Test that update_feedback_status returns the correct status with an update."""
     configuration.user_data_collection_configuration.feedback_enabled = True
 
@@ -210,10 +210,11 @@ async def test_update_feedback_status_different():
         "previous_status": True,
         "updated_status": False,
         "updated_by": "test_user_id",
+        "timestamp": mocker.ANY,
     }
 
 
-async def test_update_feedback_status_no_change():
+async def test_update_feedback_status_no_change(mocker):
     """Test that update_feedback_status returns the correct status with no update."""
     configuration.user_data_collection_configuration.feedback_enabled = True
 
@@ -226,4 +227,5 @@ async def test_update_feedback_status_no_change():
         "previous_status": True,
         "updated_status": True,
         "updated_by": "test_user_id",
+        "timestamp": mocker.ANY,
     }

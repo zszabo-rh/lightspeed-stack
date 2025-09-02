@@ -208,11 +208,13 @@ async def update_feedback_status(
         updated_status = (
             configuration.user_data_collection_configuration.feedback_enabled
         )
+        current_time = str(datetime.now(UTC))
 
     return FeedbackStatusUpdateResponse(
         status={
             "previous_status": previous_status,
             "updated_status": updated_status,
             "updated_by": user_id,
+            "timestamp": current_time,
         }
     )
