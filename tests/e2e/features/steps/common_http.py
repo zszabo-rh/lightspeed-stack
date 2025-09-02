@@ -241,7 +241,7 @@ def access_rest_api_endpoint_get(context: Context, endpoint: str) -> None:
     context.response = requests.get(url, timeout=DEFAULT_TIMEOUT)
 
 
-@when("I access endpoint {endpoint:w} using HTTP POST method")
+@when("I access endpoint {endpoint} using HTTP POST method")
 def access_rest_api_endpoint_post(context: Context, endpoint: str) -> None:
     """Send POST HTTP request with JSON payload to tested service.
 
@@ -249,8 +249,9 @@ def access_rest_api_endpoint_post(context: Context, endpoint: str) -> None:
     which must not be None. The response is stored in
     `context.response` attribute.
     """
+    endpoint = normalize_endpoint(endpoint)
     base = f"http://{context.hostname}:{context.port}"
-    path = f"{context.api_prefix}/{endpoint}".replace("//", "/")
+    path = f"{endpoint}".replace("//", "/")
     url = base + path
 
     assert context.text is not None, "Payload needs to be specified"
