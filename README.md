@@ -345,16 +345,16 @@ For data export integration with Red Hat's Dataverse, see the [Data Export Integ
 
 ## System prompt
 
-The service uses the, so called, system prompt to put the question into context before the question is sent to the selceted LLM. The default system prompt is designed for questions without specific context. It is possible to use a different system prompt through various different avenues available in the `customization` section:
+The service uses the, so called, system prompt to put the question into context before the question is sent to the selected LLM. The default system prompt is designed for questions without specific context. It is possible to use a different system prompt through various different avenues available in the `customization` section:
 
-#### System Prompt Path
+### System Prompt Path
 
 ```yaml
 customization:
   system_prompt_path: "system_prompts/system_prompt_for_product_XYZZY"
 ```
 
-#### System Prompt Literal
+### System Prompt Literal
 
 ```yaml
 customization:
@@ -364,9 +364,9 @@ customization:
 ```
 
 
-#### Custom Profile
+### Custom Profile
 
-You can pass a custom prompt profile via it's `path` to the customization:
+You can pass a custom prompt profile via its `path` to the customization:
 
 ```yaml
 customization:

@@ -27,7 +27,7 @@ Use the previous chat history to interact and help the user.
 
 QUESTION_VALIDATOR_PROMPT_TEMPLATE = f"""
 Instructions:
-- You provide validation for tsting
+- You provide validation for testing
 Example Question:
 How can I integrate GitOps into my pipeline?
 Example Response:
