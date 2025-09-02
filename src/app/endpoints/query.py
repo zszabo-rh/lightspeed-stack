@@ -81,9 +81,7 @@ def persist_user_conversation_details(
     """Associate conversation to user in the database."""
     with get_session() as session:
         existing_conversation = (
-            session.query(UserConversation)
-            .filter_by(id=conversation_id, user_id=user_id)
-            .first()
+            session.query(UserConversation).filter_by(id=conversation_id).first()
         )
 
         if not existing_conversation:
