@@ -1,8 +1,10 @@
 """Model with service configuration."""
 
 from pathlib import Path
-from typing import Optional, Any
+from typing import Optional, Any, Pattern
 from enum import Enum
+from functools import cached_property
+import re
 
 import jsonpath_ng
 from jsonpath_ng.exceptions import JSONPathError
@@ -233,6 +235,7 @@ class JsonPathOperator(str, Enum):
     EQUALS = "equals"
     CONTAINS = "contains"
     IN = "in"
+    MATCH = "match"
 
 
 class JwtRoleRule(ConfigurationBase):
@@ -271,6 +274,29 @@ class JwtRoleRule(ConfigurationBase):
             )
 
         return self
+
+    @model_validator(mode="after")
+    def check_regex_pattern(self) -> Self:
+        """Verify that regex patterns are valid for MATCH operator."""
+        if self.operator == JsonPathOperator.MATCH:
+            if not isinstance(self.value, str):
+                raise ValueError(
+                    f"MATCH operator requires a string pattern, {type(self.value).__name__}"
+                )
+            try:
+                re.compile(self.value)
+            except re.error as e:
+                raise ValueError(
+                    f"Invalid regex pattern for MATCH operator: {self.value}: {e}"
+                ) from e
+        return self
+
+    @cached_property
+    def compiled_regex(self) -> Optional[Pattern[str]]:
+        """Return compiled regex pattern for MATCH operator, None otherwise."""
+        if self.operator == JsonPathOperator.MATCH and isinstance(self.value, str):
+            return re.compile(self.value)
+        return None
 
 
 class Action(str, Enum):

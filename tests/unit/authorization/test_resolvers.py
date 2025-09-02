@@ -2,6 +2,9 @@
 
 import json
 import base64
+import re
+
+import pytest
 
 from authorization.resolvers import JwtRolesResolver, GenericAccessResolver
 from models.config import JwtRoleRule, AccessRule, JsonPathOperator, Action
@@ -74,6 +77,120 @@ class TestJwtRolesResolver:
         auth = ("user", "token", claims_to_token(jwt_claims))
         roles = await jwt_resolver.resolve_roles(auth)
         assert len(roles) == 0
+
+    async def test_resolve_roles_match_operator_email_domain(self):
+        """Test role extraction using MATCH operator with email domain regex."""
+        role_rules = [
+            JwtRoleRule(
+                jsonpath="$.email",
+                operator=JsonPathOperator.MATCH,
+                value=r"@redhat\.com$",
+                roles=["redhat_employee"],
+            )
+        ]
+        jwt_resolver = JwtRolesResolver(role_rules)
+
+        jwt_claims = {
+            "exp": 1754489339,
+            "iat": 1754488439,
+            "sub": "f:123:employee@redhat.com",
+            "email": "employee@redhat.com",
+        }
+
+        auth = ("user", "token", claims_to_token(jwt_claims))
+        roles = await jwt_resolver.resolve_roles(auth)
+        assert "redhat_employee" in roles
+
+    async def test_resolve_roles_match_operator_no_match(self):
+        """Test role extraction using MATCH operator with no match."""
+        role_rules = [
+            JwtRoleRule(
+                jsonpath="$.email",
+                operator=JsonPathOperator.MATCH,
+                value=r"@redhat\.com$",
+                roles=["redhat_employee"],
+            )
+        ]
+        jwt_resolver = JwtRolesResolver(role_rules)
+
+        jwt_claims = {
+            "exp": 1754489339,
+            "iat": 1754488439,
+            "sub": "f:123:user@example.com",
+            "email": "user@example.com",
+        }
+
+        auth = ("user", "token", claims_to_token(jwt_claims))
+        roles = await jwt_resolver.resolve_roles(auth)
+        assert len(roles) == 0
+
+    async def test_resolve_roles_match_operator_invalid_regex(self):
+        """Test that invalid regex patterns are rejected at rule creation time."""
+        with pytest.raises(
+            ValueError, match="Invalid regex pattern for MATCH operator"
+        ):
+            JwtRoleRule(
+                jsonpath="$.email",
+                operator=JsonPathOperator.MATCH,
+                value="[invalid regex(",  # Invalid regex pattern
+                roles=["test_role"],
+            )
+
+    async def test_resolve_roles_match_operator_non_string_pattern(self):
+        """Test that non-string regex patterns are rejected at rule creation time."""
+        with pytest.raises(
+            ValueError, match="MATCH operator requires a string pattern"
+        ):
+            JwtRoleRule(
+                jsonpath="$.user_id",
+                operator=JsonPathOperator.MATCH,
+                value=123,  # Non-string pattern
+                roles=["test_role"],
+            )
+
+    async def test_resolve_roles_match_operator_non_string_value(self):
+        """Test role extraction using MATCH operator with non-string match value."""
+        role_rules = [
+            JwtRoleRule(
+                jsonpath="$.user_id",
+                operator=JsonPathOperator.MATCH,
+                value=r"\d+",  # Number pattern
+                roles=["numeric_user"],
+            )
+        ]
+        jwt_resolver = JwtRolesResolver(role_rules)
+
+        jwt_claims = {
+            "exp": 1754489339,
+            "iat": 1754488439,
+            "user_id": 12345,  # Non-string value
+        }
+
+        auth = ("user", "token", claims_to_token(jwt_claims))
+        roles = await jwt_resolver.resolve_roles(auth)
+        assert len(roles) == 0  # Non-string values don't match regex
+
+    async def test_compiled_regex_property(self):
+        """Test that compiled regex pattern is properly created for MATCH operator."""
+        # Test MATCH operator creates compiled regex
+        match_rule = JwtRoleRule(
+            jsonpath="$.email",
+            operator=JsonPathOperator.MATCH,
+            value=r"@example\.com$",
+            roles=["example_user"],
+        )
+        assert match_rule.compiled_regex is not None
+        assert isinstance(match_rule.compiled_regex, re.Pattern)
+        assert match_rule.compiled_regex.pattern == r"@example\.com$"
+
+        # Test non-MATCH operator returns None
+        equals_rule = JwtRoleRule(
+            jsonpath="$.email",
+            operator=JsonPathOperator.EQUALS,
+            value="test@example.com",
+            roles=["example_user"],
+        )
+        assert equals_rule.compiled_regex is None
 
 
 class TestGenericAccessResolver:
