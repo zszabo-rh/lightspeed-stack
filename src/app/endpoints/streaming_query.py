@@ -26,6 +26,7 @@ from authorization.middleware import authorize
 from client import AsyncLlamaStackClientHolder
 from configuration import configuration
 import metrics
+from metrics.utils import update_llm_token_count_from_turn
 from models.config import Action
 from models.requests import QueryRequest
 from models.database.conversations import UserConversation
@@ -621,6 +622,13 @@ async def streaming_query_endpoint_handler(  # pylint: disable=too-many-locals
                     summary.llm_response = interleaved_content_as_str(
                         p.turn.output_message.content
                     )
+                    system_prompt = get_system_prompt(query_request, configuration)
+                    try:
+                        update_llm_token_count_from_turn(
+                            p.turn, model_id, provider_id, system_prompt
+                        )
+                    except Exception:  # pylint: disable=broad-except
+                        logger.exception("Failed to update token usage metrics")
                 elif p.event_type == "step_complete":
                     if p.step_details.step_type == "tool_execution":
                         summary.append_tool_calls_from_llama(p.step_details)

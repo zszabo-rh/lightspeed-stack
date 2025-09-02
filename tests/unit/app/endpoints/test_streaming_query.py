@@ -58,6 +58,14 @@ def mock_database_operations(mocker):
     mocker.patch("app.endpoints.streaming_query.persist_user_conversation_details")
 
 
+def mock_metrics(mocker):
+    """Helper function to mock metrics operations for streaming query endpoints."""
+    mocker.patch(
+        "app.endpoints.streaming_query.update_llm_token_count_from_turn",
+        return_value=None,
+    )
+
+
 SAMPLE_KNOWLEDGE_SEARCH_RESULTS = [
     """knowledge_search tool found 2 chunks:
 BEGIN of knowledge_search tool results.
@@ -346,12 +354,14 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
 @pytest.mark.asyncio
 async def test_streaming_query_endpoint_handler(mocker):
     """Test the streaming query endpoint handler with transcript storage disabled."""
+    mock_metrics(mocker)
     await _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
 
 
 @pytest.mark.asyncio
 async def test_streaming_query_endpoint_handler_store_transcript(mocker):
     """Test the streaming query endpoint handler with transcript storage enabled."""
+    mock_metrics(mocker)
     await _test_streaming_query_endpoint_handler(mocker, store_transcript=True)
 
 
