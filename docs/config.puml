@@ -73,12 +73,14 @@ class "JwtConfiguration" as src.models.config.JwtConfiguration {
   username_claim : str
 }
 class "JwtRoleRule" as src.models.config.JwtRoleRule {
+  compiled_regex
   jsonpath : str
   negate : bool
   operator
   roles : list[str]
   value : Any
   check_jsonpath() -> Self
+  check_regex_pattern() -> Self
   check_roles() -> Self
 }
 class "LlamaStackConfiguration" as src.models.config.LlamaStackConfiguration {
