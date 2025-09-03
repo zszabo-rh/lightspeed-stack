@@ -32,6 +32,41 @@ def validate_json(message: Any, schema: Any) -> None:
         assert False, "The provided schema is faulty:" + str(e)
 
 
+def wait_for_container_health(container_name: str, max_attempts: int = 3) -> None:
+    """Wait for container to be healthy."""
+    for attempt in range(max_attempts):
+        try:
+            result = subprocess.run(
+                [
+                    "docker",
+                    "inspect",
+                    "--format={{.State.Health.Status}}",
+                    container_name,
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+                timeout=10,
+            )
+            if result.stdout.strip() == "healthy":
+                break
+            else:
+                if attempt < max_attempts - 1:
+                    time.sleep(5)
+                else:
+                    print(
+                        f"{container_name} not healthy after {max_attempts * 5} seconds"
+                    )
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            pass
+
+        if attempt < max_attempts - 1:
+            print(f"⏱ Attempt {attempt + 1}/{max_attempts} - waiting...")
+            time.sleep(5)
+        else:
+            print(f"Could not check health status for {container_name}")
+
+
 def switch_config_and_restart(
     original_file: str,
     replacement_file: str,
@@ -76,8 +111,8 @@ def switch_config_and_restart(
         print(f"Failed to restart container {container_name}: {e.stderr}")
         raise
 
-    # Wait for container to be ready
-    time.sleep(5)
+    # Wait for container to be healthy
+    wait_for_container_health(container_name)
 
     # Clean up backup file
     if cleanup and os.path.exists(backup_file):
