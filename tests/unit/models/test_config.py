@@ -15,6 +15,8 @@ from constants import (
     POSTGRES_DEFAULT_GSS_ENCMODE,
 )
 
+from utils.checks import InvalidConfigurationError
+
 from models.config import (
     AuthenticationConfiguration,
     Configuration,
@@ -30,8 +32,6 @@ from models.config import (
     SQLiteDatabaseConfiguration,
     DatabaseConfiguration,
 )
-
-from utils.checks import InvalidConfigurationError
 
 
 def test_service_configuration_constructor() -> None:
@@ -506,8 +506,9 @@ def test_configuration_multiple_mcp_servers() -> None:
 def test_dump_configuration(tmp_path) -> None:
     """
     Test that the Configuration object can be serialized to a JSON file and
-    that the resulting file contains all expected sections and values. It also
-    checks if all keys and passwords were redacted.
+    that the resulting file contains all expected sections and values.
+
+    Please note that redaction process is not in place.
     """
     cfg = Configuration(
         name="test_name",
@@ -879,7 +880,7 @@ def test_authentication_configuration_module_unsupported() -> None:
 
 def test_database_configuration(subtests) -> None:
     """Test the database configuration handling."""
-    with subtests.test(msg="PostgresSQL"):
+    with subtests.test(msg="PostgreSQL"):
         d1 = PostgreSQLDatabaseConfiguration(
             db="db",
             user="user",
@@ -909,12 +910,16 @@ def test_no_databases_configuration() -> None:
     d = DatabaseConfiguration()
     assert d is not None
 
+    # default should be SQLite when nothing is provided
+    assert d.db_type == "sqlite"
+
     # simulate no DB configuration
     d.sqlite = None
     d.postgres = None
 
     with pytest.raises(ValueError, match="No database configuration found"):
-        d.db_type
+        # access propery to call it's getter
+        _ = d.db_type
 
 
 def test_two_databases_configuration() -> None:
