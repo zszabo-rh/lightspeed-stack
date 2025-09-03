@@ -15,6 +15,8 @@ from constants import (
     POSTGRES_DEFAULT_GSS_ENCMODE,
 )
 
+from utils.checks import InvalidConfigurationError
+
 from models.config import (
     AuthenticationConfiguration,
     Configuration,
@@ -27,9 +29,9 @@ from models.config import (
     ModelContextProtocolServer,
     InferenceConfiguration,
     PostgreSQLDatabaseConfiguration,
+    SQLiteDatabaseConfiguration,
+    DatabaseConfiguration,
 )
-
-from utils.checks import InvalidConfigurationError
 
 
 def test_service_configuration_constructor() -> None:
@@ -503,9 +505,10 @@ def test_configuration_multiple_mcp_servers() -> None:
 
 def test_dump_configuration(tmp_path) -> None:
     """
-    Test that the Configuration object can be serialized to a JSON
-    file and that the resulting file contains all expected sections
-    and values.
+    Test that the Configuration object can be serialized to a JSON file and
+    that the resulting file contains all expected sections and values.
+
+    Please note that redaction process is not in place.
     """
     cfg = Configuration(
         name="test_name",
@@ -525,6 +528,7 @@ def test_dump_configuration(tmp_path) -> None:
         llama_stack=LlamaStackConfiguration(
             use_as_library_client=True,
             library_client_config_path="tests/configuration/run.yaml",
+            api_key="whatever",
         ),
         user_data_collection=UserDataCollection(
             feedback_enabled=False, feedback_storage=None
@@ -593,7 +597,7 @@ def test_dump_configuration(tmp_path) -> None:
             },
             "llama_stack": {
                 "url": None,
-                "api_key": None,
+                "api_key": "whatever",
                 "use_as_library_client": True,
                 "library_client_config_path": "tests/configuration/run.yaml",
             },
@@ -872,6 +876,60 @@ def test_authentication_configuration_module_unsupported() -> None:
             k8s_ca_cert_path=None,
             k8s_cluster_api=None,
         )
+
+
+def test_database_configuration(subtests) -> None:
+    """Test the database configuration handling."""
+    with subtests.test(msg="PostgreSQL"):
+        d1 = PostgreSQLDatabaseConfiguration(
+            db="db",
+            user="user",
+            password="password",
+            port=1234,
+            ca_cert_path=Path("tests/configuration/server.crt"),
+        )
+        d = DatabaseConfiguration(postgres=d1)
+        assert d is not None
+        assert d.sqlite is None
+        assert d.postgres is not None
+        assert d.db_type == "postgres"
+
+    with subtests.test(msg="SQLite"):
+        d1 = SQLiteDatabaseConfiguration(
+            db_path="/tmp/foo/bar/baz",
+        )
+        d = DatabaseConfiguration(sqlite=d1)
+        assert d is not None
+        assert d.sqlite is not None
+        assert d.postgres is None
+        assert d.db_type == "sqlite"
+
+
+def test_no_databases_configuration() -> None:
+    """Test if no databases configuration is checked."""
+    d = DatabaseConfiguration()
+    assert d is not None
+
+    # default should be SQLite when nothing is provided
+    assert d.db_type == "sqlite"
+
+    # simulate no DB configuration
+    d.sqlite = None
+    d.postgres = None
+
+    with pytest.raises(ValueError, match="No database configuration found"):
+        # access propery to call it's getter
+        _ = d.db_type
+
+
+def test_two_databases_configuration() -> None:
+    """Test if two databases configuration is checked."""
+    d1 = PostgreSQLDatabaseConfiguration(db="db", user="user", password="password")
+    d2 = SQLiteDatabaseConfiguration(db_path="foo_bar_baz")
+    with pytest.raises(
+        ValidationError, match="Only one database configuration can be provided"
+    ):
+        DatabaseConfiguration(postgres=d1, sqlite=d2)
 
 
 def test_postgresql_database_configuration() -> None:
