@@ -1534,11 +1534,12 @@
                     "status"
                 ],
                 "title": "FeedbackStatusUpdateResponse",
-                "description": "Model representing a response to a feedback status update request.\n\nAttributes:\n    status: The previous and current status of the service and who updated it.\n\nExample:\n    ```python\n    status_response = StatusResponse(\n        status={\n            \"previous_status\": true,\n            \"updated_status\": false,\n            \"updated_by\": \"user/test\"\n        },\n    )\n    ```",
+                "description": "Model representing a response to a feedback status update request.\n\nAttributes:\n    status: The previous and current status of the service and who updated it.\n\nExample:\n    ```python\n    status_response = StatusResponse(\n        status={\n            \"previous_status\": true,\n            \"updated_status\": false,\n            \"updated_by\": \"user/test\",\n            \"timestamp\": \"2023-03-15 12:34:56\"\n        },\n    )\n    ```",
                 "examples": [
                     {
                         "status": {
                             "previous_status": true,
+                            "timestamp": "2023-03-15 12:34:56",
                             "updated_by": "user/test",
                             "updated_status": false
                         }
@@ -1659,7 +1660,8 @@
                 "enum": [
                     "equals",
                     "contains",
-                    "in"
+                    "in",
+                    "match"
                 ],
                 "title": "JsonPathOperator",
                 "description": "Supported operators for JSONPath evaluation."
