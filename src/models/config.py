@@ -1,7 +1,7 @@
 """Model with service configuration."""
 
 from pathlib import Path
-from typing import Optional, Any, Pattern, Dict
+from typing import Optional, Any, Pattern
 from enum import Enum
 from functools import cached_property
 import re
@@ -420,7 +420,7 @@ class CustomProfile:
     """Custom profile customization for prompts and validation."""
 
     path: str
-    prompts: Dict[str, str] = Field(default={}, init=False)
+    prompts: dict[str, str] = Field(default={}, init=False)
 
     def __post_init__(self) -> None:
         """Validate and load profile."""
@@ -433,7 +433,7 @@ class CustomProfile:
         if profile_module is not None and checks.is_valid_profile(profile_module):
             self.prompts = profile_module.PROFILE_CONFIG.get("system_prompts", {})
 
-    def get_prompts(self) -> Dict[str, str]:
+    def get_prompts(self) -> dict[str, str]:
         """Retrieve prompt attribute."""
         return self.prompts
 
