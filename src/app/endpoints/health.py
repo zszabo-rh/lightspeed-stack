@@ -117,10 +117,7 @@ get_liveness_responses: dict[int | str, dict[str, Any]] = {
         "description": "Service is alive",
         "model": LivenessResponse,
     },
-    503: {
-        "description": "Service is not alive",
-        "model": LivenessResponse,
-    },
+    # HTTP_503_SERVICE_UNAVAILABLE will never be returned when unreachable
 }
 
 
