@@ -376,7 +376,6 @@ Returns:
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
 | 200 | Service is alive | [LivenessResponse](#livenessresponse) |
-| 503 | Service is not alive | [LivenessResponse](#livenessresponse) |
 ## POST `/authorized`
 
 > **Authorized Endpoint Handler**

@@ -376,7 +376,6 @@ Returns:
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
 | 200 | Service is alive | [LivenessResponse](#livenessresponse) |
-| 503 | Service is not alive | [LivenessResponse](#livenessresponse) |
 ## POST `/authorized`
 
 > **Authorized Endpoint Handler**
@@ -823,7 +822,8 @@ Example:
         status={
             "previous_status": true,
             "updated_status": false,
-            "updated_by": "user/test"
+            "updated_by": "user/test",
+            "timestamp": "2023-03-15 12:34:56"
         },
     )
     ```
