@@ -1,5 +1,7 @@
 """Unit tests for functions defined in src/models/config.py."""
 
+# pylint: disable=too-many-lines
+
 import json
 from pathlib import Path
 
@@ -21,6 +23,8 @@ from models.config import (
     AuthenticationConfiguration,
     Configuration,
     JwkConfiguration,
+    JwtRoleRule,
+    JsonPathOperator,
     LlamaStackConfiguration,
     ServiceConfiguration,
     UserDataCollection,
@@ -805,6 +809,13 @@ def test_authentication_configuration() -> None:
     assert auth_config.k8s_ca_cert_path is None
     assert auth_config.k8s_cluster_api is None
 
+    # try to retrieve JWK configuration
+    with pytest.raises(
+        ValueError,
+        match="JWK configuration is only available for JWK token authentication module",
+    ):
+        _ = auth_config.jwk_configuration
+
 
 def test_authentication_configuration_jwk_token() -> None:
     """Test the AuthenticationConfiguration with JWK token."""
@@ -821,6 +832,9 @@ def test_authentication_configuration_jwk_token() -> None:
     assert auth_config.skip_tls_verification is False
     assert auth_config.k8s_ca_cert_path is None
     assert auth_config.k8s_cluster_api is None
+
+    # try to retrieve JWK configuration
+    assert auth_config.jwk_configuration is not None
 
 
 def test_authentication_configuration_jwk_token_but_insufficient_config() -> None:
@@ -850,6 +864,26 @@ def test_authentication_configuration_jwk_token_but_not_config() -> None:
             k8s_cluster_api=None,
             # no JwkConfiguration
         )
+
+
+def test_authentication_configuration_jwk_broken_config() -> None:
+    """Test the AuthenticationConfiguration with JWK set, but not configured."""
+
+    auth_config = AuthenticationConfiguration(
+        module=AUTH_MOD_JWK_TOKEN,
+        skip_tls_verification=False,
+        k8s_ca_cert_path=None,
+        k8s_cluster_api=None,
+        jwk_config=JwkConfiguration(url="http://foo.bar.baz"),
+    )
+    assert auth_config is not None
+
+    # emulate broken config
+    auth_config.jwk_config = None
+    # try to retrieve JWK configuration
+
+    with pytest.raises(ValueError, match="JWK configuration should not be None"):
+        _ = auth_config.jwk_configuration
 
 
 def test_authentication_configuration_supported() -> None:
@@ -893,6 +927,7 @@ def test_database_configuration(subtests) -> None:
         assert d.sqlite is None
         assert d.postgres is not None
         assert d.db_type == "postgres"
+        assert d.config is d1
 
     with subtests.test(msg="SQLite"):
         d1 = SQLiteDatabaseConfiguration(
@@ -903,6 +938,7 @@ def test_database_configuration(subtests) -> None:
         assert d.sqlite is not None
         assert d.postgres is None
         assert d.db_type == "sqlite"
+        assert d.config is d1
 
 
 def test_no_databases_configuration() -> None:
@@ -918,8 +954,12 @@ def test_no_databases_configuration() -> None:
     d.postgres = None
 
     with pytest.raises(ValueError, match="No database configuration found"):
-        # access propery to call it's getter
+        # access property to call its getter
         _ = d.db_type
+
+    with pytest.raises(ValueError, match="No database configuration found"):
+        # access property to call its getter
+        _ = d.config
 
 
 def test_two_databases_configuration() -> None:
@@ -990,3 +1030,115 @@ def test_postgresql_database_configuration_ca_cert_path(subtests) -> None:
                 port=1234,
                 ca_cert_path=Path("not a file"),
             )
+
+
+def test_jwt_role_rule_missing_attributes() -> None:
+    """Check the JwtRoleRule config class."""
+    with pytest.raises(ValidationError, match="validation errors"):
+        _ = JwtRoleRule()
+
+
+def test_jwt_role_rule_correct_attributes() -> None:
+    """Check the JwtRoleRule config class."""
+    r = JwtRoleRule(
+        jsonpath="$.id",
+        negate=False,
+        value="xyz",
+        roles=["admin"],
+        operator=JsonPathOperator.EQUALS,
+    )
+
+    assert r is not None
+    assert r.compiled_regex is None
+
+
+def test_jwt_role_rule_invalid_json_path() -> None:
+    """Check the JwtRoleRule config class."""
+    with pytest.raises(ValidationError, match="Invalid JSONPath expression"):
+        _ = JwtRoleRule(
+            jsonpath="this/is/not/valid",
+            negate=False,
+            value="xyz",
+            roles=["admin"],
+            operator=JsonPathOperator.EQUALS,
+        )
+
+
+def test_jwt_role_rule_no_roles_specified() -> None:
+    """Check the JwtRoleRule config class."""
+    with pytest.raises(
+        ValidationError, match="At least one role must be specified in the rule"
+    ):
+        _ = JwtRoleRule(
+            jsonpath="$.id",
+            negate=False,
+            value="xyz",
+            roles=[],
+            operator=JsonPathOperator.EQUALS,
+        )
+
+
+def test_jwt_role_rule_star_role_specified() -> None:
+    """Check the JwtRoleRule config class."""
+    with pytest.raises(
+        ValidationError, match="The wildcard '\\*' role is not allowed in role rules"
+    ):
+        _ = JwtRoleRule(
+            jsonpath="$.id",
+            negate=False,
+            value="xyz",
+            roles=["*"],
+            operator=JsonPathOperator.EQUALS,
+        )
+
+
+def test_jwt_role_rule_same_roles() -> None:
+    """Check the JwtRoleRule config class."""
+    with pytest.raises(ValidationError, match="Roles must be unique in the rule"):
+        _ = JwtRoleRule(
+            jsonpath="$.id",
+            negate=False,
+            value="xyz",
+            roles=["admin", "admin", "user"],
+            operator=JsonPathOperator.EQUALS,
+        )
+
+
+def test_jwt_role_rule_invalid_value() -> None:
+    """Check the JwtRoleRule config class."""
+    with pytest.raises(
+        ValidationError, match="MATCH operator requires a string pattern"
+    ):
+        _ = JwtRoleRule(
+            jsonpath="$.id",
+            negate=False,
+            value=True,  # not a string
+            roles=["admin", "user"],
+            operator=JsonPathOperator.MATCH,
+        )
+
+
+def test_jwt_role_rule_valid_regexp() -> None:
+    """Check the JwtRoleRule config class."""
+    j = JwtRoleRule(
+        jsonpath="$.id",
+        negate=False,
+        value=".*",  # valid regexp
+        roles=["admin", "user"],
+        operator=JsonPathOperator.MATCH,
+    )
+    assert j.compiled_regex is not None
+
+
+def test_jwt_role_rule_invalid_regexp() -> None:
+    """Check the JwtRoleRule config class."""
+    with pytest.raises(
+        ValidationError, match="Invalid regex pattern for MATCH operator"
+    ):
+        _ = JwtRoleRule(
+            jsonpath="$.id",
+            negate=False,
+            value="[[[",  # invalid regexp
+            roles=["admin", "user"],
+            operator=JsonPathOperator.MATCH,
+        )
