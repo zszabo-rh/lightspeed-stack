@@ -805,6 +805,13 @@ def test_authentication_configuration() -> None:
     assert auth_config.k8s_ca_cert_path is None
     assert auth_config.k8s_cluster_api is None
 
+    # try to retrieve JWK configuration
+    with pytest.raises(
+        ValueError,
+        match="JWK configuration is only available for JWK token authentication module",
+    ):
+        _ = auth_config.jwk_configuration
+
 
 def test_authentication_configuration_jwk_token() -> None:
     """Test the AuthenticationConfiguration with JWK token."""
@@ -821,6 +828,9 @@ def test_authentication_configuration_jwk_token() -> None:
     assert auth_config.skip_tls_verification is False
     assert auth_config.k8s_ca_cert_path is None
     assert auth_config.k8s_cluster_api is None
+
+    # try to retrieve JWK configuration
+    assert auth_config.jwk_configuration is not None
 
 
 def test_authentication_configuration_jwk_token_but_insufficient_config() -> None:
@@ -850,6 +860,26 @@ def test_authentication_configuration_jwk_token_but_not_config() -> None:
             k8s_cluster_api=None,
             # no JwkConfiguration
         )
+
+
+def test_authentication_configuration_jwk_broken_config() -> None:
+    """Test the AuthenticationConfiguration with JWK set, but not configured."""
+
+    auth_config = AuthenticationConfiguration(
+        module=AUTH_MOD_JWK_TOKEN,
+        skip_tls_verification=False,
+        k8s_ca_cert_path=None,
+        k8s_cluster_api=None,
+        jwk_config=JwkConfiguration(url="http://foo.bar.baz"),
+    )
+    assert auth_config is not None
+
+    # emulate broken config
+    auth_config.jwk_config = None
+    # try to retrieve JWK configuration
+
+    with pytest.raises(ValueError, match="JWK configuration should not be None"):
+        _ = auth_config.jwk_configuration
 
 
 def test_authentication_configuration_supported() -> None:
@@ -893,7 +923,7 @@ def test_database_configuration(subtests) -> None:
         assert d.sqlite is None
         assert d.postgres is not None
         assert d.db_type == "postgres"
-        assert d.config == d1
+        assert d.config is d1
 
     with subtests.test(msg="SQLite"):
         d1 = SQLiteDatabaseConfiguration(
@@ -904,7 +934,7 @@ def test_database_configuration(subtests) -> None:
         assert d.sqlite is not None
         assert d.postgres is None
         assert d.db_type == "sqlite"
-        assert d.config == d1
+        assert d.config is d1
 
 
 def test_no_databases_configuration() -> None:
@@ -920,11 +950,11 @@ def test_no_databases_configuration() -> None:
     d.postgres = None
 
     with pytest.raises(ValueError, match="No database configuration found"):
-        # access propery to call it's getter
+        # access propery to call its getter
         _ = d.db_type
 
     with pytest.raises(ValueError, match="No database configuration found"):
-        # access propery to call it's getter
+        # access propery to call its getter
         _ = d.config
 
 
