@@ -893,6 +893,7 @@ def test_database_configuration(subtests) -> None:
         assert d.sqlite is None
         assert d.postgres is not None
         assert d.db_type == "postgres"
+        assert d.config == d1
 
     with subtests.test(msg="SQLite"):
         d1 = SQLiteDatabaseConfiguration(
@@ -903,6 +904,7 @@ def test_database_configuration(subtests) -> None:
         assert d.sqlite is not None
         assert d.postgres is None
         assert d.db_type == "sqlite"
+        assert d.config == d1
 
 
 def test_no_databases_configuration() -> None:
@@ -920,6 +922,10 @@ def test_no_databases_configuration() -> None:
     with pytest.raises(ValueError, match="No database configuration found"):
         # access propery to call it's getter
         _ = d.db_type
+
+    with pytest.raises(ValueError, match="No database configuration found"):
+        # access propery to call it's getter
+        _ = d.config
 
 
 def test_two_databases_configuration() -> None:
