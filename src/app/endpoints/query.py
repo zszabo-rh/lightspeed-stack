@@ -24,6 +24,7 @@ from client import AsyncLlamaStackClientHolder
 from configuration import configuration
 from app.database import get_session
 import metrics
+from metrics.utils import update_llm_token_count_from_turn
 import constants
 from authorization.middleware import authorize
 from models.config import Action
@@ -220,6 +221,7 @@ async def query_endpoint_handler(
             query_request,
             token,
             mcp_headers=mcp_headers,
+            provider_id=provider_id,
         )
         # Update metrics for the LLM call
         metrics.llm_calls_total.labels(provider_id, model_id).inc()
@@ -389,12 +391,14 @@ def is_input_shield(shield: Shield) -> bool:
     return _is_inout_shield(shield) or not is_output_shield(shield)
 
 
-async def retrieve_response(  # pylint: disable=too-many-locals,too-many-branches
+async def retrieve_response(  # pylint: disable=too-many-locals,too-many-branches,too-many-arguments
     client: AsyncLlamaStackClient,
     model_id: str,
     query_request: QueryRequest,
     token: str,
     mcp_headers: dict[str, dict[str, str]] | None = None,
+    *,
+    provider_id: str = "",
 ) -> tuple[TurnSummary, str]:
     """
     Retrieve response from LLMs and agents.
@@ -413,6 +417,7 @@ async def retrieve_response(  # pylint: disable=too-many-locals,too-many-branche
 
     Parameters:
         model_id (str): The identifier of the LLM model to use.
+        provider_id (str): The identifier of the LLM provider to use.
         query_request (QueryRequest): The user's query and associated metadata.
         token (str): The authentication token for authorization.
         mcp_headers (dict[str, dict[str, str]], optional): Headers for multi-component processing.
@@ -511,6 +516,10 @@ async def retrieve_response(  # pylint: disable=too-many-locals,too-many-branche
         ),
         tool_calls=[],
     )
+
+    # Update token count metrics for the LLM call
+    model_label = model_id.split("/", 1)[1] if "/" in model_id else model_id
+    update_llm_token_count_from_turn(response, model_label, provider_id, system_prompt)
 
     # Check for validation errors in the response
     steps = response.steps or []

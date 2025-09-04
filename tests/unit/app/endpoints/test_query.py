@@ -47,6 +47,14 @@ def dummy_request() -> Request:
     return req
 
 
+def mock_metrics(mocker):
+    """Helper function to mock metrics operations for query endpoints."""
+    mocker.patch(
+        "app.endpoints.query.update_llm_token_count_from_turn",
+        return_value=None,
+    )
+
+
 def mock_database_operations(mocker):
     """Helper function to mock database operations for query endpoints."""
     mocker.patch(
@@ -444,6 +452,7 @@ async def test_retrieve_response_no_returned_message(prepare_agent_mocks, mocker
         "app.endpoints.query.get_agent",
         return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
     )
+    mock_metrics(mocker)
 
     query_request = QueryRequest(query="What is OpenStack?")
     model_id = "fake_model_id"
@@ -475,6 +484,7 @@ async def test_retrieve_response_message_without_content(prepare_agent_mocks, mo
         "app.endpoints.query.get_agent",
         return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
     )
+    mock_metrics(mocker)
 
     query_request = QueryRequest(query="What is OpenStack?")
     model_id = "fake_model_id"
@@ -507,6 +517,7 @@ async def test_retrieve_response_vector_db_available(prepare_agent_mocks, mocker
         "app.endpoints.query.get_agent",
         return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
     )
+    mock_metrics(mocker)
 
     query_request = QueryRequest(query="What is OpenStack?")
     model_id = "fake_model_id"
@@ -545,6 +556,7 @@ async def test_retrieve_response_no_available_shields(prepare_agent_mocks, mocke
         "app.endpoints.query.get_agent",
         return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
     )
+    mock_metrics(mocker)
 
     query_request = QueryRequest(query="What is OpenStack?")
     model_id = "fake_model_id"
@@ -594,6 +606,7 @@ async def test_retrieve_response_one_available_shield(prepare_agent_mocks, mocke
         "app.endpoints.query.get_agent",
         return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
     )
+    mock_metrics(mocker)
 
     query_request = QueryRequest(query="What is OpenStack?")
     model_id = "fake_model_id"
@@ -646,6 +659,7 @@ async def test_retrieve_response_two_available_shields(prepare_agent_mocks, mock
         "app.endpoints.query.get_agent",
         return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
     )
+    mock_metrics(mocker)
 
     query_request = QueryRequest(query="What is OpenStack?")
     model_id = "fake_model_id"
@@ -700,6 +714,7 @@ async def test_retrieve_response_four_available_shields(prepare_agent_mocks, moc
         "app.endpoints.query.get_agent",
         return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
     )
+    mock_metrics(mocker)
 
     query_request = QueryRequest(query="What is OpenStack?")
     model_id = "fake_model_id"
@@ -756,6 +771,7 @@ async def test_retrieve_response_with_one_attachment(prepare_agent_mocks, mocker
         "app.endpoints.query.get_agent",
         return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
     )
+    mock_metrics(mocker)
 
     query_request = QueryRequest(query="What is OpenStack?", attachments=attachments)
     model_id = "fake_model_id"
@@ -810,6 +826,7 @@ async def test_retrieve_response_with_two_attachments(prepare_agent_mocks, mocke
         "app.endpoints.query.get_agent",
         return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
     )
+    mock_metrics(mocker)
 
     query_request = QueryRequest(query="What is OpenStack?", attachments=attachments)
     model_id = "fake_model_id"
@@ -865,6 +882,7 @@ async def test_retrieve_response_with_mcp_servers(prepare_agent_mocks, mocker):
         "app.endpoints.query.get_agent",
         return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
     )
+    mock_metrics(mocker)
 
     query_request = QueryRequest(query="What is OpenStack?")
     model_id = "fake_model_id"
@@ -934,6 +952,7 @@ async def test_retrieve_response_with_mcp_servers_empty_token(
         "app.endpoints.query.get_agent",
         return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
     )
+    mock_metrics(mocker)
 
     query_request = QueryRequest(query="What is OpenStack?")
     model_id = "fake_model_id"
@@ -995,6 +1014,7 @@ async def test_retrieve_response_with_mcp_servers_and_mcp_headers(
         "app.endpoints.query.get_agent",
         return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
     )
+    mock_metrics(mocker)
 
     query_request = QueryRequest(query="What is OpenStack?")
     model_id = "fake_model_id"
@@ -1091,6 +1111,7 @@ async def test_retrieve_response_shield_violation(prepare_agent_mocks, mocker):
         "app.endpoints.query.get_agent",
         return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
     )
+    mock_metrics(mocker)
 
     query_request = QueryRequest(query="What is OpenStack?")
 
@@ -1327,6 +1348,7 @@ async def test_retrieve_response_no_tools_bypasses_mcp_and_rag(
         "app.endpoints.query.get_agent",
         return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
     )
+    mock_metrics(mocker)
 
     query_request = QueryRequest(query="What is OpenStack?", no_tools=True)
     model_id = "fake_model_id"
@@ -1377,6 +1399,7 @@ async def test_retrieve_response_no_tools_false_preserves_functionality(
         "app.endpoints.query.get_agent",
         return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
     )
+    mock_metrics(mocker)
 
     query_request = QueryRequest(query="What is OpenStack?", no_tools=False)
     model_id = "fake_model_id"

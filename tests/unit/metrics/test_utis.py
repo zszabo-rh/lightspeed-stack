@@ -1,6 +1,6 @@
 """Unit tests for functions defined in metrics/utils.py"""
 
-from metrics.utils import setup_model_metrics
+from metrics.utils import setup_model_metrics, update_llm_token_count_from_turn
 
 
 async def test_setup_model_metrics(mocker):
@@ -74,3 +74,50 @@ async def test_setup_model_metrics(mocker):
         ],
         any_order=False,  # Order matters here
     )
+
+
+def test_update_llm_token_count_from_turn(mocker):
+    """Test the update_llm_token_count_from_turn function."""
+    mocker.patch("metrics.utils.Tokenizer.get_instance")
+    mock_formatter_class = mocker.patch("metrics.utils.ChatFormat")
+    mock_formatter = mocker.Mock()
+    mock_formatter_class.return_value = mock_formatter
+
+    mock_received_metric = mocker.patch(
+        "metrics.utils.metrics.llm_token_received_total"
+    )
+    mock_sent_metric = mocker.patch("metrics.utils.metrics.llm_token_sent_total")
+
+    mock_turn = mocker.Mock()
+    # turn.output_message should satisfy the type RawMessage
+    mock_turn.output_message = {"role": "assistant", "content": "test response"}
+    # turn.input_messages should satisfy the type list[RawMessage]
+    mock_turn.input_messages = [{"role": "user", "content": "test input"}]
+
+    # Mock the encoded results with tokens
+    mock_encoded_output = mocker.Mock()
+    mock_encoded_output.tokens = ["token1", "token2", "token3"]  # 3 tokens
+    mock_encoded_input = mocker.Mock()
+    mock_encoded_input.tokens = ["token1", "token2"]  # 2 tokens
+    mock_formatter.encode_dialog_prompt.side_effect = [
+        mock_encoded_output,
+        mock_encoded_input,
+    ]
+
+    test_model = "test_model"
+    test_provider = "test_provider"
+    test_system_prompt = "test system prompt"
+
+    update_llm_token_count_from_turn(
+        mock_turn, test_model, test_provider, test_system_prompt
+    )
+
+    # Verify that llm_token_received_total.labels() was called with correct metrics
+    mock_received_metric.labels.assert_called_once_with(test_provider, test_model)
+    mock_received_metric.labels().inc.assert_called_once_with(
+        3
+    )  # token count from output
+
+    # Verify that llm_token_sent_total.labels() was called with correct metrics
+    mock_sent_metric.labels.assert_called_once_with(test_provider, test_model)
+    mock_sent_metric.labels().inc.assert_called_once_with(2)  # token count from input
