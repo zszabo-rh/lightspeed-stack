@@ -43,7 +43,8 @@ from app.endpoints.streaming_query import (
 )
 
 from models.requests import QueryRequest, Attachment
-from models.config import ModelContextProtocolServer
+from models.config import ModelContextProtocolServer, Action
+from authorization.resolvers import NoopRolesResolver
 from utils.types import ToolCallSummary, TurnSummary
 
 MOCK_AUTH = ("mock_user_id", "mock_username", "mock_token")
@@ -1515,3 +1516,61 @@ async def test_retrieve_response_no_tools_false_preserves_functionality(
         stream=True,
         toolgroups=expected_toolgroups,
     )
+
+
+@pytest.mark.asyncio
+async def test_streaming_query_endpoint_rejects_model_provider_override_without_permission(
+    mocker,
+):
+    """Assert 403 when request includes model/provider without MODEL_OVERRIDE."""
+    cfg = AppConfig()
+    cfg.init_from_dict(
+        {
+            "name": "test",
+            "service": {
+                "host": "localhost",
+                "port": 8080,
+                "auth_enabled": False,
+                "workers": 1,
+                "color_log": True,
+                "access_log": True,
+            },
+            "llama_stack": {
+                "api_key": "test-key",
+                "url": "http://test.com:1234",
+                "use_as_library_client": False,
+            },
+            "user_data_collection": {"transcripts_enabled": False},
+            "mcp_servers": [],
+        }
+    )
+    mocker.patch("app.endpoints.streaming_query.configuration", cfg)
+
+    # Patch authorization to exclude MODEL_OVERRIDE from authorized actions
+    access_resolver = mocker.Mock()
+    access_resolver.check_access.return_value = True
+    access_resolver.get_actions.return_value = set(Action) - {Action.MODEL_OVERRIDE}
+    mocker.patch(
+        "authorization.middleware.get_authorization_resolvers",
+        return_value=(NoopRolesResolver(), access_resolver),
+    )
+
+    # Build a query request that tries to override model/provider
+    query_request = QueryRequest(query="What?", model="m", provider="p")
+
+    request = Request(
+        scope={
+            "type": "http",
+        }
+    )
+
+    with pytest.raises(HTTPException) as exc_info:
+        await streaming_query_endpoint_handler(request, query_request, auth=MOCK_AUTH)
+
+    expected_msg = (
+        "This instance does not permit overriding model/provider in the query request "
+        "(missing permission: MODEL_OVERRIDE). Please remove the model and provider "
+        "fields from your request."
+    )
+    assert exc_info.value.status_code == status.HTTP_403_FORBIDDEN
+    assert exc_info.value.detail["response"] == expected_msg

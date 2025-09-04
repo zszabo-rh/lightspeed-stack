@@ -33,6 +33,7 @@ from utils.endpoints import check_configuration_loaded, get_agent, get_system_pr
 from utils.mcp_headers import mcp_headers_dependency, handle_mcp_headers_with_toolgroups
 from utils.transcripts import store_transcript
 from utils.types import TurnSummary
+from utils.endpoints import validate_model_provider_override
 
 from app.endpoints.query import (
     get_rag_toolgroups,
@@ -547,6 +548,9 @@ async def streaming_query_endpoint_handler(  # pylint: disable=too-many-locals
     _ = request
 
     check_configuration_loaded(configuration)
+
+    # Enforce RBAC: optionally disallow overriding model/provider in requests
+    validate_model_provider_override(query_request, request.state.authorized_actions)
 
     # log Llama Stack configuration, but without sensitive information
     llama_stack_config = configuration.llama_stack_configuration.model_copy()

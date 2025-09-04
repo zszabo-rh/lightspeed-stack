@@ -29,6 +29,7 @@ from models.requests import QueryRequest, Attachment
 from models.config import Action, ModelContextProtocolServer
 from models.database.conversations import UserConversation
 from utils.types import ToolCallSummary, TurnSummary
+from authorization.resolvers import NoopRolesResolver
 
 MOCK_AUTH = ("mock_user_id", "mock_username", "mock_token")
 
@@ -1507,3 +1508,58 @@ def test_evaluate_model_hints(
 
     assert provider_id == expected_provider
     assert model_id == expected_model
+
+
+@pytest.mark.asyncio
+async def test_query_endpoint_rejects_model_provider_override_without_permission(
+    mocker, dummy_request
+):
+    """Assert 403 and message when request includes model/provider without MODEL_OVERRIDE."""
+    # Patch endpoint configuration (no need to set customization)
+    cfg = AppConfig()
+    cfg.init_from_dict(
+        {
+            "name": "test",
+            "service": {
+                "host": "localhost",
+                "port": 8080,
+                "auth_enabled": False,
+                "workers": 1,
+                "color_log": True,
+                "access_log": True,
+            },
+            "llama_stack": {
+                "api_key": "test-key",
+                "url": "http://test.com:1234",
+                "use_as_library_client": False,
+            },
+            "user_data_collection": {"transcripts_enabled": False},
+            "mcp_servers": [],
+        }
+    )
+    mocker.patch("app.endpoints.query.configuration", cfg)
+
+    # Patch authorization to exclude MODEL_OVERRIDE from authorized actions
+    access_resolver = mocker.Mock()
+    access_resolver.check_access.return_value = True
+    access_resolver.get_actions.return_value = set(Action) - {Action.MODEL_OVERRIDE}
+    mocker.patch(
+        "authorization.middleware.get_authorization_resolvers",
+        return_value=(NoopRolesResolver(), access_resolver),
+    )
+
+    # Build a request that tries to override model/provider
+    query_request = QueryRequest(query="What?", model="m", provider="p")
+
+    with pytest.raises(HTTPException) as exc_info:
+        await query_endpoint_handler(
+            request=dummy_request, query_request=query_request, auth=MOCK_AUTH
+        )
+
+    expected_msg = (
+        "This instance does not permit overriding model/provider in the query request "
+        "(missing permission: MODEL_OVERRIDE). Please remove the model and provider "
+        "fields from your request."
+    )
+    assert exc_info.value.status_code == status.HTTP_403_FORBIDDEN
+    assert exc_info.value.detail["response"] == expected_msg

@@ -9,6 +9,7 @@ from configuration import AppConfig
 from tests.unit import config_dict
 
 from models.requests import QueryRequest
+from models.config import Action
 from utils import endpoints
 from utils.endpoints import get_agent
 
@@ -591,3 +592,25 @@ async def test_get_agent_no_tools_false_preserves_parser(
         tool_parser=mock_parser,
         enable_session_persistence=True,
     )
+
+
+def test_validate_model_provider_override_allowed_with_action():
+    """Ensure no exception when caller has MODEL_OVERRIDE and request includes model/provider."""
+    query_request = QueryRequest(query="q", model="m", provider="p")
+    authorized_actions = {Action.MODEL_OVERRIDE}
+    endpoints.validate_model_provider_override(query_request, authorized_actions)
+
+
+def test_validate_model_provider_override_rejected_without_action():
+    """Ensure HTTP 403 when request includes model/provider and caller lacks permission."""
+    query_request = QueryRequest(query="q", model="m", provider="p")
+    authorized_actions: set[Action] = set()
+    with pytest.raises(HTTPException) as exc_info:
+        endpoints.validate_model_provider_override(query_request, authorized_actions)
+    assert exc_info.value.status_code == 403
+
+
+def test_validate_model_provider_override_no_override_without_action():
+    """No exception when request does not include model/provider regardless of permission."""
+    query_request = QueryRequest(query="q")
+    endpoints.validate_model_provider_override(query_request, set())
