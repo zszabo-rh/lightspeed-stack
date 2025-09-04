@@ -552,10 +552,8 @@ async def streaming_query_endpoint_handler(  # pylint: disable=too-many-locals
     # Enforce RBAC: optionally disallow overriding model/provider in requests
     validate_model_provider_override(query_request, request.state.authorized_actions)
 
-    # log Llama Stack configuration, but without sensitive information
-    llama_stack_config = configuration.llama_stack_configuration.model_copy()
-    llama_stack_config.api_key = "********"
-    logger.info("Llama stack config: %s", llama_stack_config)
+    # log Llama Stack configuration
+    logger.info("Llama stack config: %s", configuration.llama_stack_configuration)
 
     user_id, _user_name, token = auth
 

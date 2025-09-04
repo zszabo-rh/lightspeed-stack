@@ -38,7 +38,12 @@ class AsyncLlamaStackClientHolder(metaclass=Singleton):
         else:
             logger.info("Using Llama stack running as a service")
             self._lsc = AsyncLlamaStackClient(
-                base_url=llama_stack_config.url, api_key=llama_stack_config.api_key
+                base_url=llama_stack_config.url,
+                api_key=(
+                    llama_stack_config.api_key.get_secret_value()
+                    if llama_stack_config.api_key is not None
+                    else None
+                ),
             )
 
     def get_client(self) -> AsyncLlamaStackClient:

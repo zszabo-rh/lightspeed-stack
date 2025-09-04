@@ -16,6 +16,7 @@ from pydantic import (
     FilePath,
     AnyHttpUrl,
     PositiveInt,
+    SecretStr,
 )
 from typing_extensions import Self, Literal
 
@@ -80,7 +81,7 @@ class PostgreSQLDatabaseConfiguration(ConfigurationBase):
     port: PositiveInt = 5432
     db: str
     user: str
-    password: str
+    password: SecretStr
     namespace: Optional[str] = "lightspeed-stack"
     ssl_mode: str = constants.POSTGRES_DEFAULT_SSL_MODE
     gss_encmode: str = constants.POSTGRES_DEFAULT_GSS_ENCMODE
@@ -167,7 +168,7 @@ class LlamaStackConfiguration(ConfigurationBase):
     """Llama stack configuration."""
 
     url: Optional[str] = None
-    api_key: Optional[str] = None
+    api_key: Optional[SecretStr] = None
     use_as_library_client: Optional[bool] = None
     library_client_config_path: Optional[str] = None
 
