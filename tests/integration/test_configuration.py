@@ -58,7 +58,7 @@ def test_loading_proper_configuration(configuration_filename: str) -> None:
     ls_config = cfg.llama_stack_configuration
     assert ls_config.use_as_library_client is False
     assert ls_config.url == "http://localhost:8321"
-    assert ls_config.api_key == "xyzzy"
+    assert ls_config.api_key.get_secret_value() == "xyzzy"
 
     # check 'user_data_collection' section
     udc_config = cfg.user_data_collection_configuration

@@ -537,6 +537,18 @@ def test_dump_configuration(tmp_path) -> None:
         user_data_collection=UserDataCollection(
             feedback_enabled=False, feedback_storage=None
         ),
+        database=DatabaseConfiguration(
+            sqlite=None,
+            postgres=PostgreSQLDatabaseConfiguration(
+                db="lightspeed_stack",
+                user="ls_user",
+                password="ls_password",
+                port=5432,
+                ca_cert_path=None,
+                ssl_mode="require",
+                gss_encmode="disable",
+            ),
+        ),
         mcp_servers=[],
         customization=None,
         inference=InferenceConfiguration(
@@ -601,8 +613,8 @@ def test_dump_configuration(tmp_path) -> None:
             },
             "llama_stack": {
                 "url": None,
-                "api_key": "whatever",
                 "use_as_library_client": True,
+                "api_key": "**********",
                 "library_client_config_path": "tests/configuration/run.yaml",
             },
             "user_data_collection": {
@@ -625,8 +637,18 @@ def test_dump_configuration(tmp_path) -> None:
                 "default_model": "default_model",
             },
             "database": {
-                "sqlite": {"db_path": "/tmp/lightspeed-stack.db"},
-                "postgres": None,
+                "sqlite": None,
+                "postgres": {
+                    "host": "localhost",
+                    "port": 5432,
+                    "db": "lightspeed_stack",
+                    "user": "ls_user",
+                    "password": "**********",
+                    "ssl_mode": "require",
+                    "gss_encmode": "disable",
+                    "namespace": "lightspeed-stack",
+                    "ca_cert_path": None,
+                },
             },
             "authorization": None,
         }
@@ -980,7 +1002,7 @@ def test_postgresql_database_configuration() -> None:
     assert c.port == 5432
     assert c.db == "db"
     assert c.user == "user"
-    assert c.password == "password"
+    assert c.password.get_secret_value() == "password"
     assert c.ssl_mode == POSTGRES_DEFAULT_SSL_MODE
     assert c.gss_encmode == POSTGRES_DEFAULT_GSS_ENCMODE
     assert c.namespace == "lightspeed-stack"

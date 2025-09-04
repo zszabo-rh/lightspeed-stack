@@ -36,7 +36,7 @@ get_config_responses: dict[int | str, dict[str, Any]] = {
         },
         "llama_stack": {
             "url": "http://localhost:8321",
-            "api_key": "xyzzy",
+            "api_key": "*****",
             "use_as_library_client": False,
             "library_client_config_path": None,
         },
