@@ -4,7 +4,7 @@
 Main classes for the Lightspeed Core Stack REST API service.
 
 ## [client.py](client.py)
-LLama Stack client retrieval class.
+Llama Stack client retrieval class.
 
 ## [configuration.py](configuration.py)
 Configuration loader.
