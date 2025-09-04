@@ -823,7 +823,8 @@ Example:
         status={
             "previous_status": true,
             "updated_status": false,
-            "updated_by": "user/test"
+            "updated_by": "user/test",
+            "timestamp": "2023-03-15 12:34:56"
         },
     )
     ```
