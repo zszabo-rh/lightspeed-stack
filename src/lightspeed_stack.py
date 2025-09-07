@@ -31,7 +31,7 @@ def create_argument_parser() -> ArgumentParser:
         dest="verbose",
         help="make it verbose",
         action="store_true",
-        default=None,
+        default=False,
     )
     parser.add_argument(
         "-d",
@@ -39,7 +39,7 @@ def create_argument_parser() -> ArgumentParser:
         dest="dump_configuration",
         help="dump actual configuration into JSON file and quit",
         action="store_true",
-        default=None,
+        default=False,
     )
     parser.add_argument(
         "-c",
