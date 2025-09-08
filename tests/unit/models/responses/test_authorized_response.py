@@ -15,6 +15,7 @@ class TestAuthorizedResponse:
         ar = AuthorizedResponse(
             user_id="123e4567-e89b-12d3-a456-426614174000",
             username="testuser",
+            skip_userid_check=False,
         )
         assert ar.user_id == "123e4567-e89b-12d3-a456-426614174000"
         assert ar.username == "testuser"
