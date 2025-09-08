@@ -15,8 +15,6 @@ The service includes comprehensive user data collection capabilities for various
 
 <!-- vim-markdown-toc GFM -->
 
-* [lightspeed-stack](#lightspeed-stack)
-    * [About The Project](#about-the-project)
 * [Architecture](#architecture)
 * [Prerequisites](#prerequisites)
 * [Installation](#installation)
@@ -35,6 +33,7 @@ The service includes comprehensive user data collection capabilities for various
     * [Llama Stack version check](#llama-stack-version-check)
     * [User data collection](#user-data-collection)
     * [System prompt](#system-prompt)
+        * [Control model/provider overrides via authorization](#control-modelprovider-overrides-via-authorization)
     * [Safety Shields](#safety-shields)
     * [Authentication](#authentication)
         * [K8s based authentication](#k8s-based-authentication)
@@ -67,6 +66,7 @@ The service includes comprehensive user data collection capabilities for various
     * [Utility to generate OpenAPI schema](#utility-to-generate-openapi-schema)
         * [Path](#path)
         * [Usage](#usage-1)
+    * [Makefile target to generate OpenAPI specification](#makefile-target-to-generate-openapi-specification)
     * [Utility to generate documentation from source code](#utility-to-generate-documentation-from-source-code)
         * [Path](#path-1)
         * [Usage](#usage-2)
@@ -812,6 +812,13 @@ This script re-generated OpenAPI schema for the Lightspeed Service REST API.
 ```
 make schema
 ```
+
+## Makefile target to generate OpenAPI specification
+
+Use `make openapi-doc` to generate OpenAPI specification in Markdown format.
+Resulting documentation is available at [here](docs/openapi.md).
+
+
 
 ## Utility to generate documentation from source code
 
