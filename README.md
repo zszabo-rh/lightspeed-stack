@@ -689,14 +689,14 @@ curl -H "Accept: application/json" http://localhost:8080/v1/models
 The lightspeed-stack container image bundles many Python dependencies for common
 Llama-Stack providers (when using Llama-Stack in library mode).
 
-Follow these instructons when you need to bundle either additional configuration
-files or more dependencies e.g. `lightspeed-stack-providers`.
+Follow these instructons when you need to bundle additional configuration
+files or extra dependencies (e.g. `lightspeed-stack-providers`).
 
 To include more dependencies in the base-image, create upstream pull request to update
 [the pyproject.toml file](https://github.com/lightspeed-core/lightspeed-stack/blob/main/pyproject.toml)
 
 1. Create `pyproject.toml` file in your top-level directory with content like:
-```
+```toml
 [project]
 name = "my-customized-chatbot"
 version = "0.1.0"
@@ -710,8 +710,8 @@ dependencies = [
 
 2. Create `Containerfile` in top-level directory like following. Update it as needed:
 ```
-# Latest dev image built from the git main branch
-FROM quay.io/lightspeed-core/lightspeed-stack:latest-dev
+# Latest dev image built from the git main branch (consider pinning a digest for reproducibility)
+FROM quay.io/lightspeed-core/lightspeed-stack:dev-latest
 
 ARG APP_ROOT=/app-root
 WORKDIR /app-root
@@ -738,7 +738,9 @@ RUN uv pip install . --no-deps && uv clean
 USER 0
 
 # Bundle additional rpm packages
-RUN microdnf install -y --nodocs --setopt=keepcache=0 --setopt=tsflags=nodocs TODO1 TODO2
+RUN microdnf install -y --nodocs --setopt=keepcache=0 --setopt=tsflags=nodocs TODO1 TODO2 \
+    && microdnf clean all \
+    && rm -rf /var/cache/dnf
 
 # this directory is checked by ecosystem-cert-preflight-checks task in Konflux
 COPY LICENSE.md /licenses/
