@@ -483,7 +483,7 @@ class ConversationDetails(BaseModel):
     """
 
     conversation_id: str = Field(
-        "",
+        ...,
         description="Conversation ID (UUID)",
         examples=["c5260aec-4d82-4370-9fdf-05cf908b3f16"],
     )

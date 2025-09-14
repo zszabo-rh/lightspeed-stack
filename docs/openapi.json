@@ -1100,7 +1100,11 @@
                 "properties": {
                     "conversation_id": {
                         "type": "string",
-                        "title": "Conversation Id"
+                        "title": "Conversation Id",
+                        "description": "Conversation ID (UUID)",
+                        "examples": [
+                            "c5260aec-4d82-4370-9fdf-05cf908b3f16"
+                        ]
                     },
                     "created_at": {
                         "anyOf": [
@@ -1111,7 +1115,11 @@
                                 "type": "null"
                             }
                         ],
-                        "title": "Created At"
+                        "title": "Created At",
+                        "description": "When the conversation was created",
+                        "examples": [
+                            "2024-01-01T01:00:00Z"
+                        ]
                     },
                     "last_message_at": {
                         "anyOf": [
@@ -1122,7 +1130,11 @@
                                 "type": "null"
                             }
                         ],
-                        "title": "Last Message At"
+                        "title": "Last Message At",
+                        "description": "When the last message was sent",
+                        "examples": [
+                            "2024-01-01T01:00:00Z"
+                        ]
                     },
                     "message_count": {
                         "anyOf": [
@@ -1133,7 +1145,11 @@
                                 "type": "null"
                             }
                         ],
-                        "title": "Message Count"
+                        "title": "Message Count",
+                        "description": "Number of user messages in the conversation",
+                        "examples": [
+                            42
+                        ]
                     },
                     "last_used_model": {
                         "anyOf": [
@@ -1144,7 +1160,12 @@
                                 "type": "null"
                             }
                         ],
-                        "title": "Last Used Model"
+                        "title": "Last Used Model",
+                        "description": "Identification of the last model used for the conversation",
+                        "examples": [
+                            "gpt-4-turbo",
+                            "gpt-3.5-turbo-0125"
+                        ]
                     },
                     "last_used_provider": {
                         "anyOf": [
@@ -1155,7 +1176,12 @@
                                 "type": "null"
                             }
                         ],
-                        "title": "Last Used Provider"
+                        "title": "Last Used Provider",
+                        "description": "Identification of the last provider used for the conversation",
+                        "examples": [
+                            "openai",
+                            "gemini"
+                        ]
                     }
                 },
                 "type": "object",
