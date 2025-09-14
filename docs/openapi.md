@@ -609,12 +609,12 @@ Example:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| conversation_id | string |  |
-| created_at |  |  |
-| last_message_at |  |  |
-| message_count |  |  |
-| last_used_model |  |  |
-| last_used_provider |  |  |
+| conversation_id | string | Conversation ID (UUID) |
+| created_at |  | When the conversation was created |
+| last_message_at |  | When the last message was sent |
+| message_count |  | Number of user messages in the conversation |
+| last_used_model |  | Identification of the last model used for the conversation |
+| last_used_provider |  | Identification of the last provider used for the conversation |
 
 
 ## ConversationResponse
