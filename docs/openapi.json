@@ -267,7 +267,7 @@
                         },
                         "llama_stack": {
                             "url": "http://localhost:8321",
-                            "api_key": "xyzzy",
+                            "api_key": "*****",
                             "use_as_library_client": false
                         },
                         "user_data_collection": {
@@ -935,9 +935,12 @@
                     },
                     "skip_userid_check": {
                         "type": "boolean",
-                        "title": "Skip User Id Check",
+                        "title": "Skip Userid Check",
                         "description": "Whether to skip the user ID check",
-                        "examples": [true, false]
+                        "examples": [
+                            true,
+                            false
+                        ]
                     }
                 },
                 "type": "object",
@@ -947,12 +950,12 @@
                     "skip_userid_check"
                 ],
                 "title": "AuthorizedResponse",
-                "description": "Model representing a response to an authorization request.\n\nAttributes:\n    user_id: The ID of the logged in user.\n    username: The name of the logged in user.",
+                "description": "Model representing a response to an authorization request.\n\nAttributes:\n    user_id: The ID of the logged in user.\n    username: The name of the logged in user.\n    skip_userid_check: Whether to skip the user ID check.",
                 "examples": [
                     {
+                        "skip_userid_check": false,
                         "user_id": "123e4567-e89b-12d3-a456-426614174000",
-                        "username": "user1",
-                        "skip_userid_check": false
+                        "username": "user1"
                     }
                 ]
             },
@@ -1015,27 +1018,17 @@
                         "$ref": "#/components/schemas/UserDataCollection"
                     },
                     "database": {
-                        "$ref": "#/components/schemas/DatabaseConfiguration",
-                        "default": {
-                            "sqlite": {
-                                "db_path": "/tmp/lightspeed-stack.db"
-                            }
-                        }
+                        "$ref": "#/components/schemas/DatabaseConfiguration"
                     },
                     "mcp_servers": {
                         "items": {
                             "$ref": "#/components/schemas/ModelContextProtocolServer"
                         },
                         "type": "array",
-                        "title": "Mcp Servers",
-                        "default": []
+                        "title": "Mcp Servers"
                     },
                     "authentication": {
-                        "$ref": "#/components/schemas/AuthenticationConfiguration",
-                        "default": {
-                            "module": "noop",
-                            "skip_tls_verification": false
-                        }
+                        "$ref": "#/components/schemas/AuthenticationConfiguration"
                     },
                     "authorization": {
                         "anyOf": [
@@ -1058,8 +1051,7 @@
                         ]
                     },
                     "inference": {
-                        "$ref": "#/components/schemas/InferenceConfiguration",
-                        "default": {}
+                        "$ref": "#/components/schemas/InferenceConfiguration"
                     }
                 },
                 "additionalProperties": false,
@@ -1655,7 +1647,7 @@
                     "llama_stack_version"
                 ],
                 "title": "InfoResponse",
-                "description": "Model representing a response to an info request.\n\nAttributes:\n    name: Service name.\n    service_version: Service version.\n    llama_stack_version: Llama Stack version.\n\nExample:\n    ```python\n    info_response = InfoResponse(\n        name=\"Lightspeed Stack\",\n        service_version=\"1.0.0\",\n        llama_stack_version=\"0.2.18\",\n    )\n    ```",
+                "description": "Model representing a response to an info request.\n\nAttributes:\n    name: Service name.\n    service_version: Service version.\n    llama_stack_version: Llama Stack version.\n\nExample:\n    ```python\n    info_response = InfoResponse(\n        name=\"Lightspeed Stack\",\n        service_version=\"1.0.0\",\n        llama_stack_version=\"0.2.19\",\n    )\n    ```",
                 "examples": [
                     {
                         "llama_stack_version": "1.0.0",
@@ -1684,12 +1676,7 @@
                         "title": "Url"
                     },
                     "jwt_configuration": {
-                        "$ref": "#/components/schemas/JwtConfiguration",
-                        "default": {
-                            "user_id_claim": "user_id",
-                            "username_claim": "username",
-                            "role_rules": []
-                        }
+                        "$ref": "#/components/schemas/JwtConfiguration"
                     }
                 },
                 "additionalProperties": false,
@@ -1796,7 +1783,9 @@
                     "api_key": {
                         "anyOf": [
                             {
-                                "type": "string"
+                                "type": "string",
+                                "format": "password",
+                                "writeOnly": true
                             },
                             {
                                 "type": "null"
@@ -1919,7 +1908,9 @@
                     },
                     "password": {
                         "type": "string",
-                        "title": "Password"
+                        "format": "password",
+                        "title": "Password",
+                        "writeOnly": true
                     },
                     "namespace": {
                         "anyOf": [
@@ -2303,23 +2294,10 @@
                         "default": true
                     },
                     "tls_config": {
-                        "$ref": "#/components/schemas/TLSConfiguration",
-                        "default": {}
+                        "$ref": "#/components/schemas/TLSConfiguration"
                     },
                     "cors": {
-                        "$ref": "#/components/schemas/CORSConfiguration",
-                        "default": {
-                            "allow_origins": [
-                                "*"
-                            ],
-                            "allow_credentials": false,
-                            "allow_methods": [
-                                "*"
-                            ],
-                            "allow_headers": [
-                                "*"
-                            ]
-                        }
+                        "$ref": "#/components/schemas/CORSConfiguration"
                     }
                 },
                 "additionalProperties": false,
