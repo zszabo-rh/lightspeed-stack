@@ -1,6 +1,6 @@
 # pylint: disable=redefined-outer-name
 
-"""Unit tests for functions defined in auth/jwk_token.py"""
+"""Unit tests for functions defined in authentication/jwk_token.py"""
 
 import time
 

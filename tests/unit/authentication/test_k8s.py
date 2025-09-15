@@ -1,4 +1,4 @@
-"""Unit tests for auth/k8s module."""
+"""Unit tests for authentication/k8s module."""
 
 # pylint: disable=too-many-arguments,too-many-positional-arguments,too-few-public-methods,protected-access
 

@@ -1,4 +1,4 @@
-"""Unit tests for functions defined in auth/utils.py"""
+"""Unit tests for functions defined in authentication/utils.py"""
 
 from fastapi import HTTPException
 from starlette.datastructures import Headers

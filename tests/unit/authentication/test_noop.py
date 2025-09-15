@@ -1,4 +1,4 @@
-"""Unit tests for functions defined in auth/noop.py"""
+"""Unit tests for functions defined in authentication/noop.py"""
 
 from fastapi import Request
 from authentication.noop import NoopAuthDependency
