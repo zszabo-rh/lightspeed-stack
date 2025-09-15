@@ -1114,9 +1114,9 @@ Example:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| ready | boolean |  |
-| reason | string |  |
-| providers | array |  |
+| ready | boolean | Flag indicating if service is ready |
+| reason | string | The reason for the readiness |
+| providers | array | List of unhealthy providers in case of readiness failure. |
 
 
 ## SQLiteDatabaseConfiguration

@@ -754,7 +754,7 @@ Examples:
     feedback_request = FeedbackRequest(
         conversation_id="12345678-abcd-0000-0123-456789abcdef",
         user_question="what are you doing?",
-        user_feedback="Great service!",
+        user_feedback="This response is not helpful",
         llm_response="I don't know",
         sentiment=1
     )
@@ -1124,9 +1124,9 @@ Example:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| ready | boolean |  |
-| reason | string |  |
-| providers | array |  |
+| ready | boolean | Flag indicating if service is ready |
+| reason | string | The reason for the readiness |
+| providers | array | List of unhealthy providers in case of readiness failure. |
 
 
 ## SQLiteDatabaseConfiguration
