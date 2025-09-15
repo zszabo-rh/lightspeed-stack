@@ -2240,18 +2240,29 @@
                 "properties": {
                     "ready": {
                         "type": "boolean",
-                        "title": "Ready"
+                        "title": "Ready",
+                        "description": "Flag indicating if service is ready",
+                        "examples": [
+                            true,
+                            false
+                        ]
                     },
                     "reason": {
                         "type": "string",
-                        "title": "Reason"
+                        "title": "Reason",
+                        "description": "The reason for the readiness",
+                        "examples": [
+                            "Service is ready"
+                        ]
                     },
                     "providers": {
                         "items": {
                             "$ref": "#/components/schemas/ProviderHealthStatus"
                         },
                         "type": "array",
-                        "title": "Providers"
+                        "title": "Providers",
+                        "description": "List of unhealthy providers in case of readiness failure.",
+                        "examples": []
                     }
                 },
                 "type": "object",
