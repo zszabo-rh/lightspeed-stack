@@ -3,7 +3,7 @@
 from fastapi import HTTPException
 from starlette.datastructures import Headers
 
-from auth.utils import extract_user_token
+from authentication.utils import extract_user_token
 
 
 def test_extract_user_token():

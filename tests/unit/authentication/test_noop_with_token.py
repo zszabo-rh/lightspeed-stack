@@ -3,7 +3,7 @@
 from fastapi import Request, HTTPException
 import pytest
 
-from auth.noop_with_token import NoopWithTokenAuthDependency
+from authentication.noop_with_token import NoopWithTokenAuthDependency
 from constants import DEFAULT_USER_NAME, DEFAULT_USER_UID
 
 

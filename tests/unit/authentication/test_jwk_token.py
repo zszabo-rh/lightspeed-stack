@@ -9,7 +9,7 @@ from fastapi import HTTPException, Request
 from pydantic import AnyHttpUrl
 from authlib.jose import JsonWebKey, JsonWebToken
 
-from auth.jwk_token import JwkTokenAuthDependency, _jwk_cache
+from authentication.jwk_token import JwkTokenAuthDependency, _jwk_cache
 from constants import DEFAULT_USER_NAME, DEFAULT_USER_UID, NO_USER_TOKEN
 from models.config import JwkConfiguration, JwtConfiguration
 
