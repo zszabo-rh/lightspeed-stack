@@ -173,9 +173,23 @@ class ReadinessResponse(BaseModel):
         ```
     """
 
-    ready: bool
-    reason: str
-    providers: list[ProviderHealthStatus]
+    ready: bool = Field(
+        ...,
+        description="Flag indicating if service is ready",
+        examples=[True, False],
+    )
+
+    reason: str = Field(
+        ...,
+        description="The reason for the readiness",
+        examples=["Service is ready"],
+    )
+
+    providers: list[ProviderHealthStatus] = Field(
+        ...,
+        description="List of unhealthy providers in case of readiness failure.",
+        examples=[],
+    )
 
     # provides examples for /docs endpoint
     model_config = {
