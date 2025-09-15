@@ -18,8 +18,8 @@ from constants import (
     DEFAULT_USER_UID,
     DEFAULT_VIRTUAL_PATH,
 )
-from auth.interface import AuthInterface
-from auth.utils import extract_user_token
+from authentication.interface import AuthInterface
+from authentication.utils import extract_user_token
 
 logger = logging.getLogger(__name__)
 

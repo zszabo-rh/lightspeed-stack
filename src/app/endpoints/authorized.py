@@ -5,8 +5,8 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends
 
-from auth.interface import AuthTuple
-from auth import get_auth_dependency
+from authentication.interface import AuthTuple
+from authentication import get_auth_dependency
 from models.responses import AuthorizedResponse, UnauthorizedResponse, ForbiddenResponse
 
 logger = logging.getLogger(__name__)
