@@ -7,7 +7,7 @@ from llama_stack_client.lib.agents.tool_parser import ToolParser
 from llama_stack_client.types.shared.completion_message import CompletionMessage
 from llama_stack_client.types.shared.tool_call import ToolCall
 from llama_stack_client.types.tool_execution_step import ToolExecutionStep
-from pydantic.main import BaseModel
+from pydantic.main import BaseModel, Field
 
 
 class Singleton(type):
@@ -69,7 +69,7 @@ class TurnSummary(BaseModel):
 
     llm_response: str
     tool_calls: list[ToolCallSummary]
-    rag_chunks: List[RAGChunkData] = []
+    rag_chunks: List[RAGChunkData] = Field(default_factory=list)
 
     def append_tool_calls_from_llama(self, tec: ToolExecutionStep) -> None:
         """Append the tool calls from a llama tool execution step."""
