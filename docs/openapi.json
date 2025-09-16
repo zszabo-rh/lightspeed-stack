@@ -1821,7 +1821,12 @@
                 "properties": {
                     "alive": {
                         "type": "boolean",
-                        "title": "Alive"
+                        "title": "Alive",
+                        "description": "Flag indicating that the app is alive",
+                        "examples": [
+                            true,
+                            false
+                        ]
                     }
                 },
                 "type": "object",
