@@ -687,6 +687,18 @@ Example:
 | conversations | array |  |
 
 
+## CustomProfile
+
+
+Custom profile customization for prompts and validation.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| path | string |  |
+| prompts | object |  |
+
+
 ## Customization
 
 
@@ -695,9 +707,11 @@ Service customization.
 
 | Field | Type | Description |
 |-------|------|-------------|
+| profile_path |  |  |
 | disable_query_system_prompt | boolean |  |
 | system_prompt_path |  |  |
 | system_prompt |  |  |
+| custom_profile |  |  |
 
 
 ## DatabaseConfiguration
@@ -748,9 +762,8 @@ Attributes:
     user_feedback: The optional user feedback.
     categories: The optional list of feedback categories (multi-select for negative feedback).
 
-Examples:
+Example:
     ```python
-    # Basic feedback
     feedback_request = FeedbackRequest(
         conversation_id="12345678-abcd-0000-0123-456789abcdef",
         user_question="what are you doing?",
@@ -970,7 +983,7 @@ Example:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| alive | boolean |  |
+| alive | boolean | Flag indicating that the app is alive |
 
 
 ## LlamaStackConfiguration

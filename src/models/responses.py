@@ -217,7 +217,11 @@ class LivenessResponse(BaseModel):
         ```
     """
 
-    alive: bool
+    alive: bool = Field(
+        ...,
+        description="Flag indicating that the app is alive",
+        examples=[True, False],
+    )
 
     # provides examples for /docs endpoint
     model_config = {
