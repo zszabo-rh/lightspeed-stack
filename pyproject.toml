@@ -65,6 +65,7 @@ dependencies = [
     "peft>=0.15.2",
     "trl>=0.18.2",
     "sentence-transformers>=5.1.0",
+    "greenlet>=3.2.4",
 ]
 
 

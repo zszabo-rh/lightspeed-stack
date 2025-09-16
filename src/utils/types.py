@@ -7,7 +7,7 @@ from llama_stack_client.lib.agents.tool_parser import ToolParser
 from llama_stack_client.types.shared.completion_message import CompletionMessage
 from llama_stack_client.types.shared.tool_call import ToolCall
 from llama_stack_client.types.tool_execution_step import ToolExecutionStep
-from pydantic.main import BaseModel, Field
+from pydantic import BaseModel, Field
 
 
 class Singleton(type):
