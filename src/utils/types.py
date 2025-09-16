@@ -1,7 +1,7 @@
 """Common types for the project."""
 
-from typing import Any, Optional
-
+from typing import Any, Optional, List
+import json
 from llama_stack_client.lib.agents.event_logger import interleaved_content_as_str
 from llama_stack_client.lib.agents.tool_parser import ToolParser
 from llama_stack_client.types.shared.completion_message import CompletionMessage
@@ -56,11 +56,20 @@ class ToolCallSummary(BaseModel):
     response: str | None
 
 
+class RAGChunkData(BaseModel):
+    """RAG chunk data extracted from tool responses."""
+    
+    content: str
+    source: Optional[str] = None
+    score: Optional[float] = None
+
+
 class TurnSummary(BaseModel):
     """Summary of a turn in llama stack."""
 
     llm_response: str
     tool_calls: list[ToolCallSummary]
+    rag_chunks: List[RAGChunkData] = []
 
     def append_tool_calls_from_llama(self, tec: ToolExecutionStep) -> None:
         """Append the tool calls from a llama tool execution step."""
@@ -68,11 +77,65 @@ class TurnSummary(BaseModel):
         responses_by_id = {tc.call_id: tc for tc in tec.tool_responses}
         for call_id, tc in calls_by_id.items():
             resp = responses_by_id.get(call_id)
+            response_content = interleaved_content_as_str(resp.content) if resp else None
+            
             self.tool_calls.append(
                 ToolCallSummary(
                     id=call_id,
                     name=tc.tool_name,
                     args=tc.arguments,
-                    response=interleaved_content_as_str(resp.content) if resp else None,
+                    response=response_content,
                 )
             )
+            
+            # Extract RAG chunks from knowledge_search tool responses
+            if tc.tool_name == "knowledge_search" and resp and response_content:
+                self._extract_rag_chunks_from_response(response_content)
+    
+    def _extract_rag_chunks_from_response(self, response_content: str) -> None:
+        """Extract RAG chunks from tool response content."""
+        try:
+            # Parse the response to get chunks
+            # Try JSON first
+            try:
+                data = json.loads(response_content)
+                if isinstance(data, dict) and "chunks" in data:
+                    for chunk in data["chunks"]:
+                        self.rag_chunks.append(
+                            RAGChunkData(
+                                content=chunk.get("content", ""),
+                                source=chunk.get("source"),
+                                score=chunk.get("score")
+                            )
+                        )
+                elif isinstance(data, list):
+                    # Handle list of chunks
+                    for chunk in data:
+                        if isinstance(chunk, dict):
+                            self.rag_chunks.append(
+                                RAGChunkData(
+                                    content=chunk.get("content", str(chunk)),
+                                    source=chunk.get("source"),
+                                    score=chunk.get("score")
+                                )
+                            )
+            except json.JSONDecodeError:
+                # If not JSON, treat the entire response as a single chunk
+                if response_content.strip():
+                    self.rag_chunks.append(
+                        RAGChunkData(
+                            content=response_content,
+                            source="knowledge_search",
+                            score=None
+                        )
+                    )
+        except Exception:
+            # Treat response as single chunk
+            if response_content.strip():
+                self.rag_chunks.append(
+                    RAGChunkData(
+                        content=response_content,
+                        source="knowledge_search",
+                        score=None
+                    )
+                )
