@@ -43,7 +43,7 @@ dependencies = [
     "authlib>=1.6.0",
     # OpenAPI exporter
     "email-validator>=2.2.0",
-    "openai==1.99.9",
+    "openai>=1.99.9",
     # Used by database interface
     "sqlalchemy>=2.0.42",
     # Used by Llama Stack version checker
