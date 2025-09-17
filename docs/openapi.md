@@ -779,7 +779,7 @@ Example:
         llm_response="You need to use Docker and Kubernetes for everything.",
         user_feedback="This response is too general and doesn't provide specific steps.",
         sentiment=-1,
-        categories=["incomplete", "not_relevant"]
+        categories=[FeedbackCategory.INCORRECT, FeedbackCategory.INCOMPLETE]
     )
     ```
 
@@ -907,7 +907,7 @@ Example:
     info_response = InfoResponse(
         name="Lightspeed Stack",
         service_version="1.0.0",
-        llama_stack_version="0.2.19",
+        llama_stack_version="0.2.20",
     )
     ```
 
