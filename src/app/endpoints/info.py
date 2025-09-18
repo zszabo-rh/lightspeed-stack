@@ -47,7 +47,7 @@ async def info_endpoint_handler(
     Handle request to the /info endpoint.
 
     Process GET requests to the /info endpoint, returning the
-    service name and version.
+    service name, version and Llama-stack version.
 
     Returns:
         InfoResponse: An object containing the service's name and version.
