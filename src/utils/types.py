@@ -1,13 +1,15 @@
 """Common types for the project."""
 
-from typing import Any, Optional, List
+from typing import Any, Optional
 import json
 from llama_stack_client.lib.agents.event_logger import interleaved_content_as_str
 from llama_stack_client.lib.agents.tool_parser import ToolParser
 from llama_stack_client.types.shared.completion_message import CompletionMessage
 from llama_stack_client.types.shared.tool_call import ToolCall
 from llama_stack_client.types.tool_execution_step import ToolExecutionStep
-from pydantic import BaseModel, Field
+from constants import DEFAULT_RAG_TOOL
+from pydantic import BaseModel
+from models.responses import RAGChunk, Field
 
 
 class Singleton(type):
@@ -56,12 +58,6 @@ class ToolCallSummary(BaseModel):
     response: str | None
 
 
-class RAGChunkData(BaseModel):
-    """RAG chunk data extracted from tool responses."""
-    
-    content: str
-    source: Optional[str] = None
-    score: Optional[float] = None
 
 
 class TurnSummary(BaseModel):
@@ -69,7 +65,7 @@ class TurnSummary(BaseModel):
 
     llm_response: str
     tool_calls: list[ToolCallSummary]
-    rag_chunks: List[RAGChunkData] = Field(default_factory=list)
+    rag_chunks: list[RAGChunk] = []
 
     def append_tool_calls_from_llama(self, tec: ToolExecutionStep) -> None:
         """Append the tool calls from a llama tool execution step."""
@@ -89,7 +85,7 @@ class TurnSummary(BaseModel):
             )
             
             # Extract RAG chunks from knowledge_search tool responses
-            if tc.tool_name == "knowledge_search" and resp and response_content:
+            if tc.tool_name == DEFAULT_RAG_TOOL and resp and response_content:
                 self._extract_rag_chunks_from_response(response_content)
     
     def _extract_rag_chunks_from_response(self, response_content: str) -> None:
@@ -102,7 +98,7 @@ class TurnSummary(BaseModel):
                 if isinstance(data, dict) and "chunks" in data:
                     for chunk in data["chunks"]:
                         self.rag_chunks.append(
-                            RAGChunkData(
+                            RAGChunk(
                                 content=chunk.get("content", ""),
                                 source=chunk.get("source"),
                                 score=chunk.get("score")
@@ -113,7 +109,7 @@ class TurnSummary(BaseModel):
                     for chunk in data:
                         if isinstance(chunk, dict):
                             self.rag_chunks.append(
-                                RAGChunkData(
+                                RAGChunk(
                                     content=chunk.get("content", str(chunk)),
                                     source=chunk.get("source"),
                                     score=chunk.get("score")
@@ -123,7 +119,7 @@ class TurnSummary(BaseModel):
                 # If not JSON, treat the entire response as a single chunk
                 if response_content.strip():
                     self.rag_chunks.append(
-                        RAGChunkData(
+                        RAGChunk(
                             content=response_content,
                             source="knowledge_search",
                             score=None
@@ -133,7 +129,7 @@ class TurnSummary(BaseModel):
             # Treat response as single chunk
             if response_content.strip():
                 self.rag_chunks.append(
-                    RAGChunkData(
+                    RAGChunk(
                         content=response_content,
                         source="knowledge_search",
                         score=None

@@ -226,6 +226,10 @@ async def query_endpoint_handler(
         # Update metrics for the LLM call
         metrics.llm_calls_total.labels(provider_id, model_id).inc()
 
+        # Convert RAG chunks to dictionary format once for reuse
+        logger.info("Processing RAG chunks...")
+        rag_chunks_dict = [chunk.model_dump() for chunk in summary.rag_chunks]
+
         if not is_transcripts_enabled():
             logger.debug("Transcript collection is disabled in the configuration")
         else:
@@ -238,7 +242,7 @@ async def query_endpoint_handler(
                 query=query_request.query,
                 query_request=query_request,
                 summary=summary,
-                rag_chunks=[],  # TODO(lucasagomes): implement rag_chunks
+                rag_chunks=rag_chunks_dict,
                 truncated=False,  # TODO(lucasagomes): implement truncation as part of quota work
                 attachments=query_request.attachments or [],
             )
@@ -251,29 +255,18 @@ async def query_endpoint_handler(
             provider_id=provider_id,
         )
 
-        # Convert tool calls and RAG chunks to response format
+        # Convert tool calls to response format
         logger.info("Processing tool calls...")
         tool_calls = [
             ToolCall(
                 tool_name=tc.name,
                 arguments=tc.args if isinstance(tc.args, dict) else {"query": str(tc.args)},
-                result={"response": tc.response} if tc.response else None
+                result={"response": tc.response} if tc.response and tc.name != constants.DEFAULT_RAG_TOOL else None
             )
             for tc in summary.tool_calls
         ]
 
         
-        logger.info("Processing RAG chunks...")
-        rag_chunks = [
-            RAGChunk(
-                content=chunk.content,
-                source=chunk.source,
-                score=chunk.score
-            )
-            for chunk in summary.rag_chunks
-        ]
-        
-        # Extract referenced documents from RAG chunks
         logger.info("Extracting referenced documents...")
         referenced_docs = []
         doc_sources = set()
@@ -292,7 +285,7 @@ async def query_endpoint_handler(
         response = QueryResponse(
             conversation_id=conversation_id,
             response=summary.llm_response,
-            rag_chunks=rag_chunks if rag_chunks else None,
+            rag_chunks=summary.rag_chunks if summary.rag_chunks else [],
             referenced_documents=referenced_docs if referenced_docs else None,
             tool_calls=tool_calls if tool_calls else None,
         )

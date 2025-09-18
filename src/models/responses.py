@@ -1,6 +1,6 @@
 """Models for REST API responses."""
 
-from typing import Any, Optional, List
+from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
@@ -88,17 +88,14 @@ class QueryResponse(BaseModel):
         ],
     )
 
-    rag_chunks: Optional[List[RAGChunk]] = Field(
-        None,
-        description="List of RAG chunks used to generate the response",
-    )
+    rag_chunks: list[RAGChunk] = []
 
-    referenced_documents: Optional[List[ReferencedDocument]] = Field(
+    referenced_documents: Optional[list[ReferencedDocument]] = Field(
         None,
         description="List of documents referenced in the response",
     )
 
-    tool_calls: Optional[List[ToolCall]] = Field(
+    tool_calls: Optional[list[ToolCall]] = Field(
         None,
         description="List of tool calls made during response generation",
     )
