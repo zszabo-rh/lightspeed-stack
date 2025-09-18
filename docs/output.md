@@ -34,7 +34,7 @@ Handle request to the / endpoint.
 Handle request to the /info endpoint.
 
 Process GET requests to the /info endpoint, returning the
-service name and version.
+service name, version and Llama-stack version.
 
 Returns:
     InfoResponse: An object containing the service's name and version.
@@ -74,7 +74,7 @@ Returns:
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
 | 200 | Successful Response | [ModelsResponse](#modelsresponse) |
-| 503 | Connection to Llama Stack is broken |  |
+| 500 | Connection to Llama Stack is broken |  |
 ## POST `/v1/query`
 
 > **Query Endpoint Handler**
@@ -108,7 +108,7 @@ Returns:
 | 200 | Successful Response | [QueryResponse](#queryresponse) |
 | 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse) |
 | 403 | User is not authorized | [ForbiddenResponse](#forbiddenresponse) |
-| 503 | Service Unavailable |  |
+| 500 | Internal Server Error |  |
 | 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## POST `/v1/streaming_query`
 
@@ -143,7 +143,11 @@ Raises:
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | ... |
+| 200 | Streaming response with Server-Sent Events | ...string |
+| 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse) |
+| 401 | Unauthorized: Invalid or missing Bearer token for k8s auth | [UnauthorizedResponse](#unauthorizedresponse) |
+| 403 | User is not authorized | [ForbiddenResponse](#forbiddenresponse) |
+| 500 | Internal Server Error |  |
 | 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## GET `/v1/config`
 
@@ -269,6 +273,8 @@ Handle request to retrieve all conversations for the authenticated user.
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
 | 200 | Successful Response | [ConversationsListResponse](#conversationslistresponse) |
+| 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse) |
+| 401 | Unauthorized: Invalid or missing Bearer token | [UnauthorizedResponse](#unauthorizedresponse) |
 | 503 | Service Unavailable |  |
 ## GET `/v1/conversations/{conversation_id}`
 
@@ -304,6 +310,8 @@ Returns:
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
 | 200 | Successful Response | [ConversationResponse](#conversationresponse) |
+| 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse) |
+| 401 | Unauthorized: Invalid or missing Bearer token | [UnauthorizedResponse](#unauthorizedresponse) |
 | 404 | Not Found |  |
 | 503 | Service Unavailable |  |
 | 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
@@ -335,6 +343,8 @@ Returns:
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
 | 200 | Successful Response | [ConversationDeleteResponse](#conversationdeleteresponse) |
+| 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse) |
+| 401 | Unauthorized: Invalid or missing Bearer token | [UnauthorizedResponse](#unauthorizedresponse) |
 | 404 | Not Found |  |
 | 503 | Service Unavailable |  |
 | 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |

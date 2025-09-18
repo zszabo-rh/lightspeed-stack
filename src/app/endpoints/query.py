@@ -59,7 +59,7 @@ query_response: dict[int | str, dict[str, Any]] = {
         "description": "User is not authorized",
         "model": ForbiddenResponse,
     },
-    503: {
+    500: {
         "detail": {
             "response": "Unable to connect to Llama Stack",
             "cause": "Connection error.",
