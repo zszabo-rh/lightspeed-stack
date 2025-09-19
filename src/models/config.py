@@ -524,8 +524,6 @@ class ConversationCache(ConfigurationBase):
                 # no other DBs configuration allowed
                 if any([self.memory, self.sqlite]):
                     raise ValueError("Only PostgreSQL cache config must be provided")
-            case _:
-                raise ValueError("Invalid conversation cache type selected")
         return self
 
 
