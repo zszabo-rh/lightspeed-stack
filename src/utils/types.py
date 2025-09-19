@@ -121,7 +121,7 @@ class TurnSummary(BaseModel):
                     self.rag_chunks.append(
                         RAGChunk(
                             content=response_content,
-                            source="knowledge_search",
+                            source=DEFAULT_RAG_TOOL,
                             score=None
                         )
                     )
@@ -131,7 +131,7 @@ class TurnSummary(BaseModel):
                 self.rag_chunks.append(
                     RAGChunk(
                         content=response_content,
-                        source="knowledge_search",
+                        source=DEFAULT_RAG_TOOL,
                         score=None
                     )
                 )

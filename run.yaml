@@ -127,7 +127,7 @@ vector_dbs:
   - vector_db_id: my_knowledge_base
     embedding_model: sentence-transformers/all-mpnet-base-v2
     embedding_dimension: 768
-    provider_id: my_vector_db
+    provider_id: faiss
 models:
   - metadata:
       embedding_dimension: 768 # Depends on chosen model
