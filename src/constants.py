@@ -58,3 +58,8 @@ DEFAULT_JWT_USER_NAME_CLAIM = "username"
 POSTGRES_DEFAULT_SSL_MODE = "prefer"
 # See: https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNECT-GSSENCMODE
 POSTGRES_DEFAULT_GSS_ENCMODE = "prefer"
+
+# cache constants
+CACHE_TYPE_MEMORY = "memory"
+CACHE_TYPE_SQLITE = "sqlite"
+CACHE_TYPE_POSTGRES = "postgres"
