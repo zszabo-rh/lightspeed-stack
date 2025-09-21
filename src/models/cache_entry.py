@@ -1,3 +1,5 @@
+"""Model for conversation history cache entry."""
+
 from pydantic import BaseModel
 
 
