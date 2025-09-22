@@ -36,7 +36,7 @@ class ModelsResponse(BaseModel):
 
 class RAGChunk(BaseModel):
     """Model representing a RAG chunk used in the response."""
-    
+
     content: str = Field(description="The content of the chunk")
     source: Optional[str] = Field(None, description="Source document or URL")
     score: Optional[float] = Field(None, description="Relevance score")
@@ -44,15 +44,17 @@ class RAGChunk(BaseModel):
 
 class ReferencedDocument(BaseModel):
     """Model representing a document referenced in the response."""
-    
+
     url: Optional[str] = Field(None, description="URL of the document")
     title: Optional[str] = Field(None, description="Title of the document")
-    chunk_count: Optional[int] = Field(None, description="Number of chunks from this document")
+    chunk_count: Optional[int] = Field(
+        None, description="Number of chunks from this document"
+    )
 
 
 class ToolCall(BaseModel):
     """Model representing a tool call made during response generation."""
-    
+
     tool_name: str = Field(description="Name of the tool called")
     arguments: dict[str, Any] = Field(description="Arguments passed to the tool")
     result: Optional[dict[str, Any]] = Field(None, description="Result from the tool")
@@ -110,21 +112,23 @@ class QueryResponse(BaseModel):
                         {
                             "content": "OLM is a component of the Operator Framework toolkit...",
                             "source": "kubernetes-docs/operators.md",
-                            "score": 0.95
+                            "score": 0.95,
                         }
                     ],
                     "referenced_documents": [
                         {
-                            "url": "https://kubernetes.io/docs/concepts/extend-kubernetes/operator/",
+                            "url": (
+                                "https://kubernetes.io/docs/concepts/extend-kubernetes/operator/"
+                            ),
                             "title": "Operator Pattern",
-                            "chunk_count": 2
+                            "chunk_count": 2,
                         }
                     ],
                     "tool_calls": [
                         {
                             "tool_name": "knowledge_search",
                             "arguments": {"query": "operator lifecycle manager"},
-                            "result": {"chunks_found": 5}
+                            "result": {"chunks_found": 5},
                         }
                     ],
                 }

@@ -30,7 +30,13 @@ from authorization.middleware import authorize
 from models.config import Action
 from models.database.conversations import UserConversation
 from models.requests import QueryRequest, Attachment
-from models.responses import QueryResponse, UnauthorizedResponse, ForbiddenResponse, RAGChunk, ReferencedDocument, ToolCall
+from models.responses import (
+    QueryResponse,
+    UnauthorizedResponse,
+    ForbiddenResponse,
+    ReferencedDocument,
+    ToolCall,
+)
 from utils.endpoints import (
     check_configuration_loaded,
     get_agent,
@@ -260,13 +266,18 @@ async def query_endpoint_handler(
         tool_calls = [
             ToolCall(
                 tool_name=tc.name,
-                arguments=tc.args if isinstance(tc.args, dict) else {"query": str(tc.args)},
-                result={"response": tc.response} if tc.response and tc.name != constants.DEFAULT_RAG_TOOL else None
+                arguments=(
+                    tc.args if isinstance(tc.args, dict) else {"query": str(tc.args)}
+                ),
+                result=(
+                    {"response": tc.response}
+                    if tc.response and tc.name != constants.DEFAULT_RAG_TOOL
+                    else None
+                ),
             )
             for tc in summary.tool_calls
         ]
 
-        
         logger.info("Extracting referenced documents...")
         referenced_docs = []
         doc_sources = set()
@@ -277,7 +288,9 @@ async def query_endpoint_handler(
                     ReferencedDocument(
                         url=chunk.source if chunk.source.startswith("http") else None,
                         title=chunk.source,
-                        chunk_count=sum(1 for c in summary.rag_chunks if c.source == chunk.source)
+                        chunk_count=sum(
+                            1 for c in summary.rag_chunks if c.source == chunk.source
+                        ),
                     )
                 )
 

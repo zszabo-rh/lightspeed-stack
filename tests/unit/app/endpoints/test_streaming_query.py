@@ -42,11 +42,11 @@ from app.endpoints.streaming_query import (
     stream_build_event,
 )
 
-from models.requests import QueryRequest, Attachment
-from models.config import ModelContextProtocolServer, Action
 from authorization.resolvers import NoopRolesResolver
-from utils.types import ToolCallSummary, TurnSummary
+from models.config import ModelContextProtocolServer, Action
+from models.requests import QueryRequest, Attachment
 from models.responses import RAGChunk
+from utils.types import ToolCallSummary, TurnSummary
 
 MOCK_AUTH = ("mock_user_id", "mock_username", False, "mock_token")
 
