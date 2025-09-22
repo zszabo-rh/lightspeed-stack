@@ -176,6 +176,7 @@ addopts = [
 
 [tool.pylint.main]
 source-roots = "src"
+ignore = ["query.py"]
 
 [build-system]
 requires = ["pdm-backend"]
