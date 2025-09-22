@@ -24,7 +24,8 @@ def test_conversation_cache_no_type_specified() -> None:
 def test_conversation_cache_unknown_type() -> None:
     """Check the test for cache type."""
     with pytest.raises(
-        ValidationError, match="Input should be 'memory', 'sqlite' or 'postgres'"
+        ValidationError,
+        match="Input should be 'noop', 'memory', 'sqlite' or 'postgres'",
     ):
         _ = ConversationCacheConfiguration(type="foo")
 
