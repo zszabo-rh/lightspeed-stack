@@ -489,7 +489,7 @@ class InferenceConfiguration(ConfigurationBase):
 class ConversationCacheConfiguration(ConfigurationBase):
     """Conversation cache configuration."""
 
-    type: Literal["memory", "sqlite", "postgres"] | None = None
+    type: Literal["noop", "memory", "sqlite", "postgres"] | None = None
     memory: Optional[InMemoryCacheConfig] = None
     sqlite: Optional[SQLiteDatabaseConfiguration] = None
     postgres: Optional[PostgreSQLDatabaseConfiguration] = None
