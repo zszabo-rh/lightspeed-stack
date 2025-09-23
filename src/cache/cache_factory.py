@@ -39,9 +39,11 @@ class CacheFactory:
                 if config.postgres is not None:
                     return PostgresCache(config.postgres)
                 raise ValueError("Expecting configuration for PostgreSQL cache")
+            case None:
+                raise ValueError("Cache type must be set")
             case _:
                 raise ValueError(
                     f"Invalid cache type: {config.type}. "
-                    f"Use '{constants.CACHE_TYPE_POSTGRES}' '{constants.CACHE_TYPE_SQLITE}' or "
-                    f"'{constants.CACHE_TYPE_MEMORY}' options."
+                    f"Use '{constants.CACHE_TYPE_POSTGRES}' '{constants.CACHE_TYPE_SQLITE}' "
+                    f"'{constants.CACHE_TYPE_MEMORY} or {constants.CACHE_TYPE_NOOP}' options."
                 )

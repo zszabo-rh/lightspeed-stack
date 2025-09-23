@@ -132,6 +132,15 @@ def test_conversation_cache_postgres_improper_config():
         _ = CacheFactory.conversation_cache(cc)
 
 
+def test_conversation_cache_no_type():
+    """Check if wrong cache configuration is detected properly."""
+    cc = ConversationCacheConfiguration(type=CACHE_TYPE_NOOP)
+    # simulate improper configuration (can not be done directly as model checks this)
+    cc.type = None
+    with pytest.raises(ValueError, match="Cache type must be set"):
+        CacheFactory.conversation_cache(cc)
+
+
 def test_conversation_cache_wrong_cache(invalid_cache_type_config_fixture):
     """Check if wrong cache configuration is detected properly."""
     with pytest.raises(ValueError, match="Invalid cache type"):
