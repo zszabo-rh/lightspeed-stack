@@ -41,6 +41,7 @@ class RAGChunk(BaseModel):
     source: Optional[str] = Field(None, description="Source document or URL")
     score: Optional[float] = Field(None, description="Relevance score")
 
+
 class ToolCall(BaseModel):
     """Model representing a tool call made during response generation."""
 
@@ -57,11 +58,12 @@ class ReferencedDocument(BaseModel):
         doc_title: Title of the referenced doc.
     """
 
-    doc_url: AnyUrl = Field(
+    doc_url: Optional[AnyUrl] = Field(
         None, description="URL of the referenced document"
     )
 
     doc_title: str = Field(description="Title of the referenced document")
+
 
 class QueryResponse(BaseModel):
     """Model representing LLM response to a query.
@@ -98,7 +100,7 @@ class QueryResponse(BaseModel):
         None,
         description="List of tool calls made during response generation",
     )
-    
+
     referenced_documents: list[ReferencedDocument] = Field(
         default_factory=list,
         description="List of documents referenced in generating the response",
@@ -145,7 +147,6 @@ class QueryResponse(BaseModel):
             ]
         }
     }
-    
 
 
 class InfoResponse(BaseModel):
