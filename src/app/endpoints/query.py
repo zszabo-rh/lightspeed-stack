@@ -290,7 +290,7 @@ def select_model_and_provider_id(
 
     Returns:
         A tuple containing the combined model ID (in the format
-        "provider/model") and the provider ID.
+        "provider/model"), and its separated parts: the model label and the provider ID.
 
     Raises:
         HTTPException: If no suitable LLM model is found or the selected model is not available.
@@ -322,7 +322,8 @@ def select_model_and_provider_id(
             model_id = model.identifier
             provider_id = model.provider_id
             logger.info("Selected model: %s", model)
-            return model_id, model_id, provider_id
+            model_label = model_id.split("/", 1)[1] if "/" in model_id else model_id
+            return model_id, model_label, provider_id
         except (StopIteration, AttributeError) as e:
             message = "No LLM model found in available models"
             logger.error(message)
