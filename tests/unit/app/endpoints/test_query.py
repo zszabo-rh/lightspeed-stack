@@ -5,31 +5,38 @@
 # pylint: disable=too-many-lines
 
 import json
-from fastapi import HTTPException, status, Request
-import pytest
 
+import pytest
+from fastapi import HTTPException, Request, status
 from llama_stack_client import APIConnectionError
 from llama_stack_client.types import UserMessage  # type: ignore
-from llama_stack_client.types.shared.interleaved_content import (
-    TextContentItem,
-)
+from llama_stack_client.types.agents.turn import Turn
+from llama_stack_client.types.shared.interleaved_content_item import TextContentItem
+from llama_stack_client.types.tool_execution_step import ToolExecutionStep
+from llama_stack_client.types.tool_response import ToolResponse
+from pydantic import AnyUrl
 
-from configuration import AppConfig
 from app.endpoints.query import (
-    query_endpoint_handler,
-    select_model_and_provider_id,
-    retrieve_response,
-    validate_attachments_metadata,
-    is_transcripts_enabled,
-    get_rag_toolgroups,
     evaluate_model_hints,
+    get_rag_toolgroups,
+    is_transcripts_enabled,
+    parse_metadata_from_text_item,
+    parse_referenced_documents,
+    query_endpoint_handler,
+    retrieve_response,
+    select_model_and_provider_id,
+    validate_attachments_metadata,
 )
-
-from models.requests import QueryRequest, Attachment
+from authorization.resolvers import NoopRolesResolver
+from configuration import AppConfig
 from models.config import Action, ModelContextProtocolServer
 from models.database.conversations import UserConversation
+from models.requests import Attachment, QueryRequest
+from models.responses import ReferencedDocument
+from tests.unit.app.endpoints.test_streaming_query import (
+    SAMPLE_KNOWLEDGE_SEARCH_RESULTS,
+)
 from utils.types import ToolCallSummary, TurnSummary
-from authorization.resolvers import NoopRolesResolver
 
 MOCK_AUTH = ("mock_user_id", "mock_username", False, "mock_token")
 
@@ -167,10 +174,11 @@ async def _test_query_endpoint_handler(
     )
     conversation_id = "fake_conversation_id"
     query = "What is OpenStack?"
+    referenced_documents = []
 
     mocker.patch(
         "app.endpoints.query.retrieve_response",
-        return_value=(summary, conversation_id),
+        return_value=(summary, conversation_id, referenced_documents),
     )
     mocker.patch(
         "app.endpoints.query.select_model_and_provider_id",
@@ -458,7 +466,7 @@ async def test_retrieve_response_no_returned_message(prepare_agent_mocks, mocker
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    response, _ = await retrieve_response(
+    response, _, _ = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -490,7 +498,7 @@ async def test_retrieve_response_message_without_content(prepare_agent_mocks, mo
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    response, _ = await retrieve_response(
+    response, _, _ = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -523,7 +531,7 @@ async def test_retrieve_response_vector_db_available(prepare_agent_mocks, mocker
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    summary, conversation_id = await retrieve_response(
+    summary, conversation_id, _ = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -562,7 +570,7 @@ async def test_retrieve_response_no_available_shields(prepare_agent_mocks, mocke
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    summary, conversation_id = await retrieve_response(
+    summary, conversation_id, _ = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -612,7 +620,7 @@ async def test_retrieve_response_one_available_shield(prepare_agent_mocks, mocke
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    summary, conversation_id = await retrieve_response(
+    summary, conversation_id, _ = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -665,7 +673,7 @@ async def test_retrieve_response_two_available_shields(prepare_agent_mocks, mock
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    summary, conversation_id = await retrieve_response(
+    summary, conversation_id, _ = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -720,7 +728,7 @@ async def test_retrieve_response_four_available_shields(prepare_agent_mocks, moc
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    summary, conversation_id = await retrieve_response(
+    summary, conversation_id, _ = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -777,7 +785,7 @@ async def test_retrieve_response_with_one_attachment(prepare_agent_mocks, mocker
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    summary, conversation_id = await retrieve_response(
+    summary, conversation_id, _ = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -832,7 +840,7 @@ async def test_retrieve_response_with_two_attachments(prepare_agent_mocks, mocke
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    summary, conversation_id = await retrieve_response(
+    summary, conversation_id, _ = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -854,6 +862,123 @@ async def test_retrieve_response_with_two_attachments(prepare_agent_mocks, mocke
         ],
         toolgroups=None,
     )
+
+
+def test_parse_metadata_from_text_item_valid(mocker):
+    """Test parsing metadata from a TextContentItem."""
+    text = """
+    Some text...
+    Metadata: {"docs_url": "https://redhat.com", "title": "Example Doc"}
+    """
+    mock_item = mocker.Mock(spec=TextContentItem)
+    mock_item.text = text
+
+    doc = parse_metadata_from_text_item(mock_item)
+
+    assert isinstance(doc, ReferencedDocument)
+    assert doc.doc_url == AnyUrl("https://redhat.com")
+    assert doc.doc_title == "Example Doc"
+
+
+def test_parse_metadata_from_text_item_missing_title(mocker):
+    """Test parsing metadata from a TextContentItem with missing title."""
+    mock_item = mocker.Mock(spec=TextContentItem)
+    mock_item.text = """Metadata: {"docs_url": "https://redhat.com"}"""
+    doc = parse_metadata_from_text_item(mock_item)
+    assert doc is None
+
+
+def test_parse_metadata_from_text_item_missing_url(mocker):
+    """Test parsing metadata from a TextContentItem with missing url."""
+    mock_item = mocker.Mock(spec=TextContentItem)
+    mock_item.text = """Metadata: {"title": "Example Doc"}"""
+    doc = parse_metadata_from_text_item(mock_item)
+    assert doc is None
+
+
+def test_parse_metadata_from_text_item_malformed_url(mocker):
+    """Test parsing metadata from a TextContentItem with malformed url."""
+    mock_item = mocker.Mock(spec=TextContentItem)
+    mock_item.text = (
+        """Metadata: {"docs_url": "not a valid url", "title": "Example Doc"}"""
+    )
+    doc = parse_metadata_from_text_item(mock_item)
+    assert doc is None
+
+
+def test_parse_referenced_documents_single_doc(mocker):
+    """Test parsing metadata from a Turn containing a single doc."""
+    text_item = mocker.Mock(spec=TextContentItem)
+    text_item.text = (
+        """Metadata: {"docs_url": "https://redhat.com", "title": "Example Doc"}"""
+    )
+
+    tool_response = mocker.Mock(spec=ToolResponse)
+    tool_response.tool_name = "knowledge_search"
+    tool_response.content = [text_item]
+
+    step = mocker.Mock(spec=ToolExecutionStep)
+    step.tool_responses = [tool_response]
+
+    response = mocker.Mock(spec=Turn)
+    response.steps = [step]
+
+    docs = parse_referenced_documents(response)
+
+    assert len(docs) == 1
+    assert docs[0].doc_url == AnyUrl("https://redhat.com")
+    assert docs[0].doc_title == "Example Doc"
+
+
+def test_parse_referenced_documents_multiple_docs(mocker):
+    """Test parsing metadata from a Turn containing multiple docs."""
+    text_item = mocker.Mock(spec=TextContentItem)
+    text_item.text = SAMPLE_KNOWLEDGE_SEARCH_RESULTS
+
+    tool_response = ToolResponse(
+        call_id="c1",
+        tool_name="knowledge_search",
+        content=[
+            TextContentItem(text=s, type="text")
+            for s in SAMPLE_KNOWLEDGE_SEARCH_RESULTS
+        ],
+    )
+
+    step = mocker.Mock(spec=ToolExecutionStep)
+    step.tool_responses = [tool_response]
+
+    response = mocker.Mock(spec=Turn)
+    response.steps = [step]
+
+    docs = parse_referenced_documents(response)
+
+    assert len(docs) == 2
+    assert docs[0].doc_url == AnyUrl("https://example.com/doc1")
+    assert docs[0].doc_title == "Doc1"
+    assert docs[1].doc_url == AnyUrl("https://example.com/doc2")
+    assert docs[1].doc_title == "Doc2"
+
+
+def test_parse_referenced_documents_ignores_other_tools(mocker):
+    """Test parsing metadata from a Turn with the wrong tool name."""
+    text_item = mocker.Mock(spec=TextContentItem)
+    text_item.text = (
+        """Metadata: {"docs_url": "https://redhat.com", "title": "Example Doc"}"""
+    )
+
+    tool_response = mocker.Mock(spec=ToolResponse)
+    tool_response.tool_name = "not rag tool"
+    tool_response.content = [text_item]
+
+    step = mocker.Mock(spec=ToolExecutionStep)
+    step.tool_responses = [tool_response]
+
+    response = mocker.Mock()
+    response.steps = [step]
+
+    docs = parse_referenced_documents(response)
+
+    assert not docs
 
 
 @pytest.mark.asyncio
@@ -888,7 +1013,7 @@ async def test_retrieve_response_with_mcp_servers(prepare_agent_mocks, mocker):
     model_id = "fake_model_id"
     access_token = "test_token_123"
 
-    summary, conversation_id = await retrieve_response(
+    summary, conversation_id, _ = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -958,7 +1083,7 @@ async def test_retrieve_response_with_mcp_servers_empty_token(
     model_id = "fake_model_id"
     access_token = ""  # Empty token
 
-    summary, conversation_id = await retrieve_response(
+    summary, conversation_id, _ = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -1030,7 +1155,7 @@ async def test_retrieve_response_with_mcp_servers_and_mcp_headers(
         },
     }
 
-    summary, conversation_id = await retrieve_response(
+    summary, conversation_id, _ = await retrieve_response(
         mock_client,
         model_id,
         query_request,
@@ -1115,7 +1240,7 @@ async def test_retrieve_response_shield_violation(prepare_agent_mocks, mocker):
 
     query_request = QueryRequest(query="What is OpenStack?")
 
-    _, conversation_id = await retrieve_response(
+    _, conversation_id, _ = await retrieve_response(
         mock_client, "fake_model_id", query_request, "test_token"
     )
 
@@ -1200,7 +1325,7 @@ async def test_auth_tuple_unpacking_in_query_endpoint_handler(mocker, dummy_requ
     )
     mock_retrieve_response = mocker.patch(
         "app.endpoints.query.retrieve_response",
-        return_value=(summary, "test_conversation_id"),
+        return_value=(summary, "test_conversation_id", []),
     )
 
     mocker.patch(
@@ -1248,10 +1373,11 @@ async def test_query_endpoint_handler_no_tools_true(mocker, dummy_request):
     )
     conversation_id = "fake_conversation_id"
     query = "What is OpenStack?"
+    referenced_documents = []
 
     mocker.patch(
         "app.endpoints.query.retrieve_response",
-        return_value=(summary, conversation_id),
+        return_value=(summary, conversation_id, referenced_documents),
     )
     mocker.patch(
         "app.endpoints.query.select_model_and_provider_id",
@@ -1299,10 +1425,11 @@ async def test_query_endpoint_handler_no_tools_false(mocker, dummy_request):
     )
     conversation_id = "fake_conversation_id"
     query = "What is OpenStack?"
+    referenced_documents = []
 
     mocker.patch(
         "app.endpoints.query.retrieve_response",
-        return_value=(summary, conversation_id),
+        return_value=(summary, conversation_id, referenced_documents),
     )
     mocker.patch(
         "app.endpoints.query.select_model_and_provider_id",
@@ -1354,7 +1481,7 @@ async def test_retrieve_response_no_tools_bypasses_mcp_and_rag(
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    summary, conversation_id = await retrieve_response(
+    summary, conversation_id, _ = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
@@ -1405,7 +1532,7 @@ async def test_retrieve_response_no_tools_false_preserves_functionality(
     model_id = "fake_model_id"
     access_token = "test_token"
 
-    summary, conversation_id = await retrieve_response(
+    summary, conversation_id, _ = await retrieve_response(
         mock_client, model_id, query_request, access_token
     )
 
