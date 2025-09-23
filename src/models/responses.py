@@ -2,7 +2,7 @@
 
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import AnyUrl, BaseModel, Field
 
 
 class ModelsResponse(BaseModel):
@@ -41,17 +41,6 @@ class RAGChunk(BaseModel):
     source: Optional[str] = Field(None, description="Source document or URL")
     score: Optional[float] = Field(None, description="Relevance score")
 
-
-class ReferencedDocument(BaseModel):
-    """Model representing a document referenced in the response."""
-
-    url: Optional[str] = Field(None, description="URL of the document")
-    title: Optional[str] = Field(None, description="Title of the document")
-    chunk_count: Optional[int] = Field(
-        None, description="Number of chunks from this document"
-    )
-
-
 class ToolCall(BaseModel):
     """Model representing a tool call made during response generation."""
 
@@ -60,6 +49,20 @@ class ToolCall(BaseModel):
     result: Optional[dict[str, Any]] = Field(None, description="Result from the tool")
 
 
+class ReferencedDocument(BaseModel):
+    """Model representing a document referenced in generating a response.
+
+    Attributes:
+        doc_url: Url to the referenced doc.
+        doc_title: Title of the referenced doc.
+    """
+
+    doc_url: AnyUrl = Field(
+        None, description="URL of the referenced document"
+    )
+
+    doc_title: str = Field(description="Title of the referenced document")
+
 class QueryResponse(BaseModel):
     """Model representing LLM response to a query.
 
@@ -67,14 +70,13 @@ class QueryResponse(BaseModel):
         conversation_id: The optional conversation ID (UUID).
         response: The response.
         rag_chunks: List of RAG chunks used to generate the response.
-        referenced_documents: List of documents referenced in the response.
+        referenced_documents: The URLs and titles for the documents used to generate the response.
         tool_calls: List of tool calls made during response generation.
         TODO: truncated: Whether conversation history was truncated.
         TODO: input_tokens: Number of tokens sent to LLM.
         TODO: output_tokens: Number of tokens received from LLM.
         TODO: available_quotas: Quota available as measured by all configured quota limiters
         TODO: tool_results: List of tool results.
-
     """
 
     conversation_id: Optional[str] = Field(
@@ -92,15 +94,25 @@ class QueryResponse(BaseModel):
 
     rag_chunks: list[RAGChunk] = []
 
-    referenced_documents: Optional[list[ReferencedDocument]] = Field(
-        None,
-        description="List of documents referenced in the response",
-    )
-
     tool_calls: Optional[list[ToolCall]] = Field(
         None,
         description="List of tool calls made during response generation",
     )
+    
+    referenced_documents: list[ReferencedDocument] = Field(
+        default_factory=list,
+        description="List of documents referenced in generating the response",
+        examples=[
+            [
+                {
+                    "doc_url": "https://docs.openshift.com/"
+                    "container-platform/4.15/operators/olm/index.html",
+                    "doc_title": "Operator Lifecycle Manager (OLM)",
+                }
+            ]
+        ],
+    )
+
     # provides examples for /docs endpoint
     model_config = {
         "json_schema_extra": {
@@ -115,15 +127,6 @@ class QueryResponse(BaseModel):
                             "score": 0.95,
                         }
                     ],
-                    "referenced_documents": [
-                        {
-                            "url": (
-                                "https://kubernetes.io/docs/concepts/extend-kubernetes/operator/"
-                            ),
-                            "title": "Operator Pattern",
-                            "chunk_count": 2,
-                        }
-                    ],
                     "tool_calls": [
                         {
                             "tool_name": "knowledge_search",
@@ -131,10 +134,18 @@ class QueryResponse(BaseModel):
                             "result": {"chunks_found": 5},
                         }
                     ],
+                    "referenced_documents": [
+                        {
+                            "doc_url": "https://docs.openshift.com/"
+                            "container-platform/4.15/operators/olm/index.html",
+                            "doc_title": "Operator Lifecycle Manager (OLM)",
+                        }
+                    ],
                 }
             ]
         }
     }
+    
 
 
 class InfoResponse(BaseModel):
@@ -150,7 +161,7 @@ class InfoResponse(BaseModel):
         info_response = InfoResponse(
             name="Lightspeed Stack",
             service_version="1.0.0",
-            llama_stack_version="0.2.19",
+            llama_stack_version="0.2.20",
         )
         ```
     """
@@ -275,7 +286,11 @@ class LivenessResponse(BaseModel):
         ```
     """
 
-    alive: bool
+    alive: bool = Field(
+        ...,
+        description="Flag indicating that the app is alive",
+        examples=[True, False],
+    )
 
     # provides examples for /docs endpoint
     model_config = {

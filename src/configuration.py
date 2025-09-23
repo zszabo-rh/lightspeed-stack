@@ -19,7 +19,11 @@ from models.config import (
     AuthenticationConfiguration,
     InferenceConfiguration,
     DatabaseConfiguration,
+    ConversationCacheConfiguration,
 )
+
+from cache.cache import Cache
+from cache.cache_factory import CacheFactory
 
 
 logger = logging.getLogger(__name__)
@@ -43,6 +47,7 @@ class AppConfig:
     def __init__(self) -> None:
         """Initialize the class instance."""
         self._configuration: Optional[Configuration] = None
+        self._conversation_cache: Optional[Cache] = None
 
     def load_configuration(self, filename: str) -> None:
         """Load configuration from YAML file."""
@@ -125,11 +130,27 @@ class AppConfig:
         return self._configuration.inference
 
     @property
+    def conversation_cache_configuration(self) -> ConversationCacheConfiguration:
+        """Return conversation cache configuration."""
+        if self._configuration is None:
+            raise LogicError("logic error: configuration is not loaded")
+        return self._configuration.conversation_cache
+
+    @property
     def database_configuration(self) -> DatabaseConfiguration:
         """Return database configuration."""
         if self._configuration is None:
             raise LogicError("logic error: configuration is not loaded")
         return self._configuration.database
+
+    @property
+    def conversation_cache(self) -> Cache | None:
+        """Return the conversation cache."""
+        if self._conversation_cache is None and self._configuration is not None:
+            self._conversation_cache = CacheFactory.conversation_cache(
+                self._configuration.conversation_cache
+            )
+        return self._conversation_cache
 
 
 configuration: AppConfig = AppConfig()
