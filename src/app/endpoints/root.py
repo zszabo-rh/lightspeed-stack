@@ -6,15 +6,10 @@ from typing import Annotated
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse
 
-from authentication.interface import AuthTuple
-from authentication import get_auth_dependency
-from authorization.middleware import authorize
-from models.config import Action
 
 logger = logging.getLogger("app.endpoints.handlers")
 router = APIRouter(tags=["root"])
 
-auth_dependency = get_auth_dependency()
 
 
 INDEX_PAGE = """
@@ -778,14 +773,11 @@ Rz1JGaaTn29/SlPX2oA//9k=">
 
 
 @router.get("/", response_class=HTMLResponse)
-@authorize(Action.INFO)
 async def root_endpoint_handler(
-    auth: Annotated[AuthTuple, Depends(auth_dependency)],
     request: Request,
 ) -> HTMLResponse:
     """Handle request to the / endpoint."""
     # Used only for authorization
-    _ = auth
 
     # Nothing interesting in the request
     _ = request

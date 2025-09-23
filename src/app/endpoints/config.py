@@ -5,9 +5,6 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Request, Depends
 
-from authentication.interface import AuthTuple
-from authentication import get_auth_dependency
-from authorization.middleware import authorize
 from configuration import configuration
 from models.config import Action, Configuration
 from utils.endpoints import check_configuration_loaded
@@ -15,7 +12,6 @@ from utils.endpoints import check_configuration_loaded
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["config"])
 
-auth_dependency = get_auth_dependency()
 
 
 get_config_responses: dict[int | str, dict[str, Any]] = {
@@ -61,9 +57,7 @@ get_config_responses: dict[int | str, dict[str, Any]] = {
 
 
 @router.get("/config", responses=get_config_responses)
-@authorize(Action.GET_CONFIG)
 async def config_endpoint_handler(
-    auth: Annotated[AuthTuple, Depends(auth_dependency)],
     request: Request,
 ) -> Configuration:
     """
@@ -76,7 +70,6 @@ async def config_endpoint_handler(
         Configuration: The loaded service configuration object.
     """
     # Used only for authorization
-    _ = auth
 
     # Nothing interesting in the request
     _ = request

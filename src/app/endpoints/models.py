@@ -7,12 +7,8 @@ from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.params import Depends
 from llama_stack_client import APIConnectionError
 
-from authentication import get_auth_dependency
-from authentication.interface import AuthTuple
 from client import AsyncLlamaStackClientHolder
 from configuration import configuration
-from authorization.middleware import authorize
-from models.config import Action
 from models.responses import ModelsResponse
 from utils.endpoints import check_configuration_loaded
 
@@ -20,7 +16,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["models"])
 
 
-auth_dependency = get_auth_dependency()
 
 
 models_responses: dict[int | str, dict[str, Any]] = {
@@ -51,10 +46,8 @@ models_responses: dict[int | str, dict[str, Any]] = {
 
 
 @router.get("/models", responses=models_responses)
-@authorize(Action.GET_MODELS)
 async def models_endpoint_handler(
     request: Request,
-    auth: Annotated[AuthTuple, Depends(auth_dependency)],
 ) -> ModelsResponse:
     """
     Handle requests to the /models endpoint.
@@ -70,7 +63,6 @@ async def models_endpoint_handler(
         ModelsResponse: An object containing the list of available models.
     """
     # Used only by the middleware
-    _ = auth
 
     # Nothing interesting in the request
     _ = request

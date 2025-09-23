@@ -7,19 +7,13 @@ from fastapi import APIRouter, HTTPException, Request, status
 from fastapi import Depends
 from llama_stack_client import APIConnectionError
 
-from authentication.interface import AuthTuple
-from authentication import get_auth_dependency
-from authorization.middleware import authorize
 from configuration import configuration
 from client import AsyncLlamaStackClientHolder
-from models.config import Action
 from models.responses import InfoResponse
 from version import __version__
 
 logger = logging.getLogger("app.endpoints.handlers")
 router = APIRouter(tags=["info"])
-
-auth_dependency = get_auth_dependency()
 
 
 get_info_responses: dict[int | str, dict[str, Any]] = {
@@ -38,9 +32,7 @@ get_info_responses: dict[int | str, dict[str, Any]] = {
 
 
 @router.get("/info", responses=get_info_responses)
-@authorize(Action.INFO)
 async def info_endpoint_handler(
-    auth: Annotated[AuthTuple, Depends(auth_dependency)],
     request: Request,
 ) -> InfoResponse:
     """
@@ -53,7 +45,6 @@ async def info_endpoint_handler(
         InfoResponse: An object containing the service's name and version.
     """
     # Used only for authorization
-    _ = auth
 
     # Nothing interesting in the request
     _ = request

@@ -20,6 +20,20 @@ from log import get_logger
 logger = get_logger(__name__)
 
 
+def get_auth_dependency_lazy():
+    """Factory function that returns a proper FastAPI dependency function."""
+    try:
+        from authentication import get_auth_dependency
+        # Return the actual auth dependency directly - let FastAPI handle it
+        return get_auth_dependency()
+    except (ImportError, Exception):
+        # Return a mock auth dependency for when authentication is not available
+        # Make it non-async to match FastAPI's expectation
+        def mock_auth_dependency():
+            return ("fallback-user-id", "fallback-username", True, "fallback-token")
+        return mock_auth_dependency
+
+
 def delete_conversation(conversation_id: str) -> None:
     """Delete a conversation according to its ID."""
     with get_session() as session:

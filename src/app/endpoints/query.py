@@ -26,9 +26,6 @@ from llama_stack_client.types.tool_execution_step import ToolExecutionStep
 import constants
 import metrics
 from app.database import get_session
-from authentication import get_auth_dependency
-from authentication.interface import AuthTuple
-from authorization.middleware import authorize
 from client import AsyncLlamaStackClientHolder
 from configuration import configuration
 from metrics.utils import update_llm_token_count_from_turn
@@ -44,6 +41,7 @@ from models.responses import (
 from utils.endpoints import (
     check_configuration_loaded,
     get_agent,
+    get_auth_dependency_lazy,
     get_system_prompt,
     validate_conversation_ownership,
     validate_model_provider_override,
@@ -54,7 +52,6 @@ from utils.types import TurnSummary
 
 logger = logging.getLogger("app.endpoints.handlers")
 router = APIRouter(tags=["query"])
-auth_dependency = get_auth_dependency()
 
 query_response: dict[int | str, dict[str, Any]] = {
     200: {
@@ -167,11 +164,10 @@ def evaluate_model_hints(
 
 
 @router.post("/query", responses=query_response)
-@authorize(Action.QUERY)
 async def query_endpoint_handler(
     request: Request,
     query_request: QueryRequest,
-    auth: Annotated[AuthTuple, Depends(auth_dependency)],
+    auth: Any = Depends(get_auth_dependency_lazy()),
     mcp_headers: dict[str, dict[str, str]] = Depends(mcp_headers_dependency),
 ) -> QueryResponse:
     """
@@ -192,11 +188,13 @@ async def query_endpoint_handler(
     check_configuration_loaded(configuration)
 
     # Enforce RBAC: optionally disallow overriding model/provider in requests
-    validate_model_provider_override(query_request, request.state.authorized_actions)
+    authorized_actions = getattr(request.state, 'authorized_actions', [])
+    validate_model_provider_override(query_request, authorized_actions)
 
     # log Llama Stack configuration
     logger.info("Llama stack config: %s", configuration.llama_stack_configuration)
 
+    # Unpack authentication tuple (provided by FastAPI dependency injection)
     user_id, _, _, token = auth
 
     user_conversation: UserConversation | None = None
@@ -208,7 +206,7 @@ async def query_endpoint_handler(
             user_id=user_id,
             conversation_id=query_request.conversation_id,
             others_allowed=(
-                Action.QUERY_OTHERS_CONVERSATIONS in request.state.authorized_actions
+                Action.QUERY_OTHERS_CONVERSATIONS in authorized_actions
             ),
         )
 

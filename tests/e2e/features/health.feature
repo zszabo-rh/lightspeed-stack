@@ -22,7 +22,7 @@ Feature: REST API tests
           """
       And The body of the response is the following
           """
-          {"ready": true, "reason": "All providers are healthy", "providers": []}
+          {"ready": true, "reason": "Application fully initialized and ready", "providers": []}
           """
 
 
@@ -49,7 +49,7 @@ Feature: REST API tests
      Then The status code of the response is 503
       And The body of the response, ignoring the "providers" field, is the following
           """
-          {"ready": false, "reason": "Providers not healthy: unknown"}
+          {"ready": false, "reason": "Unhealthy providers: unknown"}
           """
 
 

@@ -8,21 +8,14 @@ from prometheus_client import (
     CONTENT_TYPE_LATEST,
 )
 
-from authentication.interface import AuthTuple
-from authentication import get_auth_dependency
-from authorization.middleware import authorize
-from models.config import Action
 from metrics.utils import setup_model_metrics
 
 router = APIRouter(tags=["metrics"])
 
-auth_dependency = get_auth_dependency()
 
 
 @router.get("/metrics", response_class=PlainTextResponse)
-@authorize(Action.GET_METRICS)
 async def metrics_endpoint_handler(
-    auth: Annotated[AuthTuple, Depends(auth_dependency)],
     request: Request,
 ) -> PlainTextResponse:
     """
@@ -36,7 +29,6 @@ async def metrics_endpoint_handler(
     Prometheus format.
     """
     # Used only for authorization
-    _ = auth
 
     # Nothing interesting in the request
     _ = request

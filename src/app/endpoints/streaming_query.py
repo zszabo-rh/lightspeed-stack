@@ -20,22 +20,23 @@ from llama_stack_client.types.shared.interleaved_content_item import TextContent
 from fastapi import APIRouter, HTTPException, Request, Depends, status
 from fastapi.responses import StreamingResponse
 
-from authentication import get_auth_dependency
-from authentication.interface import AuthTuple
-from authorization.middleware import authorize
 from client import AsyncLlamaStackClientHolder
 from configuration import configuration
 import metrics
 from metrics.utils import update_llm_token_count_from_turn
-from models.config import Action
 from models.requests import QueryRequest
 from models.responses import UnauthorizedResponse, ForbiddenResponse
 from models.database.conversations import UserConversation
-from utils.endpoints import check_configuration_loaded, get_agent, get_system_prompt
+from utils.endpoints import (
+    check_configuration_loaded,
+    get_agent,
+    get_auth_dependency_lazy,
+    get_system_prompt,
+    validate_model_provider_override,
+)
 from utils.mcp_headers import mcp_headers_dependency, handle_mcp_headers_with_toolgroups
 from utils.transcripts import store_transcript
 from utils.types import TurnSummary
-from utils.endpoints import validate_model_provider_override
 
 from app.endpoints.query import (
     get_rag_toolgroups,
@@ -51,7 +52,6 @@ from app.endpoints.query import (
 
 logger = logging.getLogger("app.endpoints.handlers")
 router = APIRouter(tags=["streaming_query"])
-auth_dependency = get_auth_dependency()
 
 streaming_query_responses: dict[int | str, dict[str, Any]] = {
     200: {
@@ -561,11 +561,10 @@ def _handle_heartbeat_event(chunk_id: int) -> Iterator[str]:
 
 
 @router.post("/streaming_query", responses=streaming_query_responses)
-@authorize(Action.STREAMING_QUERY)
 async def streaming_query_endpoint_handler(  # pylint: disable=too-many-locals
     request: Request,
     query_request: QueryRequest,
-    auth: Annotated[AuthTuple, Depends(auth_dependency)],
+    auth: Any = Depends(get_auth_dependency_lazy()),
     mcp_headers: dict[str, dict[str, str]] = Depends(mcp_headers_dependency),
 ) -> StreamingResponse:
     """
@@ -592,11 +591,13 @@ async def streaming_query_endpoint_handler(  # pylint: disable=too-many-locals
     check_configuration_loaded(configuration)
 
     # Enforce RBAC: optionally disallow overriding model/provider in requests
-    validate_model_provider_override(query_request, request.state.authorized_actions)
+    authorized_actions = getattr(request.state, 'authorized_actions', [])
+    validate_model_provider_override(query_request, authorized_actions)
 
     # log Llama Stack configuration
     logger.info("Llama stack config: %s", configuration.llama_stack_configuration)
 
+    # Unpack authentication tuple (provided by FastAPI dependency injection)
     user_id, _user_name, _skip_userid_check, token = auth
 
     user_conversation: UserConversation | None = None

@@ -5,11 +5,11 @@ from typing import Callable, Awaitable
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.routing import Mount, Route, WebSocketRoute
-
 from app import routers
 from app.database import initialize_database, create_tables
 from configuration import configuration
 from log import get_logger
+from models.config import CORSConfiguration
 import metrics
 from utils.common import register_mcp_servers_async
 import version
@@ -18,7 +18,15 @@ logger = get_logger(__name__)
 
 logger.info("Initializing app")
 
-service_name = configuration.configuration.name
+# Use a default service name when configuration is not available
+def get_service_name():
+    """Get service name with fallback for when configuration is not loaded."""
+    try:
+        return configuration.configuration.name
+    except (AttributeError, ImportError, Exception):
+        return "lightspeed-stack"  # Fallback name
+
+service_name = get_service_name()
 
 
 app = FastAPI(
@@ -40,7 +48,16 @@ app = FastAPI(
     ],
 )
 
-cors = configuration.service_configuration.cors
+def get_cors_config():
+    """Get CORS configuration with fallback defaults."""
+    try:
+        return configuration.service_configuration.cors
+    except (AttributeError, ImportError, Exception):
+        # Fallback CORS configuration for minimal mode
+        return CORSConfiguration()
+
+# Initialize CORS configuration
+cors = get_cors_config()
 
 app.add_middleware(
     CORSMiddleware,
@@ -88,11 +105,33 @@ app_routes_paths = [
 
 @app.on_event("startup")
 async def startup_event() -> None:
-    """Perform logger setup on service startup."""
-    logger.info("Registering MCP servers")
-    await register_mcp_servers_async(logger, configuration.configuration)
-    get_logger("app.endpoints.handlers")
-    logger.info("App startup complete")
+    """Perform setup on service startup and track initialization state."""
+    # Import app_state here to avoid circular imports
+    from app.endpoints.health import app_state
+    
+    try:
+        logger.info("Registering MCP servers")
+        # Try to access configuration for MCP servers
+        try:
+            config = configuration.configuration
+            await register_mcp_servers_async(logger, config)
+            app_state.mark_check_complete('mcp_servers_registered', True)
+        except (AttributeError, ImportError, ValueError) as config_error:
+            # Configuration not available - skip MCP server registration
+            logger.info("Skipping MCP server registration - configuration not available")
+            app_state.mark_check_complete('mcp_servers_registered', False, f"Configuration not available: {str(config_error)}")
+        
+        get_logger("app.endpoints.handlers")
+        logger.info("App startup complete")
 
-    initialize_database()
-    create_tables()
+        initialize_database()
+        create_tables()
+        
+        # Mark full initialization complete
+        app_state.mark_initialization_complete()
+        logger.info("Application fully initialized and ready to accept traffic")
+        
+    except Exception as e:
+        error_msg = f"Startup event failed: {str(e)}"
+        logger.error(error_msg)
+        app_state.mark_check_complete('mcp_servers_registered', False, error_msg)

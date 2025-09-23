@@ -19,8 +19,17 @@ from models.config import (
     AuthenticationConfiguration,
     InferenceConfiguration,
     DatabaseConfiguration,
-    ConversationCacheConfiguration,
 )
+
+# Handle missing ConversationCacheConfiguration for backward compatibility
+try:
+    from models.config import ConversationCacheConfiguration
+except ImportError:
+    # Create a stub class for backward compatibility
+    from models.config import ConfigurationBase
+    class ConversationCacheConfiguration(ConfigurationBase):
+        """Stub conversation cache configuration for backward compatibility."""
+        type: str = "noop"
 
 from cache.cache import Cache
 from cache.cache_factory import CacheFactory
@@ -151,6 +160,10 @@ class AppConfig:
                 self._configuration.conversation_cache
             )
         return self._conversation_cache
+
+    def is_loaded(self) -> bool:
+        """Check if configuration has been loaded."""
+        return self._configuration is not None
 
 
 configuration: AppConfig = AppConfig()

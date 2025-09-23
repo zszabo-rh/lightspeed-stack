@@ -10,9 +10,6 @@ from fastapi import APIRouter, HTTPException, Request, status, Depends
 from client import AsyncLlamaStackClientHolder
 from configuration import configuration
 from app.database import get_session
-from authentication import get_auth_dependency
-from authorization.middleware import authorize
-from models.config import Action
 from models.database.conversations import UserConversation
 from models.responses import (
     ConversationResponse,
@@ -21,16 +18,17 @@ from models.responses import (
     ConversationDetails,
     UnauthorizedResponse,
 )
+from models.config import Action
 from utils.endpoints import (
     check_configuration_loaded,
     delete_conversation,
+    get_auth_dependency_lazy,
     validate_conversation_ownership,
 )
 from utils.suid import check_suid
 
 logger = logging.getLogger("app.endpoints.handlers")
 router = APIRouter(tags=["conversations"])
-auth_dependency = get_auth_dependency()
 
 conversation_responses: dict[int | str, dict[str, Any]] = {
     200: {
@@ -177,15 +175,17 @@ def simplify_session_data(session_data: dict) -> list[dict[str, Any]]:
 
 
 @router.get("/conversations", responses=conversations_list_responses)
-@authorize(Action.LIST_CONVERSATIONS)
 async def get_conversations_list_endpoint_handler(
     request: Request,
-    auth: Any = Depends(auth_dependency),
+    auth: Any = Depends(get_auth_dependency_lazy()),
 ) -> ConversationsListResponse:
     """Handle request to retrieve all conversations for the authenticated user."""
     check_configuration_loaded(configuration)
 
     user_id = auth[0]
+    
+    # Get authorized actions safely
+    authorized_actions = getattr(request.state, 'authorized_actions', [])
 
     logger.info("Retrieving conversations for user %s", user_id)
 
@@ -195,7 +195,7 @@ async def get_conversations_list_endpoint_handler(
 
             filtered_query = (
                 query
-                if Action.LIST_OTHERS_CONVERSATIONS in request.state.authorized_actions
+                if Action.LIST_OTHERS_CONVERSATIONS in authorized_actions
                 else query.filter_by(user_id=user_id)
             )
 
@@ -238,11 +238,10 @@ async def get_conversations_list_endpoint_handler(
 
 
 @router.get("/conversations/{conversation_id}", responses=conversation_responses)
-@authorize(Action.GET_CONVERSATION)
 async def get_conversation_endpoint_handler(
     request: Request,
     conversation_id: str,
-    auth: Any = Depends(auth_dependency),
+    auth: Any = Depends(get_auth_dependency_lazy()),
 ) -> ConversationResponse:
     """
     Handle request to retrieve a conversation by ID.
@@ -275,12 +274,15 @@ async def get_conversation_endpoint_handler(
         )
 
     user_id = auth[0]
+    
+    # Get authorized actions safely
+    authorized_actions = getattr(request.state, 'authorized_actions', [])
 
     user_conversation = validate_conversation_ownership(
         user_id=user_id,
         conversation_id=conversation_id,
         others_allowed=(
-            Action.READ_OTHERS_CONVERSATIONS in request.state.authorized_actions
+            Action.READ_OTHERS_CONVERSATIONS in authorized_actions
         ),
     )
 
@@ -366,11 +368,10 @@ async def get_conversation_endpoint_handler(
 @router.delete(
     "/conversations/{conversation_id}", responses=conversation_delete_responses
 )
-@authorize(Action.DELETE_CONVERSATION)
 async def delete_conversation_endpoint_handler(
     request: Request,
     conversation_id: str,
-    auth: Any = Depends(auth_dependency),
+    auth: Any = Depends(get_auth_dependency_lazy()),
 ) -> ConversationDeleteResponse:
     """
     Handle request to delete a conversation by ID.
@@ -397,12 +398,15 @@ async def delete_conversation_endpoint_handler(
         )
 
     user_id = auth[0]
+    
+    # Get authorized actions safely
+    authorized_actions = getattr(request.state, 'authorized_actions', [])
 
     user_conversation = validate_conversation_ownership(
         user_id=user_id,
         conversation_id=conversation_id,
         others_allowed=(
-            Action.DELETE_OTHERS_CONVERSATIONS in request.state.authorized_actions
+            Action.DELETE_OTHERS_CONVERSATIONS in authorized_actions
         ),
     )
 
