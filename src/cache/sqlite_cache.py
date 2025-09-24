@@ -102,7 +102,7 @@ class SQLiteCache(Cache):
         try:
             self.connection = sqlite3.connect(database=config.db_path)
             self.initialize_cache()
-        except Exception as e:
+        except sqlite3.Error as e:
             if self.connection is not None:
                 self.connection.close()
             logger.exception("Error initializing SQLite cache:\n%s", e)
@@ -114,14 +114,21 @@ class SQLiteCache(Cache):
         if self.connection is None:
             logger.warning("Not connected, need to reconnect later")
             return False
+        cursor = None
         try:
             cursor = self.connection.cursor()
             cursor.execute("SELECT 1")
             logger.info("Connection to storage is ok")
             return True
-        except Exception as e:
+        except sqlite3.Error as e:
             logger.error("Disconnected from storage: %s", e)
             return False
+        finally:
+            if cursor is not None:
+                try:
+                    cursor.close()
+                except Exception:  # pylint: disable=broad-exception-caught
+                    logger.warning("Unable to close cursor")
 
     def initialize_cache(self) -> None:
         """Initialize cache - clean it up etc."""
@@ -238,9 +245,10 @@ class SQLiteCache(Cache):
             self.DELETE_SINGLE_CONVERSATION_STATEMENT,
             (user_id, conversation_id),
         )
+        deleted = cursor.rowcount > 0
         cursor.close()
         self.connection.commit()
-        return True
+        return deleted
 
     @connection
     def list(self, user_id: str, skip_user_id_check: bool = False) -> list[str]:

@@ -1,13 +1,17 @@
 """Unit tests for SQLite cache implementation."""
 
-import pytest
 from pathlib import Path
 
-from cache.cache_error import CacheError
+import sqlite3
+
+import pytest
+
 from models.config import SQLiteDatabaseConfiguration
 from models.cache_entry import CacheEntry
-from cache.sqlite_cache import SQLiteCache
 from utils import suid
+
+from cache.cache_error import CacheError
+from cache.sqlite_cache import SQLiteCache
 
 USER_ID_1 = suid.get_suid()
 USER_ID_2 = suid.get_suid()
@@ -21,23 +25,27 @@ cache_entry_2 = CacheEntry(
 )
 
 
+# pylint: disable=too-few-public-methods
 class CursorMock:
     """Mock class for simulating DB cursor exceptions."""
 
     def __init__(self):
-        pass
+        """Construct the mock cursor class."""
 
-    def execute(self, str):
-        raise Exception("can not SELECT")
+    def execute(self, command):
+        """Execute any SQL command."""
+        raise sqlite3.Error("can not SELECT")
 
 
+# pylint: disable=too-few-public-methods
 class ConnectionMock:
     """Mock class for connection."""
 
     def __init__(self):
-        pass
+        """Construct the connection mock class."""
 
     def cursor(self):
+        """Getter for mock cursor."""
         return CursorMock()
 
 
@@ -118,7 +126,7 @@ def test_get_operation_when_connected(tmpdir):
 
     # should not fail
     lst = cache.get(USER_ID_1, CONVERSATION_ID_1, False)
-    assert lst == []
+    assert not lst
 
 
 def test_insert_or_append_when_disconnected(tmpdir):
@@ -157,7 +165,9 @@ def test_delete_operation_when_connected(tmpdir):
 
     # should not fail
     deleted = cache.delete(USER_ID_1, CONVERSATION_ID_1, False)
-    assert deleted is True
+
+    # nothing should be deleted
+    assert deleted is False
 
 
 def test_list_operation_when_disconnected(tmpdir):
@@ -177,7 +187,7 @@ def test_list_operation_when_connected(tmpdir):
 
     # should not fail
     lst = cache.list(USER_ID_1, False)
-    assert lst == []
+    assert not lst
 
 
 def test_ready_method(tmpdir):
@@ -209,9 +219,10 @@ def test_get_operation_after_delete(tmpdir):
     cache.insert_or_append(USER_ID_1, CONVERSATION_ID_1, cache_entry_2, False)
 
     deleted = cache.delete(USER_ID_1, CONVERSATION_ID_1, False)
+    assert deleted is True
 
     lst = cache.get(USER_ID_1, CONVERSATION_ID_1, False)
-    assert lst == []
+    assert not lst
 
 
 def test_multiple_ids(tmpdir):
@@ -228,9 +239,10 @@ def test_multiple_ids(tmpdir):
     cache.insert_or_append(USER_ID_2, CONVERSATION_ID_2, cache_entry_2, False)
 
     deleted = cache.delete(USER_ID_1, CONVERSATION_ID_1, False)
+    assert deleted is True
 
     lst = cache.get(USER_ID_1, CONVERSATION_ID_1, False)
-    assert lst == []
+    assert not lst
 
     lst = cache.get(USER_ID_1, CONVERSATION_ID_2, False)
     assert lst[0] == cache_entry_1
