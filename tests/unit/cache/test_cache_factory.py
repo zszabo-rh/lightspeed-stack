@@ -48,11 +48,12 @@ def postgres_cache_config():
     )
 
 
-@pytest.fixture(scope="module", name="sqlite_cache_config_fixture")
-def sqlite_cache_config():
+@pytest.fixture(name="sqlite_cache_config_fixture")
+def sqlite_cache_config(tmpdir):
     """Fixture containing initialized instance of SQLite cache."""
+    db_path = str(tmpdir / "test.sqlite")
     return ConversationCacheConfiguration(
-        type=CACHE_TYPE_SQLITE, sqlite=SQLiteDatabaseConfiguration(db_path="foo")
+        type=CACHE_TYPE_SQLITE, sqlite=SQLiteDatabaseConfiguration(db_path=db_path)
     )
 
 
@@ -99,10 +100,11 @@ def test_conversation_cache_sqlite(sqlite_cache_config_fixture):
     assert isinstance(cache, SQLiteCache)
 
 
-def test_conversation_cache_sqlite_improper_config():
+def test_conversation_cache_sqlite_improper_config(tmpdir):
     """Check if memory cache configuration is checked in cache factory."""
+    db_path = str(tmpdir / "test.sqlite")
     cc = ConversationCacheConfiguration(
-        type=CACHE_TYPE_SQLITE, sqlite=SQLiteDatabaseConfiguration(db_path="foo")
+        type=CACHE_TYPE_SQLITE, sqlite=SQLiteDatabaseConfiguration(db_path=db_path)
     )
     # simulate improper configuration (can not be done directly as model checks this)
     cc.sqlite = None
