@@ -8,7 +8,6 @@ from datetime import UTC, datetime
 from typing import Annotated, Any, Optional, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from pydantic import AnyUrl
 from llama_stack_client import (
     APIConnectionError,
     AsyncLlamaStackClient,  # type: ignore
@@ -23,6 +22,7 @@ from llama_stack_client.types.agents.turn_create_params import (
 from llama_stack_client.types.model_list_response import ModelListResponse
 from llama_stack_client.types.shared.interleaved_content_item import TextContentItem
 from llama_stack_client.types.tool_execution_step import ToolExecutionStep
+from pydantic import AnyUrl
 
 import constants
 import metrics
@@ -513,8 +513,7 @@ def parse_referenced_documents(response: Turn) -> list[ReferencedDocument]:
         if not isinstance(step, ToolExecutionStep):
             continue
         for tool_response in step.tool_responses:
-            # TODO(are-ces): use constant instead
-            if tool_response.tool_name != "knowledge_search":
+            if tool_response.tool_name != constants.DEFAULT_RAG_TOOL:
                 continue
             for text_item in tool_response.content:
                 if not isinstance(text_item, TextContentItem):
