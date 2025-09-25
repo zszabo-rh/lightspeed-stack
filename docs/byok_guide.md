@@ -37,7 +37,7 @@ BYOK (Bring Your Own Knowledge) is Lightspeed Core's implementation of Retrieval
 The BYOK system operates through a sophisticated chain of components:
 
 1. **Agent Orchestrator**: The AI agent acts as the central coordinator, using the LLM as its reasoning engine
-2. **Knowledge Search**: When the agent needs external information, it queries your custom vector database
+2. **RAG Tool**: When the agent needs external information, it queries your custom vector database
 3. **Vector Database**: Your indexed knowledge sources, stored as vector embeddings for semantic search
 4. **Embedding Model**: Converts queries and documents into vector representations for similarity matching
 5. **Context Integration**: Retrieved knowledge is integrated into the AI's response generation process
@@ -46,7 +46,7 @@ The BYOK system operates through a sophisticated chain of components:
 graph TD
     A[User Query] --> B[AI Agent]
     B --> C{Need External Knowledge?}
-    C -->|Yes| D[Knowledge Search Tool]
+    C -->|Yes| D[RAG Tool]
     C -->|No| E[Generate Response]
     D --> F[Vector Database]
     F --> G[Retrieve Relevant Context]
@@ -67,14 +67,13 @@ Before implementing BYOK, ensure you have:
   - Used for indexing your knowledge sources
 
 ### System Requirements
-- **Llama Stack**: Compatible vector database backend
 - **Embedding Model**: Local or downloadable embedding model
 - **LLM Provider**: OpenAI, vLLM, or other supported inference provider
 
 ### Knowledge Sources
-- Text-based documents (PDFs, Markdown, TXT, etc.)
-- Structured data that can be converted to text
-- Documentation, manuals, FAQs, knowledge bases
+- **Directly supported**: Markdown (.md) and plain text (.txt) files
+- **Requires conversion**: PDFs, AsciiDoc, HTML, and other formats must be converted to markdown or TXT
+- Documentation, manuals, FAQs, knowledge bases (after format conversion)
 
 ---
 
@@ -82,34 +81,75 @@ Before implementing BYOK, ensure you have:
 
 ### Step 1: Prepare Your Knowledge Sources
 
-1. **Collect your documents**: Gather all text-based knowledge sources you want to include
-2. **Organize content**: Structure your documents for optimal indexing
-3. **Format validation**: Ensure documents are in supported formats (PDF, TXT, MD, etc.)
+1. **Collect your documents**: Gather all knowledge sources you want to include
+2. **Convert formats**: Convert non-supported formats to markdown (.md) or plain text (.txt)
+   - **PDF conversion**: Use tools like [docling](https://github.com/DS4SD/docling) to convert PDFs to markdown
+   - **Adoc conversion**: Use [custom scripts](https://github.com/openshift/lightspeed-rag-content/blob/main/scripts/asciidoctor-text/convert-it-all.py) to convert AsciiDoc to plain text
+3. **Organize content**: Structure your converted documents for optimal indexing
+4. **Format validation**: Ensure all documents are in supported formats (.md or .txt)
 
 ### Step 2: Create Vector Database
 
 Use the `rag-content` tool to create a compatible vector database:
 Please refer https://github.com/lightspeed-core/rag-content to create your vector database
 
+**Metadata Configuration:**
+When using the `rag-content` tool, you need to create a `custom_processor.py` script to handle document metadata:
+
+1. **Document URL References**: Implement the `url_function` in your `custom_processor.py` to add URL metadata to each document chunk
+2. **Title Extraction**: The system automatically extracts the document title from the first line of each file
+3. **Custom Metadata**: You can add additional metadata fields as needed for your use case
+
+Example `custom_processor.py` structure:
+```python
+class CustomMetadataProcessor(MetadataProcessor):
+
+    def __init__(self, url):
+        self.url = url
+
+    def url_function(self, file_path: str) -> str:
+        # Return a URL for the file, so it can be referenced when used
+        # in an answer
+        return self.url
+```
+
 **Important Notes:**
 - The vector database must be compatible with Llama Stack
 - Supported formats: 
-  You can generate the vector database either using:
-    Llama-Index Faiss Vector Store
-    Llama-Index Postgres (PGVector) Vector Store
-    Llama-Stack Faiss Vector-IO
-    Llama-Stack SQLite-vec Vector-IO
+  - Llama-Stack Faiss Vector-IO
+  - Llama-Stack SQLite-vec Vector-IO
 - The same embedding model must be used for both creation and querying
 
 ### Step 3: Configure Embedding Model
 
-Download and configure your embedding model:
-Use the embedding generation step mentioned in the rag-content repo.
-For example:
+You have two options for configuring your embedding model:
+
+#### Option 1: Use rag-content Download Script (Optional)
+You can use the embedding generation step mentioned in the rag-content repo:
+
 ```bash
 mkdir ./embeddings_model
 pdm run python ./scripts/download_embeddings_model.py -l ./embeddings_model/ -r sentence-transformers/all-mpnet-base-v2 
 ```
+
+#### Option 2: Manual Download and Configuration
+Alternatively, you can download your own embedding model and update the path in your YAML configuration:
+
+1. **Download your preferred embedding model** from Hugging Face or other sources
+2. **Place the model** in your desired directory (e.g., `/path/to/your/embedding_models/`)
+3. **Update the YAML configuration** to point to your model path:
+
+```yaml
+models:
+  - model_id: sentence-transformers/all-mpnet-base-v2
+    metadata:
+        embedding_dimension: 768
+    model_type: embedding
+    provider_id: sentence-transformers
+    provider_model_id: /path/to/your/embedding_models/all-mpnet-base-v2
+```
+
+**Note**: Ensure the same embedding model is used for both vector database creation and querying.
 
 ### Step 4: Configure Llama Stack
 
@@ -200,13 +240,14 @@ vector_dbs:
   vector_db_id: your-index-id  # ID used during index generation
 ```
 
+**⚠️ Important**: The `vector_db_id` value must exactly match the ID you provided when creating the vector database using the rag-content tool. This identifier links your Llama Stack configuration to the specific vector database index you created.
+
 ### Step 5: Enable RAG Tools
 
 The configuration above automatically enables the RAG tools. The system will:
 
-1. **Detect RAG availability**: Automatically identify when knowledge search is available
-2. **Enhance prompts**: Encourage the AI to use knowledge search tools
-3. **Force knowledge usage**: Modify queries to ensure knowledge base consultation
+1. **Detect RAG availability**: Automatically identify when RAG is available
+2. **Enhance prompts**: Encourage the AI to use RAG tools
 
 ---
 
