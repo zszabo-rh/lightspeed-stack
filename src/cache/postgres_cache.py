@@ -15,23 +15,21 @@ logger = get_logger("cache.postgres_cache")
 class PostgresCache(Cache):
     """Cache that uses PostgreSQL to store cached values.
 
-    The cache itself is stored in following table:
+    The cache itself lives stored in following table:
 
     ```
-         Column      |            Type             | Nullable |
-    -----------------+-----------------------------+----------+
-     user_id         | text                        | not null |
-     conversation_id | text                        | not null |
-     created_at      | int                         | not null |
-     query           | text                        |          |
-     response        | text                        |          |
-     provider        | text                        |          |
-     model           | text                        |          |
+         Column      |              Type              | Nullable |
+    -----------------+--------------------------------+----------+
+     user_id         | text                           | not null |
+     conversation_id | text                           | not null |
+     created_at      | timestamp without time zone    | not null |
+     query           | text                           |          |
+     response        | text                           |          |
+     provider        | text                           |          |
+     model           | text                           |          |
     Indexes:
-        "cache_pkey" PRIMARY KEY, btree (user_id, conversation_id)
-        "cache_key_key" UNIQUE CONSTRAINT, btree (key)
-        "timestamps" btree (updated_at)
-    Access method: heap
+        "cache_pkey" PRIMARY KEY, btree (user_id, conversation_id, created_at)
+        "timestamps" btree (created_at)
     ```
     """
 
