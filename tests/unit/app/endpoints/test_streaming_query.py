@@ -42,9 +42,10 @@ from app.endpoints.streaming_query import (
     stream_build_event,
 )
 
-from models.requests import QueryRequest, Attachment
-from models.config import ModelContextProtocolServer, Action
 from authorization.resolvers import NoopRolesResolver
+from models.config import ModelContextProtocolServer, Action
+from models.requests import QueryRequest, Attachment
+from models.responses import RAGChunk
 from utils.types import ToolCallSummary, TurnSummary
 
 MOCK_AUTH = ("mock_user_id", "mock_username", False, "mock_token")
@@ -341,6 +342,13 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
                         name="knowledge_search",
                         args={},
                         response=" ".join(SAMPLE_KNOWLEDGE_SEARCH_RESULTS),
+                    )
+                ],
+                rag_chunks=[
+                    RAGChunk(
+                        content=" ".join(SAMPLE_KNOWLEDGE_SEARCH_RESULTS),
+                        source="knowledge_search",
+                        score=None,
                     )
                 ],
             ),
