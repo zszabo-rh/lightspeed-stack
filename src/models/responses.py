@@ -667,6 +667,16 @@ class ConversationsListResponse(BaseModel):
     }
 
 
+class ConversationsListResponseV2(BaseModel):
+    """Model representing a response for listing conversations of a user.
+
+    Attributes:
+        conversations: List of conversation IDs associated with the user.
+    """
+
+    conversations: list[str]
+
+
 class ErrorResponse(BaseModel):
     """Model representing error response for query endpoint."""
 

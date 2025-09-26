@@ -47,6 +47,7 @@ from utils.endpoints import (
     check_configuration_loaded,
     get_agent,
     get_system_prompt,
+    store_conversation_into_cache,
     validate_model_provider_override,
 )
 from utils.mcp_headers import handle_mcp_headers_with_toolgroups, mcp_headers_dependency
@@ -703,6 +704,16 @@ async def streaming_query_endpoint_handler(  # pylint: disable=too-many-locals
                     # of quota work
                     attachments=query_request.attachments or [],
                 )
+
+            store_conversation_into_cache(
+                configuration,
+                user_id,
+                conversation_id,
+                provider_id,
+                model_id,
+                query_request.query,
+                summary.llm_response,
+            )
 
         persist_user_conversation_details(
             user_id=user_id,

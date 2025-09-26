@@ -6,6 +6,7 @@ from llama_stack_client._client import AsyncLlamaStackClient
 from llama_stack_client.lib.agents.agent import AsyncAgent
 
 import constants
+from models.cache_entry import CacheEntry
 from models.requests import QueryRequest
 from models.database.conversations import UserConversation
 from models.config import Action
@@ -133,6 +134,31 @@ def validate_model_provider_override(
                 )
             },
         )
+
+
+# # pylint: disable=R0913,R0917
+def store_conversation_into_cache(
+    config: AppConfig,
+    user_id: str,
+    conversation_id: str,
+    provider_id: str,
+    model_id: str,
+    query: str,
+    response: str,
+) -> None:
+    """Store one part of conversation into conversation history cache."""
+    if config.conversation_cache_configuration.type is not None:
+        cache = config.conversation_cache
+        if cache is None:
+            logger.warning("Conversation cache configured but not initialized")
+            return
+        cache_entry = CacheEntry(
+            query=query,
+            response=response,
+            provider=provider_id,
+            model=model_id,
+        )
+        cache.insert_or_append(user_id, conversation_id, cache_entry, False)
 
 
 # # pylint: disable=R0913,R0917

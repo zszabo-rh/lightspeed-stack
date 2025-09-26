@@ -47,6 +47,7 @@ from utils.endpoints import (
     check_configuration_loaded,
     get_agent,
     get_system_prompt,
+    store_conversation_into_cache,
     validate_conversation_ownership,
     validate_model_provider_override,
 )
@@ -277,6 +278,16 @@ async def query_endpoint_handler(
             conversation_id=conversation_id,
             model=model_id,
             provider_id=provider_id,
+        )
+
+        store_conversation_into_cache(
+            configuration,
+            user_id,
+            conversation_id,
+            provider_id,
+            model_id,
+            query_request.query,
+            summary.llm_response,
         )
 
         # Convert tool calls to response format
