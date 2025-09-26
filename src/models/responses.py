@@ -1,9 +1,10 @@
 """Models for REST API responses."""
 
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from pydantic import AnyUrl, BaseModel, Field
 
+from llama_stack_client.types import ProviderInfo
 from models.cache_entry import ConversationData
 
 
@@ -83,6 +84,65 @@ class ShieldsResponse(BaseModel):
             }
         ],
     )
+
+
+class ProvidersListResponse(BaseModel):
+    """Model representing a response to providers request."""
+
+    providers: dict[str, list[dict[str, Any]]] = Field(
+        ...,
+        description="List of available API types and their corresponding providers",
+        examples=[
+            {
+                "inference": [
+                    {
+                        "provider_id": "sentence-transformers",
+                        "provider_type": "inline::sentence-transformers",
+                    },
+                    {"provider_id": "openai", "provider_type": "remote::openai"},
+                ],
+                "agents": [
+                    {
+                        "provider_id": "meta-reference",
+                        "provider_type": "inline::meta-reference",
+                    },
+                ],
+                "datasetio": [
+                    {
+                        "provider_id": "huggingface",
+                        "provider_type": "remote::huggingface",
+                    },
+                    {"provider_id": "localfs", "provider_type": "inline::localfs"},
+                ],
+            },
+        ],
+    )
+
+
+class ProviderResponse(ProviderInfo):
+    """Model representing a response to get specific provider request."""
+
+    api: str = Field(
+        ...,
+        description="The API this provider implements",
+        example="inference",
+    )  # type: ignore
+    config: dict[str, Union[bool, float, str, list[Any], object, None]] = Field(
+        ...,
+        description="Provider configuration parameters",
+        example={"api_key": "********"},
+    )  # type: ignore
+    health: dict[str, Union[bool, float, str, list[Any], object, None]] = Field(
+        ...,
+        description="Current health status of the provider",
+        example={"status": "OK", "message": "Healthy"},
+    )  # type: ignore
+    provider_id: str = Field(
+        ..., description="Unique provider identifier", example="openai"
+    )  # type: ignore
+    provider_type: str = Field(
+        ..., description="Provider implementation type", example="remote::openai"
+    )  # type: ignore
 
 
 class RAGChunk(BaseModel):
