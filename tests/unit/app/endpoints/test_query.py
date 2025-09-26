@@ -38,7 +38,13 @@ from tests.unit.app.endpoints.test_streaming_query import (
 )
 from utils.types import ToolCallSummary, TurnSummary
 
-MOCK_AUTH = ("mock_user_id", "mock_username", False, "mock_token")
+# User ID must be proper UUID
+MOCK_AUTH = (
+    "00000001-0001-0001-0001-000000000001",
+    "mock_username",
+    False,
+    "mock_token",
+)
 
 
 @pytest.fixture
@@ -93,6 +99,9 @@ def setup_configuration_fixture():
         },
         "mcp_servers": [],
         "customization": None,
+        "conversation_cache": {
+            "type": "noop",
+        },
     }
     cfg = AppConfig()
     cfg.init_from_dict(config_dict)
@@ -172,7 +181,7 @@ async def _test_query_endpoint_handler(
             )
         ],
     )
-    conversation_id = "fake_conversation_id"
+    conversation_id = "00000000-0000-0000-0000-000000000000"
     query = "What is OpenStack?"
     referenced_documents = []
 
@@ -209,7 +218,7 @@ async def _test_query_endpoint_handler(
     # Assert the store_transcript function is called if transcripts are enabled
     if store_transcript_to_file:
         mock_transcript.assert_called_once_with(
-            user_id="mock_user_id",
+            user_id="00000001-0001-0001-0001-000000000001",
             conversation_id=conversation_id,
             model_id="fake_model_id",
             provider_id="fake_provider_id",
@@ -458,7 +467,11 @@ async def test_retrieve_response_no_returned_message(prepare_agent_mocks, mocker
     mocker.patch("app.endpoints.query.configuration", mock_config)
     mocker.patch(
         "app.endpoints.query.get_agent",
-        return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
+        return_value=(
+            mock_agent,
+            "00000000-0000-0000-0000-000000000000",
+            "fake_session_id",
+        ),
     )
     mock_metrics(mocker)
 
@@ -490,7 +503,11 @@ async def test_retrieve_response_message_without_content(prepare_agent_mocks, mo
     mocker.patch("app.endpoints.query.configuration", mock_config)
     mocker.patch(
         "app.endpoints.query.get_agent",
-        return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
+        return_value=(
+            mock_agent,
+            "00000000-0000-0000-0000-000000000000",
+            "fake_session_id",
+        ),
     )
     mock_metrics(mocker)
 
@@ -523,7 +540,11 @@ async def test_retrieve_response_vector_db_available(prepare_agent_mocks, mocker
     mocker.patch("app.endpoints.query.configuration", mock_config)
     mocker.patch(
         "app.endpoints.query.get_agent",
-        return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
+        return_value=(
+            mock_agent,
+            "00000000-0000-0000-0000-000000000000",
+            "fake_session_id",
+        ),
     )
     mock_metrics(mocker)
 
@@ -538,7 +559,7 @@ async def test_retrieve_response_vector_db_available(prepare_agent_mocks, mocker
     # Assert that the metric for validation errors is NOT incremented
     mock_metric.inc.assert_not_called()
     assert summary.llm_response == "LLM answer"
-    assert conversation_id == "fake_conversation_id"
+    assert conversation_id == "00000000-0000-0000-0000-000000000000"
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(content="What is OpenStack?", role="user")],
         session_id="fake_session_id",
@@ -562,7 +583,11 @@ async def test_retrieve_response_no_available_shields(prepare_agent_mocks, mocke
     mocker.patch("app.endpoints.query.configuration", mock_config)
     mocker.patch(
         "app.endpoints.query.get_agent",
-        return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
+        return_value=(
+            mock_agent,
+            "00000000-0000-0000-0000-000000000000",
+            "fake_session_id",
+        ),
     )
     mock_metrics(mocker)
 
@@ -575,7 +600,7 @@ async def test_retrieve_response_no_available_shields(prepare_agent_mocks, mocke
     )
 
     assert summary.llm_response == "LLM answer"
-    assert conversation_id == "fake_conversation_id"
+    assert conversation_id == "00000000-0000-0000-0000-000000000000"
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(content="What is OpenStack?", role="user")],
         session_id="fake_session_id",
@@ -612,7 +637,11 @@ async def test_retrieve_response_one_available_shield(prepare_agent_mocks, mocke
     mocker.patch("app.endpoints.query.configuration", mock_config)
     mocker.patch(
         "app.endpoints.query.get_agent",
-        return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
+        return_value=(
+            mock_agent,
+            "00000000-0000-0000-0000-000000000000",
+            "fake_session_id",
+        ),
     )
     mock_metrics(mocker)
 
@@ -625,7 +654,7 @@ async def test_retrieve_response_one_available_shield(prepare_agent_mocks, mocke
     )
 
     assert summary.llm_response == "LLM answer"
-    assert conversation_id == "fake_conversation_id"
+    assert conversation_id == "00000000-0000-0000-0000-000000000000"
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(content="What is OpenStack?", role="user")],
         session_id="fake_session_id",
@@ -665,7 +694,11 @@ async def test_retrieve_response_two_available_shields(prepare_agent_mocks, mock
     mocker.patch("app.endpoints.query.configuration", mock_config)
     mocker.patch(
         "app.endpoints.query.get_agent",
-        return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
+        return_value=(
+            mock_agent,
+            "00000000-0000-0000-0000-000000000000",
+            "fake_session_id",
+        ),
     )
     mock_metrics(mocker)
 
@@ -678,7 +711,7 @@ async def test_retrieve_response_two_available_shields(prepare_agent_mocks, mock
     )
 
     assert summary.llm_response == "LLM answer"
-    assert conversation_id == "fake_conversation_id"
+    assert conversation_id == "00000000-0000-0000-0000-000000000000"
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(content="What is OpenStack?", role="user")],
         session_id="fake_session_id",
@@ -720,7 +753,11 @@ async def test_retrieve_response_four_available_shields(prepare_agent_mocks, moc
     mocker.patch("app.endpoints.query.configuration", mock_config)
     mock_get_agent = mocker.patch(
         "app.endpoints.query.get_agent",
-        return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
+        return_value=(
+            mock_agent,
+            "00000000-0000-0000-0000-000000000000",
+            "fake_session_id",
+        ),
     )
     mock_metrics(mocker)
 
@@ -733,7 +770,7 @@ async def test_retrieve_response_four_available_shields(prepare_agent_mocks, moc
     )
 
     assert summary.llm_response == "LLM answer"
-    assert conversation_id == "fake_conversation_id"
+    assert conversation_id == "00000000-0000-0000-0000-000000000000"
 
     # Verify get_agent was called with the correct parameters
     mock_get_agent.assert_called_once_with(
@@ -777,7 +814,11 @@ async def test_retrieve_response_with_one_attachment(prepare_agent_mocks, mocker
     ]
     mocker.patch(
         "app.endpoints.query.get_agent",
-        return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
+        return_value=(
+            mock_agent,
+            "00000000-0000-0000-0000-000000000000",
+            "fake_session_id",
+        ),
     )
     mock_metrics(mocker)
 
@@ -790,7 +831,7 @@ async def test_retrieve_response_with_one_attachment(prepare_agent_mocks, mocker
     )
 
     assert summary.llm_response == "LLM answer"
-    assert conversation_id == "fake_conversation_id"
+    assert conversation_id == "00000000-0000-0000-0000-000000000000"
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(content="What is OpenStack?", role="user")],
         session_id="fake_session_id",
@@ -832,7 +873,11 @@ async def test_retrieve_response_with_two_attachments(prepare_agent_mocks, mocke
     ]
     mocker.patch(
         "app.endpoints.query.get_agent",
-        return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
+        return_value=(
+            mock_agent,
+            "00000000-0000-0000-0000-000000000000",
+            "fake_session_id",
+        ),
     )
     mock_metrics(mocker)
 
@@ -845,7 +890,7 @@ async def test_retrieve_response_with_two_attachments(prepare_agent_mocks, mocke
     )
 
     assert summary.llm_response == "LLM answer"
-    assert conversation_id == "fake_conversation_id"
+    assert conversation_id == "00000000-0000-0000-0000-000000000000"
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(content="What is OpenStack?", role="user")],
         session_id="fake_session_id",
@@ -1005,7 +1050,11 @@ async def test_retrieve_response_with_mcp_servers(prepare_agent_mocks, mocker):
     mocker.patch("app.endpoints.query.configuration", mock_config)
     mock_get_agent = mocker.patch(
         "app.endpoints.query.get_agent",
-        return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
+        return_value=(
+            mock_agent,
+            "00000000-0000-0000-0000-000000000000",
+            "fake_session_id",
+        ),
     )
     mock_metrics(mocker)
 
@@ -1018,7 +1067,7 @@ async def test_retrieve_response_with_mcp_servers(prepare_agent_mocks, mocker):
     )
 
     assert summary.llm_response == "LLM answer"
-    assert conversation_id == "fake_conversation_id"
+    assert conversation_id == "00000000-0000-0000-0000-000000000000"
 
     # Verify get_agent was called with the correct parameters
     mock_get_agent.assert_called_once_with(
@@ -1075,7 +1124,11 @@ async def test_retrieve_response_with_mcp_servers_empty_token(
     mocker.patch("app.endpoints.query.configuration", mock_config)
     mock_get_agent = mocker.patch(
         "app.endpoints.query.get_agent",
-        return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
+        return_value=(
+            mock_agent,
+            "00000000-0000-0000-0000-000000000000",
+            "fake_session_id",
+        ),
     )
     mock_metrics(mocker)
 
@@ -1088,7 +1141,7 @@ async def test_retrieve_response_with_mcp_servers_empty_token(
     )
 
     assert summary.llm_response == "LLM answer"
-    assert conversation_id == "fake_conversation_id"
+    assert conversation_id == "00000000-0000-0000-0000-000000000000"
 
     # Verify get_agent was called with the correct parameters
     mock_get_agent.assert_called_once_with(
@@ -1137,7 +1190,11 @@ async def test_retrieve_response_with_mcp_servers_and_mcp_headers(
     mocker.patch("app.endpoints.query.configuration", mock_config)
     mock_get_agent = mocker.patch(
         "app.endpoints.query.get_agent",
-        return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
+        return_value=(
+            mock_agent,
+            "00000000-0000-0000-0000-000000000000",
+            "fake_session_id",
+        ),
     )
     mock_metrics(mocker)
 
@@ -1164,7 +1221,7 @@ async def test_retrieve_response_with_mcp_servers_and_mcp_headers(
     )
 
     assert summary.llm_response == "LLM answer"
-    assert conversation_id == "fake_conversation_id"
+    assert conversation_id == "00000000-0000-0000-0000-000000000000"
 
     # Verify get_agent was called with the correct parameters
     mock_get_agent.assert_called_once_with(
@@ -1234,7 +1291,11 @@ async def test_retrieve_response_shield_violation(prepare_agent_mocks, mocker):
     mocker.patch("app.endpoints.query.configuration", mock_config)
     mocker.patch(
         "app.endpoints.query.get_agent",
-        return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
+        return_value=(
+            mock_agent,
+            "00000000-0000-0000-0000-000000000000",
+            "fake_session_id",
+        ),
     )
     mock_metrics(mocker)
 
@@ -1247,7 +1308,7 @@ async def test_retrieve_response_shield_violation(prepare_agent_mocks, mocker):
     # Assert that the metric for validation errors is incremented
     mock_metric.inc.assert_called_once()
 
-    assert conversation_id == "fake_conversation_id"
+    assert conversation_id == "00000000-0000-0000-0000-000000000000"
     mock_agent.create_turn.assert_called_once_with(
         messages=[UserMessage(content="What is OpenStack?", role="user")],
         session_id="fake_session_id",
@@ -1325,7 +1386,7 @@ async def test_auth_tuple_unpacking_in_query_endpoint_handler(mocker, dummy_requ
     )
     mock_retrieve_response = mocker.patch(
         "app.endpoints.query.retrieve_response",
-        return_value=(summary, "test_conversation_id", []),
+        return_value=(summary, "00000000-0000-0000-0000-000000000000", []),
     )
 
     mocker.patch(
@@ -1371,7 +1432,7 @@ async def test_query_endpoint_handler_no_tools_true(mocker, dummy_request):
             )
         ],
     )
-    conversation_id = "fake_conversation_id"
+    conversation_id = "00000000-0000-0000-0000-000000000000"
     query = "What is OpenStack?"
     referenced_documents = []
 
@@ -1423,7 +1484,7 @@ async def test_query_endpoint_handler_no_tools_false(mocker, dummy_request):
             )
         ],
     )
-    conversation_id = "fake_conversation_id"
+    conversation_id = "00000000-0000-0000-0000-000000000000"
     query = "What is OpenStack?"
     referenced_documents = []
 
@@ -1473,7 +1534,11 @@ async def test_retrieve_response_no_tools_bypasses_mcp_and_rag(
     mocker.patch("app.endpoints.query.configuration", mock_config)
     mocker.patch(
         "app.endpoints.query.get_agent",
-        return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
+        return_value=(
+            mock_agent,
+            "00000000-0000-0000-0000-000000000000",
+            "fake_session_id",
+        ),
     )
     mock_metrics(mocker)
 
@@ -1486,7 +1551,7 @@ async def test_retrieve_response_no_tools_bypasses_mcp_and_rag(
     )
 
     assert summary.llm_response == "LLM answer"
-    assert conversation_id == "fake_conversation_id"
+    assert conversation_id == "00000000-0000-0000-0000-000000000000"
 
     # Verify that agent.extra_headers is empty (no MCP headers)
     assert mock_agent.extra_headers == {}
@@ -1524,7 +1589,11 @@ async def test_retrieve_response_no_tools_false_preserves_functionality(
     mocker.patch("app.endpoints.query.configuration", mock_config)
     mocker.patch(
         "app.endpoints.query.get_agent",
-        return_value=(mock_agent, "fake_conversation_id", "fake_session_id"),
+        return_value=(
+            mock_agent,
+            "00000000-0000-0000-0000-000000000000",
+            "fake_session_id",
+        ),
     )
     mock_metrics(mocker)
 
@@ -1537,7 +1606,7 @@ async def test_retrieve_response_no_tools_false_preserves_functionality(
     )
 
     assert summary.llm_response == "LLM answer"
-    assert conversation_id == "fake_conversation_id"
+    assert conversation_id == "00000000-0000-0000-0000-000000000000"
 
     # Verify that agent.extra_headers contains MCP headers
     expected_extra_headers = {
