@@ -724,6 +724,193 @@
                 }
             }
         },
+        "/v2/conversations": {
+            "get": {
+                "tags": [
+                    "conversations_v2"
+                ],
+                "summary": "Get Conversations List Endpoint Handler",
+                "description": "Handle request to retrieve all conversations for the authenticated user.",
+                "operationId": "get_conversations_list_endpoint_handler_v2_conversations_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ConversationsListResponseV2"
+                                }
+                            }
+                        },
+                        "conversations": [
+                            {
+                                "conversation_id": "123e4567-e89b-12d3-a456-426614174000"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "/v2/conversations/{conversation_id}": {
+            "get": {
+                "tags": [
+                    "conversations_v2"
+                ],
+                "summary": "Get Conversation Endpoint Handler",
+                "description": "Handle request to retrieve a conversation by ID.",
+                "operationId": "get_conversation_endpoint_handler_v2_conversations__conversation_id__get",
+                "parameters": [
+                    {
+                        "name": "conversation_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Conversation Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ConversationResponse"
+                                }
+                            }
+                        },
+                        "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
+                        "chat_history": [
+                            {
+                                "messages": [
+                                    {
+                                        "content": "Hi",
+                                        "type": "user"
+                                    },
+                                    {
+                                        "content": "Hello!",
+                                        "type": "assistant"
+                                    }
+                                ],
+                                "started_at": "2024-01-01T00:00:00Z",
+                                "completed_at": "2024-01-01T00:00:05Z",
+                                "provider": "provider ID",
+                                "model": "model ID"
+                            }
+                        ]
+                    },
+                    "400": {
+                        "description": "Missing or invalid credentials provided by client",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UnauthorizedResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized: Invalid or missing Bearer token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UnauthorizedResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "detail": {
+                            "response": "Conversation not found",
+                            "cause": "The specified conversation ID does not exist."
+                        },
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "conversations_v2"
+                ],
+                "summary": "Delete Conversation Endpoint Handler",
+                "description": "Handle request to delete a conversation by ID.",
+                "operationId": "delete_conversation_endpoint_handler_v2_conversations__conversation_id__delete",
+                "parameters": [
+                    {
+                        "name": "conversation_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Conversation Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ConversationDeleteResponse"
+                                }
+                            }
+                        },
+                        "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
+                        "success": true,
+                        "message": "Conversation deleted successfully"
+                    },
+                    "400": {
+                        "description": "Missing or invalid credentials provided by client",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UnauthorizedResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized: Invalid or missing Bearer token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UnauthorizedResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "detail": {
+                            "response": "Conversation not found",
+                            "cause": "The specified conversation ID does not exist."
+                        },
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/readiness": {
             "get": {
                 "tags": [
@@ -1439,6 +1626,23 @@
                         ]
                     }
                 ]
+            },
+            "ConversationsListResponseV2": {
+                "properties": {
+                    "conversations": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Conversations"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "conversations"
+                ],
+                "title": "ConversationsListResponseV2",
+                "description": "Model representing a response for listing conversations of a user.\n\nAttributes:\n    conversations: List of conversation IDs associated with the user."
             },
             "CustomProfile": {
                 "properties": {
