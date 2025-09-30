@@ -46,6 +46,8 @@ from models.responses import (
 from utils.endpoints import (
     check_configuration_loaded,
     get_agent,
+    get_topic_summary_system_prompt,
+    get_temp_agent,
     get_system_prompt,
     store_conversation_into_cache,
     validate_conversation_ownership,
@@ -98,7 +100,11 @@ def is_transcripts_enabled() -> bool:
 
 
 def persist_user_conversation_details(
-    user_id: str, conversation_id: str, model: str, provider_id: str
+    user_id: str,
+    conversation_id: str,
+    model: str,
+    provider_id: str,
+    topic_summary: Optional[str],
 ) -> None:
     """Associate conversation to user in the database."""
     with get_session() as session:
@@ -112,6 +118,7 @@ def persist_user_conversation_details(
                 user_id=user_id,
                 last_used_model=model,
                 last_used_provider=provider_id,
+                topic_summary=topic_summary,
                 message_count=1,
             )
             session.add(conversation)
@@ -169,9 +176,42 @@ def evaluate_model_hints(
     return model_id, provider_id
 
 
+async def get_topic_summary(
+    question: str, client: AsyncLlamaStackClient, model_id: str
+) -> str:
+    """Get a topic summary for a question.
+
+    Args:
+        question: The question to be validated.
+        client: The AsyncLlamaStackClient to use for the request.
+        model_id: The ID of the model to use.
+    Returns:
+        str: The topic summary for the question.
+    """
+    topic_summary_system_prompt = get_topic_summary_system_prompt(configuration)
+    agent, session_id, _ = await get_temp_agent(
+        client, model_id, topic_summary_system_prompt
+    )
+    response = await agent.create_turn(
+        messages=[UserMessage(role="user", content=question)],
+        session_id=session_id,
+        stream=False,
+        toolgroups=None,
+    )
+    response = cast(Turn, response)
+    return (
+        interleaved_content_as_str(response.output_message.content)
+        if (
+            getattr(response, "output_message", None) is not None
+            and getattr(response.output_message, "content", None) is not None
+        )
+        else ""
+    )
+
+
 @router.post("/query", responses=query_response)
 @authorize(Action.QUERY)
-async def query_endpoint_handler(
+async def query_endpoint_handler(  # pylint: disable=R0914
     request: Request,
     query_request: QueryRequest,
     auth: Annotated[AuthTuple, Depends(auth_dependency)],
@@ -200,7 +240,7 @@ async def query_endpoint_handler(
     # log Llama Stack configuration
     logger.info("Llama stack config: %s", configuration.llama_stack_configuration)
 
-    user_id, _, _, token = auth
+    user_id, _, _skip_userid_check, token = auth
 
     user_conversation: UserConversation | None = None
     if query_request.conversation_id:
@@ -251,6 +291,16 @@ async def query_endpoint_handler(
         # Update metrics for the LLM call
         metrics.llm_calls_total.labels(provider_id, model_id).inc()
 
+        # Get the initial topic summary for the conversation
+        topic_summary = None
+        with get_session() as session:
+            existing_conversation = (
+                session.query(UserConversation).filter_by(id=conversation_id).first()
+            )
+            if not existing_conversation:
+                topic_summary = await get_topic_summary(
+                    query_request.query, client, model_id
+                )
         # Convert RAG chunks to dictionary format once for reuse
         logger.info("Processing RAG chunks...")
         rag_chunks_dict = [chunk.model_dump() for chunk in summary.rag_chunks]
@@ -278,6 +328,7 @@ async def query_endpoint_handler(
             conversation_id=conversation_id,
             model=model_id,
             provider_id=provider_id,
+            topic_summary=topic_summary,
         )
 
         store_conversation_into_cache(
@@ -288,6 +339,8 @@ async def query_endpoint_handler(
             model_id,
             query_request.query,
             summary.llm_response,
+            _skip_userid_check,
+            topic_summary,
         )
 
         # Convert tool calls to response format
