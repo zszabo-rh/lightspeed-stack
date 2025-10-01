@@ -1,24 +1,55 @@
 """Definition of FastAPI based web service."""
 
-from typing import Callable, Awaitable
+import os
+from contextlib import asynccontextmanager
+from typing import AsyncIterator, Awaitable, Callable
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.routing import Mount, Route, WebSocketRoute
 
+import metrics
+import version
 from app import routers
-from app.database import initialize_database, create_tables
+from app.database import create_tables, initialize_database
+from client import AsyncLlamaStackClientHolder
 from configuration import configuration
 from log import get_logger
-import metrics
 from utils.common import register_mcp_servers_async
-import version
+from utils.llama_stack_version import check_llama_stack_version
 
 logger = get_logger(__name__)
 
 logger.info("Initializing app")
 
+
 service_name = configuration.configuration.name
+
+
+# running on FastAPI startup
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    """
+    Initialize app resources.
+
+    FastAPI lifespan context: initializes configuration, Llama client, MCP servers,
+    logger, and database before serving requests.
+    """
+    configuration.load_configuration(os.environ["LIGHTSPEED_STACK_CONFIG_PATH"])
+    await AsyncLlamaStackClientHolder().load(configuration.configuration.llama_stack)
+    client = AsyncLlamaStackClientHolder().get_client()
+    # check if the Llama Stack version is supported by the service
+    await check_llama_stack_version(client)
+
+    logger.info("Registering MCP servers")
+    await register_mcp_servers_async(logger, configuration.configuration)
+    get_logger("app.endpoints.handlers")
+    logger.info("App startup complete")
+
+    initialize_database()
+    create_tables()
+
+    yield
 
 
 app = FastAPI(
@@ -38,6 +69,7 @@ app = FastAPI(
     servers=[
         {"url": "http://localhost:8080/", "description": "Locally running service"}
     ],
+    lifespan=lifespan,
 )
 
 cors = configuration.service_configuration.cors
@@ -84,15 +116,3 @@ app_routes_paths = [
     for route in app.routes
     if isinstance(route, (Mount, Route, WebSocketRoute))
 ]
-
-
-@app.on_event("startup")
-async def startup_event() -> None:
-    """Perform logger setup on service startup."""
-    logger.info("Registering MCP servers")
-    await register_mcp_servers_async(logger, configuration.configuration)
-    get_logger("app.endpoints.handlers")
-    logger.info("App startup complete")
-
-    initialize_database()
-    create_tables()

@@ -8,24 +8,22 @@ methods. For HEAD HTTP method, just the HTTP response code is used.
 import logging
 from typing import Annotated, Any
 
+from fastapi import APIRouter, Depends, Response, status
 from llama_stack.providers.datatypes import HealthStatus
 
-from fastapi import APIRouter, status, Response, Depends
-from client import AsyncLlamaStackClientHolder
-from authentication.interface import AuthTuple
 from authentication import get_auth_dependency
+from authentication.interface import AuthTuple
 from authorization.middleware import authorize
+from client import AsyncLlamaStackClientHolder
 from models.config import Action
 from models.responses import (
     LivenessResponse,
-    ReadinessResponse,
     ProviderHealthStatus,
+    ReadinessResponse,
 )
 
 logger = logging.getLogger("app.endpoints.handlers")
 router = APIRouter(tags=["health"])
-
-auth_dependency = get_auth_dependency()
 
 
 async def get_providers_health_statuses() -> list[ProviderHealthStatus]:
@@ -80,7 +78,7 @@ get_readiness_responses: dict[int | str, dict[str, Any]] = {
 @router.get("/readiness", responses=get_readiness_responses)
 @authorize(Action.INFO)
 async def readiness_probe_get_method(
-    auth: Annotated[AuthTuple, Depends(auth_dependency)],
+    auth: Annotated[AuthTuple, Depends(get_auth_dependency())],
     response: Response,
 ) -> ReadinessResponse:
     """
@@ -126,7 +124,7 @@ get_liveness_responses: dict[int | str, dict[str, Any]] = {
 @router.get("/liveness", responses=get_liveness_responses)
 @authorize(Action.INFO)
 async def liveness_probe_get_method(
-    auth: Annotated[AuthTuple, Depends(auth_dependency)],
+    auth: Annotated[AuthTuple, Depends(get_auth_dependency())],
 ) -> LivenessResponse:
     """
     Return the liveness status of the service.

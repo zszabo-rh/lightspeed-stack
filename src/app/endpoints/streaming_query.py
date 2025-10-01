@@ -58,7 +58,6 @@ from utils.types import TurnSummary
 
 logger = logging.getLogger("app.endpoints.handlers")
 router = APIRouter(tags=["streaming_query"])
-auth_dependency = get_auth_dependency()
 
 streaming_query_responses: dict[int | str, dict[str, Any]] = {
     200: {
@@ -572,7 +571,7 @@ def _handle_heartbeat_event(chunk_id: int) -> Iterator[str]:
 async def streaming_query_endpoint_handler(  # pylint: disable=R0915,R0914
     request: Request,
     query_request: QueryRequest,
-    auth: Annotated[AuthTuple, Depends(auth_dependency)],
+    auth: Annotated[AuthTuple, Depends(get_auth_dependency())],
     mcp_headers: dict[str, dict[str, str]] = Depends(mcp_headers_dependency),
 ) -> StreamingResponse:
     """

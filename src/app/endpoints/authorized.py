@@ -5,13 +5,12 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends
 
-from authentication.interface import AuthTuple
 from authentication import get_auth_dependency
-from models.responses import AuthorizedResponse, UnauthorizedResponse, ForbiddenResponse
+from authentication.interface import AuthTuple
+from models.responses import AuthorizedResponse, ForbiddenResponse, UnauthorizedResponse
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["authorized"])
-auth_dependency = get_auth_dependency()
 
 
 authorized_responses: dict[int | str, dict[str, Any]] = {
@@ -38,7 +37,7 @@ authorized_responses: dict[int | str, dict[str, Any]] = {
 
 @router.post("/authorized", responses=authorized_responses)
 async def authorized_endpoint_handler(
-    auth: Annotated[AuthTuple, Depends(auth_dependency)],
+    auth: Annotated[AuthTuple, Depends(get_auth_dependency())],
 ) -> AuthorizedResponse:
     """
     Handle request to the /authorized endpoint.

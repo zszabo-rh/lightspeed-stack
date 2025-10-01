@@ -1,28 +1,27 @@
 """Handler for REST API call to provide metrics."""
 
 from typing import Annotated
+
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import PlainTextResponse
-from fastapi import APIRouter, Request, Depends
 from prometheus_client import (
-    generate_latest,
     CONTENT_TYPE_LATEST,
+    generate_latest,
 )
 
-from authentication.interface import AuthTuple
 from authentication import get_auth_dependency
+from authentication.interface import AuthTuple
 from authorization.middleware import authorize
-from models.config import Action
 from metrics.utils import setup_model_metrics
+from models.config import Action
 
 router = APIRouter(tags=["metrics"])
-
-auth_dependency = get_auth_dependency()
 
 
 @router.get("/metrics", response_class=PlainTextResponse)
 @authorize(Action.GET_METRICS)
 async def metrics_endpoint_handler(
-    auth: Annotated[AuthTuple, Depends(auth_dependency)],
+    auth: Annotated[AuthTuple, Depends(get_auth_dependency())],
     request: Request,
 ) -> PlainTextResponse:
     """
