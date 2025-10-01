@@ -358,6 +358,7 @@ class Action(str, Enum):
     DELETE_CONVERSATION = "delete_conversation"
     FEEDBACK = "feedback"
     GET_MODELS = "get_models"
+    GET_TOOLS = "get_tools"
     GET_METRICS = "get_metrics"
     GET_CONFIG = "get_config"
 
