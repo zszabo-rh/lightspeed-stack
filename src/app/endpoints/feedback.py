@@ -1,12 +1,13 @@
 """Handler for REST API endpoint for user feedback."""
 
+import json
 import logging
 import threading
-from typing import Annotated, Any
+from datetime import UTC, datetime
 from pathlib import Path
-import json
-from datetime import datetime, UTC
-from fastapi import APIRouter, HTTPException, Depends, Request, status
+from typing import Annotated, Any
+
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from authentication import get_auth_dependency
 from authentication.interface import AuthTuple
@@ -18,15 +19,14 @@ from models.responses import (
     ErrorResponse,
     FeedbackResponse,
     FeedbackStatusUpdateResponse,
+    ForbiddenResponse,
     StatusResponse,
     UnauthorizedResponse,
-    ForbiddenResponse,
 )
 from utils.suid import get_suid
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/feedback", tags=["feedback"])
-auth_dependency = get_auth_dependency()
 feedback_status_lock = threading.Lock()
 
 # Response for the feedback endpoint
@@ -87,7 +87,7 @@ async def assert_feedback_enabled(_request: Request) -> None:
 @authorize(Action.FEEDBACK)
 async def feedback_endpoint_handler(
     feedback_request: FeedbackRequest,
-    auth: Annotated[AuthTuple, Depends(auth_dependency)],
+    auth: Annotated[AuthTuple, Depends(get_auth_dependency())],
     _ensure_feedback_enabled: Any = Depends(assert_feedback_enabled),
 ) -> FeedbackResponse:
     """Handle feedback requests.
@@ -183,7 +183,7 @@ def feedback_status() -> StatusResponse:
 @authorize(Action.ADMIN)
 async def update_feedback_status(
     feedback_update_request: FeedbackStatusUpdateRequest,
-    auth: Annotated[AuthTuple, Depends(auth_dependency)],
+    auth: Annotated[AuthTuple, Depends(get_auth_dependency())],
 ) -> FeedbackStatusUpdateResponse:
     """
     Handle feedback status update requests.

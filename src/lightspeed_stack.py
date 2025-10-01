@@ -4,15 +4,14 @@ This source file contains entry point to the service. It is implemented in the
 main() function.
 """
 
-from argparse import ArgumentParser
-import asyncio
 import logging
+import os
+from argparse import ArgumentParser
+
 from rich.logging import RichHandler
 
-from runners.uvicorn import start_uvicorn
 from configuration import configuration
-from client import AsyncLlamaStackClientHolder
-from utils.llama_stack_version import check_llama_stack_version
+from runners.uvicorn import start_uvicorn
 
 FORMAT = "%(message)s"
 logging.basicConfig(
@@ -75,14 +74,9 @@ def main() -> None:
             raise SystemExit(1) from e
         return
 
-    logger.info("Creating AsyncLlamaStackClient")
-    asyncio.run(
-        AsyncLlamaStackClientHolder().load(configuration.configuration.llama_stack)
-    )
-    client = AsyncLlamaStackClientHolder().get_client()
-
-    # check if the Llama Stack version is supported by the service
-    asyncio.run(check_llama_stack_version(client))
+    # Store config path in env so each uvicorn worker can load it
+    # (step is needed because process context isn’t shared).
+    os.environ["LIGHTSPEED_STACK_CONFIG_PATH"] = args.config_file
 
     # if every previous steps don't fail, start the service on specified port
     start_uvicorn(configuration.service_configuration)

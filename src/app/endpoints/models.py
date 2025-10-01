@@ -9,18 +9,15 @@ from llama_stack_client import APIConnectionError
 
 from authentication import get_auth_dependency
 from authentication.interface import AuthTuple
+from authorization.middleware import authorize
 from client import AsyncLlamaStackClientHolder
 from configuration import configuration
-from authorization.middleware import authorize
 from models.config import Action
 from models.responses import ModelsResponse
 from utils.endpoints import check_configuration_loaded
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["models"])
-
-
-auth_dependency = get_auth_dependency()
 
 
 models_responses: dict[int | str, dict[str, Any]] = {
@@ -54,7 +51,7 @@ models_responses: dict[int | str, dict[str, Any]] = {
 @authorize(Action.GET_MODELS)
 async def models_endpoint_handler(
     request: Request,
-    auth: Annotated[AuthTuple, Depends(auth_dependency)],
+    auth: Annotated[AuthTuple, Depends(get_auth_dependency())],
 ) -> ModelsResponse:
     """
     Handle requests to the /models endpoint.

@@ -3,22 +3,21 @@
 import logging
 from typing import Any
 
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from llama_stack_client import APIConnectionError, NotFoundError
 
-from fastapi import APIRouter, HTTPException, Request, status, Depends
-
-from client import AsyncLlamaStackClientHolder
-from configuration import configuration
 from app.database import get_session
 from authentication import get_auth_dependency
 from authorization.middleware import authorize
+from client import AsyncLlamaStackClientHolder
+from configuration import configuration
 from models.config import Action
 from models.database.conversations import UserConversation
 from models.responses import (
-    ConversationResponse,
     ConversationDeleteResponse,
-    ConversationsListResponse,
     ConversationDetails,
+    ConversationResponse,
+    ConversationsListResponse,
     UnauthorizedResponse,
 )
 from utils.endpoints import (
@@ -30,7 +29,6 @@ from utils.suid import check_suid
 
 logger = logging.getLogger("app.endpoints.handlers")
 router = APIRouter(tags=["conversations"])
-auth_dependency = get_auth_dependency()
 
 conversation_responses: dict[int | str, dict[str, Any]] = {
     200: {
@@ -180,7 +178,7 @@ def simplify_session_data(session_data: dict) -> list[dict[str, Any]]:
 @authorize(Action.LIST_CONVERSATIONS)
 async def get_conversations_list_endpoint_handler(
     request: Request,
-    auth: Any = Depends(auth_dependency),
+    auth: Any = Depends(get_auth_dependency()),
 ) -> ConversationsListResponse:
     """Handle request to retrieve all conversations for the authenticated user."""
     check_configuration_loaded(configuration)
@@ -242,7 +240,7 @@ async def get_conversations_list_endpoint_handler(
 async def get_conversation_endpoint_handler(
     request: Request,
     conversation_id: str,
-    auth: Any = Depends(auth_dependency),
+    auth: Any = Depends(get_auth_dependency()),
 ) -> ConversationResponse:
     """
     Handle request to retrieve a conversation by ID.
@@ -370,7 +368,7 @@ async def get_conversation_endpoint_handler(
 async def delete_conversation_endpoint_handler(
     request: Request,
     conversation_id: str,
-    auth: Any = Depends(auth_dependency),
+    auth: Any = Depends(get_auth_dependency()),
 ) -> ConversationDeleteResponse:
     """
     Handle request to delete a conversation by ID.

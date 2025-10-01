@@ -3,17 +3,17 @@
 import logging
 from typing import Any
 
-from fastapi import APIRouter, Request, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from configuration import configuration
 from authentication import get_auth_dependency
 from authorization.middleware import authorize
+from configuration import configuration
 from models.cache_entry import CacheEntry
 from models.config import Action
 from models.responses import (
-    ConversationsListResponseV2,
-    ConversationResponse,
     ConversationDeleteResponse,
+    ConversationResponse,
+    ConversationsListResponseV2,
     UnauthorizedResponse,
 )
 from utils.endpoints import check_configuration_loaded
@@ -21,7 +21,6 @@ from utils.suid import check_suid
 
 logger = logging.getLogger("app.endpoints.handlers")
 router = APIRouter(tags=["conversations_v2"])
-auth_dependency = get_auth_dependency()
 
 
 conversation_responses: dict[int | str, dict[str, Any]] = {
@@ -93,7 +92,7 @@ conversations_list_responses: dict[int | str, dict[str, Any]] = {
 @authorize(Action.LIST_CONVERSATIONS)
 async def get_conversations_list_endpoint_handler(
     request: Request,  # pylint: disable=unused-argument
-    auth: Any = Depends(auth_dependency),
+    auth: Any = Depends(get_auth_dependency()),
 ) -> ConversationsListResponseV2:
     """Handle request to retrieve all conversations for the authenticated user."""
     check_configuration_loaded(configuration)
@@ -123,7 +122,7 @@ async def get_conversations_list_endpoint_handler(
 async def get_conversation_endpoint_handler(
     request: Request,  # pylint: disable=unused-argument
     conversation_id: str,
-    auth: Any = Depends(auth_dependency),
+    auth: Any = Depends(get_auth_dependency()),
 ) -> ConversationResponse:
     """Handle request to retrieve a conversation by ID."""
     check_configuration_loaded(configuration)
@@ -159,7 +158,7 @@ async def get_conversation_endpoint_handler(
 async def delete_conversation_endpoint_handler(
     request: Request,  # pylint: disable=unused-argument
     conversation_id: str,
-    auth: Any = Depends(auth_dependency),
+    auth: Any = Depends(get_auth_dependency()),
 ) -> ConversationDeleteResponse:
     """Handle request to delete a conversation by ID."""
     check_configuration_loaded(configuration)

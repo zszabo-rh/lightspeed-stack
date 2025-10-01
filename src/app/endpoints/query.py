@@ -57,7 +57,6 @@ from utils.types import TurnSummary
 
 logger = logging.getLogger("app.endpoints.handlers")
 router = APIRouter(tags=["query"])
-auth_dependency = get_auth_dependency()
 
 query_response: dict[int | str, dict[str, Any]] = {
     200: {
@@ -174,7 +173,7 @@ def evaluate_model_hints(
 async def query_endpoint_handler(
     request: Request,
     query_request: QueryRequest,
-    auth: Annotated[AuthTuple, Depends(auth_dependency)],
+    auth: Annotated[AuthTuple, Depends(get_auth_dependency())],
     mcp_headers: dict[str, dict[str, str]] = Depends(mcp_headers_dependency),
 ) -> QueryResponse:
     """

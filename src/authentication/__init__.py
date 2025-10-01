@@ -1,12 +1,12 @@
 """This package contains authentication code and modules."""
 
 import logging
+import os
 
-from authentication.interface import AuthInterface
-from authentication import noop, noop_with_token, k8s, jwk_token
-from configuration import configuration
 import constants
-
+from authentication import jwk_token, k8s, noop, noop_with_token
+from authentication.interface import AuthInterface
+from configuration import LogicError, configuration
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,16 @@ def get_auth_dependency(
     virtual_path: str = constants.DEFAULT_VIRTUAL_PATH,
 ) -> AuthInterface:
     """Select the configured authentication dependency interface."""
-    module = configuration.authentication_configuration.module
+    try:
+        module = configuration.authentication_configuration.module
+    except LogicError:
+        # Only load once if not already loaded
+        config_path = os.getenv(
+            "LIGHTSPEED_STACK_CONFIG_PATH",
+            "tests/configuration/lightspeed-stack.yaml",
+        )
+        configuration.load_configuration(config_path)
+        module = configuration.authentication_configuration.module
 
     logger.debug(
         "Initializing authentication dependency: module='%s', virtual_path='%s'",
