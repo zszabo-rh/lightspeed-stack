@@ -1,5 +1,8 @@
 """Unit tests for functions defined in src/configuration.py."""
 
+from pathlib import Path
+from typing import Any, Generator
+
 import pytest
 from configuration import AppConfig, LogicError
 from models.config import CustomProfile, ModelContextProtocolServer
@@ -7,7 +10,7 @@ from models.config import CustomProfile, ModelContextProtocolServer
 
 # pylint: disable=broad-exception-caught,protected-access
 @pytest.fixture(autouse=True)
-def _reset_app_config_between_tests():
+def _reset_app_config_between_tests() -> Generator:
     # ensure clean state before each test
     try:
         AppConfig()._configuration = None  # type: ignore[attr-defined]
@@ -83,7 +86,7 @@ def test_configuration_is_singleton() -> None:
 
 def test_init_from_dict() -> None:
     """Test the configuration initialization from dictionary with config values."""
-    config_dict = {
+    config_dict: dict[str, Any] = {
         "name": "foo",
         "service": {
             "host": "localhost",
@@ -226,7 +229,7 @@ def test_init_from_dict_with_authorization_configuration() -> None:
     assert cfg.authorization_configuration is not None
 
 
-def test_load_proper_configuration(tmpdir) -> None:
+def test_load_proper_configuration(tmpdir: Path) -> None:
     """Test loading proper configuration from YAML file."""
     cfg_filename = tmpdir / "config.yaml"
     with open(cfg_filename, "w", encoding="utf-8") as fout:
@@ -258,7 +261,7 @@ mcp_servers: []
     assert cfg.user_data_collection_configuration is not None
 
 
-def test_load_configuration_with_mcp_servers(tmpdir) -> None:
+def test_load_configuration_with_mcp_servers(tmpdir: Path) -> None:
     """Test loading configuration from YAML file with MCP servers."""
     cfg_filename = tmpdir / "config.yaml"
     with open(cfg_filename, "w", encoding="utf-8") as fout:
@@ -301,7 +304,7 @@ mcp_servers:
 
 def test_mcp_servers_property_empty() -> None:
     """Test mcp_servers property returns empty list when no servers configured."""
-    config_dict = {
+    config_dict: dict[str, Any] = {
         "name": "test",
         "service": {
             "host": "localhost",
@@ -369,56 +372,56 @@ def test_mcp_servers_property_with_servers() -> None:
     assert servers[0].url == "http://localhost:8080"
 
 
-def test_configuration_not_loaded():
+def test_configuration_not_loaded() -> None:
     """Test that accessing configuration before loading raises an error."""
     cfg = AppConfig()
     with pytest.raises(LogicError, match="logic error: configuration is not loaded"):
         cfg.configuration  # pylint: disable=pointless-statement
 
 
-def test_service_configuration_not_loaded():
+def test_service_configuration_not_loaded() -> None:
     """Test that accessing service_configuration before loading raises an error."""
     cfg = AppConfig()
     with pytest.raises(LogicError, match="logic error: configuration is not loaded"):
         cfg.service_configuration  # pylint: disable=pointless-statement
 
 
-def test_llama_stack_configuration_not_loaded():
+def test_llama_stack_configuration_not_loaded() -> None:
     """Test that accessing llama_stack_configuration before loading raises an error."""
     cfg = AppConfig()
     with pytest.raises(LogicError, match="logic error: configuration is not loaded"):
         cfg.llama_stack_configuration  # pylint: disable=pointless-statement
 
 
-def test_user_data_collection_configuration_not_loaded():
+def test_user_data_collection_configuration_not_loaded() -> None:
     """Test that accessing user_data_collection_configuration before loading raises an error."""
     cfg = AppConfig()
     with pytest.raises(LogicError, match="logic error: configuration is not loaded"):
         cfg.user_data_collection_configuration  # pylint: disable=pointless-statement
 
 
-def test_mcp_servers_not_loaded():
+def test_mcp_servers_not_loaded() -> None:
     """Test that accessing mcp_servers before loading raises an error."""
     cfg = AppConfig()
     with pytest.raises(LogicError, match="logic error: configuration is not loaded"):
         cfg.mcp_servers  # pylint: disable=pointless-statement
 
 
-def test_authentication_configuration_not_loaded():
+def test_authentication_configuration_not_loaded() -> None:
     """Test that accessing authentication_configuration before loading raises an error."""
     cfg = AppConfig()
     with pytest.raises(LogicError, match="logic error: configuration is not loaded"):
         cfg.authentication_configuration  # pylint: disable=pointless-statement
 
 
-def test_customization_not_loaded():
+def test_customization_not_loaded() -> None:
     """Test that accessing customization before loading raises an error."""
     cfg = AppConfig()
     with pytest.raises(LogicError, match="logic error: configuration is not loaded"):
         cfg.customization  # pylint: disable=pointless-statement
 
 
-def test_load_configuration_with_customization_system_prompt_path(tmpdir) -> None:
+def test_load_configuration_with_customization_system_prompt_path(tmpdir: Path) -> None:
     """Test loading configuration from YAML file with customization."""
     system_prompt_filename = tmpdir / "system_prompt.txt"
     with open(system_prompt_filename, "w", encoding="utf-8") as fout:
@@ -462,7 +465,7 @@ customization:
     assert cfg.customization.system_prompt == "this is system prompt"
 
 
-def test_load_configuration_with_customization_system_prompt(tmpdir) -> None:
+def test_load_configuration_with_customization_system_prompt(tmpdir: Path) -> None:
     """Test loading configuration from YAML file with system_prompt in the customization."""
     cfg_filename = tmpdir / "config.yaml"
     with open(cfg_filename, "w", encoding="utf-8") as fout:
@@ -505,7 +508,7 @@ customization:
     )
 
 
-def test_configuration_with_profile_customization(tmpdir) -> None:
+def test_configuration_with_profile_customization(tmpdir: Path) -> None:
     """Test loading configuration from YAML file with a custom profile."""
     expected_profile = CustomProfile(path="tests/profiles/test/profile.py")
     expected_prompts = expected_profile.get_prompts()
@@ -544,7 +547,7 @@ customization:
     ) == expected_prompts.get("default")
 
 
-def test_configuration_with_all_customizations(tmpdir) -> None:
+def test_configuration_with_all_customizations(tmpdir: Path) -> None:
     """Test loading configuration from YAML file with a custom profile, prompt and prompt path."""
     expected_profile = CustomProfile(path="tests/profiles/test/profile.py")
     expected_prompts = expected_profile.get_prompts()
