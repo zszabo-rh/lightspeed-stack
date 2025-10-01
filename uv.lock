@@ -1395,8 +1395,8 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.115.12" },
     { name = "jsonpath-ng", specifier = ">=1.6.1" },
     { name = "kubernetes", specifier = ">=30.1.0" },
-    { name = "llama-stack", specifier = "==0.2.20" },
-    { name = "llama-stack-client", specifier = "==0.2.20" },
+    { name = "llama-stack", specifier = "==0.2.21" },
+    { name = "llama-stack-client", specifier = "==0.2.21" },
     { name = "openai", specifier = ">=1.99.9" },
     { name = "prometheus-client", specifier = ">=0.22.1" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
@@ -1490,25 +1490,8 @@ wheels = [
 ]
 
 [[package]]
-name = "llama-api-client"
-version = "0.4.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "anyio" },
-    { name = "distro" },
-    { name = "httpx" },
-    { name = "pydantic" },
-    { name = "sniffio" },
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/f6/fe/937935f9f8a869efbda9b563f64cd8c3d433981f9dada40521ad8eadc9dd/llama_api_client-0.4.0.tar.gz", hash = "sha256:45d37086bd7004846d90746347449ea56cc20109c06cc8d908bbaf7f36fbb931", size = 120975, upload-time = "2025-09-17T21:04:00.558Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/43/ac/0152123825a2674e06fbf1094d8f19fc2b931e84b70007c4340cc0775ce5/llama_api_client-0.4.0-py3-none-any.whl", hash = "sha256:adafdc22faaeefe944d59ff9de65f205efc79acee52d80a3f18fd8a940597368", size = 87986, upload-time = "2025-09-17T21:03:59.686Z" },
-]
-
-[[package]]
 name = "llama-stack"
-version = "0.2.20"
+version = "0.2.21"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -1521,7 +1504,6 @@ dependencies = [
     { name = "huggingface-hub" },
     { name = "jinja2" },
     { name = "jsonschema" },
-    { name = "llama-api-client" },
     { name = "llama-stack-client" },
     { name = "openai" },
     { name = "opentelemetry-exporter-otlp-proto-http" },
@@ -1538,14 +1520,14 @@ dependencies = [
     { name = "tiktoken" },
     { name = "uvicorn" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/58/2b/3f08c5fb5795cd7cdb30cc7a216ff768d7f162fd985fb08018db0f5c36b9/llama_stack-0.2.20.tar.gz", hash = "sha256:ae1e5d302f1bebcb17dc61e8e565a787decfbf13a59c8bf6207cc8895708caf5", size = 3322371, upload-time = "2025-08-29T21:10:22.506Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3c/00/c73d8c823a7dffcb98526e5752ef873a4685fa4d574c1e9e33e993e678da/llama_stack-0.2.21.tar.gz", hash = "sha256:d0c540a4e0c6a4c3a65c8e39d9410b4295e73da85ad7822c78ddc906f22f796e", size = 3330012, upload-time = "2025-09-08T22:27:07.23Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0b/24/abf8c7462f84dc99f838a3dd9e8d9df6b861c2ea4ec1a23c4eccf23723ee/llama_stack-0.2.20-py3-none-any.whl", hash = "sha256:5b3f0b40ef179b34ce5920594951d62519e5c3978fe92986069fbf080d5d0c08", size = 3654721, upload-time = "2025-08-29T21:10:20.597Z" },
+    { url = "https://files.pythonhosted.org/packages/a4/c5/80cd86e36dc74752cae824a311fb8b3026957955884447898481c9b6f163/llama_stack-0.2.21-py3-none-any.whl", hash = "sha256:831bf9c15ebc40ed31b24c41492d1331b6befccc7795673368a65615915e3cf8", size = 3663001, upload-time = "2025-09-08T22:27:05.406Z" },
 ]
 
 [[package]]
 name = "llama-stack-client"
-version = "0.2.20"
+version = "0.2.21"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -1564,9 +1546,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/21/91/c5e32219a5192825dd601700e68205c815c5cfee60c64c22172e46a0c83e/llama_stack_client-0.2.20.tar.gz", hash = "sha256:356257f0a4bbb64205f89e113d715925853d5e34ec744e72466da72790ba415b", size = 318311, upload-time = "2025-08-29T21:10:12.854Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f1/d3/8c50561d167f1e9b601b8fffe852b44c1ff97aaa6db6cdedd611d9e02a65/llama_stack_client-0.2.21.tar.gz", hash = "sha256:bd931fdcadedec5ccdbaa3c54d0c17761af1c227711ad6150dc0dd33d7b66ce2", size = 318319, upload-time = "2025-09-08T22:26:57.668Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b0/ba/84914c4eead2fd9251c149fd6a7da28b78acd620793e3c4506116645cb60/llama_stack_client-0.2.20-py3-none-any.whl", hash = "sha256:6e178981d2ce971da2145c79d5b2b123fa50e063ed431494975c2ba01c5b8016", size = 369899, upload-time = "2025-08-29T21:10:11.113Z" },
+    { url = "https://files.pythonhosted.org/packages/02/77/dadc682046a2c7ad68be8d2d2afac7007bf4d22efb0d3929d85ab9706ffe/llama_stack_client-0.2.21-py3-none-any.whl", hash = "sha256:adba82fdf18ab3b8ac218cedba4927bd5d26c23c2318e75c8763a44bb6b40693", size = 369902, upload-time = "2025-09-08T22:26:56.308Z" },
 ]
 
 [[package]]
@@ -1993,7 +1975,7 @@ wheels = [
 
 [[package]]
 name = "openai"
-version = "1.99.9"
+version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -2005,9 +1987,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8a/d2/ef89c6f3f36b13b06e271d3cc984ddd2f62508a0972c1cbcc8485a6644ff/openai-1.99.9.tar.gz", hash = "sha256:f2082d155b1ad22e83247c3de3958eb4255b20ccf4a1de2e6681b6957b554e92", size = 506992, upload-time = "2025-08-12T02:31:10.054Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d8/5d/74fa2b0358ef15d113b1a6ca2323cee0034020b085a81a94eeddc6914de9/openai-2.0.0.tar.gz", hash = "sha256:6b9513b485f856b0be6bc44c518831acb58e37a12bed72fcc52b1177d1fb34a8", size = 565732, upload-time = "2025-09-30T17:35:57.632Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e8/fb/df274ca10698ee77b07bff952f302ea627cc12dac6b85289485dd77db6de/openai-1.99.9-py3-none-any.whl", hash = "sha256:9dbcdb425553bae1ac5d947147bebbd630d91bbfc7788394d4c4f3a35682ab3a", size = 786816, upload-time = "2025-08-12T02:31:08.34Z" },
+    { url = "https://files.pythonhosted.org/packages/69/41/86ddc9cdd885acc02ee50ec24ea1c5e324eea0c7a471ee841a7088653558/openai-2.0.0-py3-none-any.whl", hash = "sha256:a79f493651f9843a6c54789a83f3b2db56df0e1770f7dcbe98bcf0e967ee2148", size = 955538, upload-time = "2025-09-30T17:35:54.695Z" },
 ]
 
 [[package]]
