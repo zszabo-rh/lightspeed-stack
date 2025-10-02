@@ -16,7 +16,12 @@ Lightspeed Core Service (LCS) service API specification.
 
 > **Root Endpoint Handler**
 
-Handle request to the / endpoint.
+Handle GET requests to the root ("/") endpoint and returns the static HTML index page.
+
+Returns:
+    HTMLResponse: The HTML content of the index page, including a heading,
+    embedded image with the service icon, and links to the API documentation
+    via Swagger UI and ReDoc.
 
 
 
@@ -642,6 +647,24 @@ Conversation cache configuration.
 | postgres |  |  |
 
 
+## ConversationData
+
+
+Model representing conversation data returned by cache list operations.
+
+Attributes:
+    conversation_id: The conversation ID
+    topic_summary: The topic summary for the conversation (can be None)
+    last_message_timestamp: The timestamp of the last message in the conversation
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| conversation_id | string |  |
+| topic_summary |  |  |
+| last_message_timestamp | number |  |
+
+
 ## ConversationDeleteResponse
 
 
@@ -681,6 +704,7 @@ Attributes:
     message_count: Number of user messages in the conversation.
     last_used_model: The last model used for the conversation.
     last_used_provider: The provider of the last used model.
+    topic_summary: The topic summary for the conversation.
 
 Example:
     ```python
@@ -691,6 +715,7 @@ Example:
         message_count=5,
         last_used_model="gemini/gemini-2.0-flash",
         last_used_provider="gemini",
+        topic_summary="Openshift Microservices Deployment Strategies",
     )
     ```
 
@@ -703,6 +728,7 @@ Example:
 | message_count |  | Number of user messages in the conversation |
 | last_used_model |  | Identification of the last model used for the conversation |
 | last_used_provider |  | Identification of the last provider used for the conversation |
+| topic_summary |  | Topic summary for the conversation |
 
 
 ## ConversationResponse
@@ -757,6 +783,7 @@ Example:
                 message_count=5,
                 last_used_model="gemini/gemini-2.0-flash",
                 last_used_provider="gemini",
+                topic_summary="Openshift Microservices Deployment Strategies",
             ),
             ConversationDetails(
                 conversation_id="456e7890-e12b-34d5-a678-901234567890"
@@ -764,6 +791,7 @@ Example:
                 message_count=2,
                 last_used_model="gemini/gemini-2.0-flash",
                 last_used_provider="gemini",
+                topic_summary="RHDH Purpose Summary",
             )
         ]
     )
@@ -781,7 +809,7 @@ Example:
 Model representing a response for listing conversations of a user.
 
 Attributes:
-    conversations: List of conversation IDs associated with the user.
+    conversations: List of conversation data associated with the user.
 
 
 | Field | Type | Description |
