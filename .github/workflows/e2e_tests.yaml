@@ -131,7 +131,7 @@ jobs:
                   storage_dir: /tmp/llama-stack-files
                   metadata_store:
                     type: sqlite
-                    db_path: .llama/distributions/ollama/files_metadata.db
+                    db_path: /app-root/.llama/distributions/ollama/files_metadata.db
                 provider_id: localfs
                 provider_type: inline::localfs
               agents:
@@ -289,3 +289,14 @@ jobs:
 
           echo "Running comprehensive e2e test suite..."
           make test-e2e
+
+      - name: Show logs on failure
+        if: failure()
+        run: |
+          echo "=== Test failure logs ==="
+          echo "=== llama-stack logs ==="
+          docker compose logs llama-stack
+          
+          echo ""
+          echo "=== lightspeed-stack logs ==="
+          docker compose logs lightspeed-stack
