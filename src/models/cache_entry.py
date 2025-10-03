@@ -17,6 +17,8 @@ class CacheEntry(BaseModel):
     response: str
     provider: str
     model: str
+    started_at: str
+    completed_at: str
 
 
 class ConversationData(BaseModel):
