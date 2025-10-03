@@ -243,8 +243,6 @@ def transform_chat_message(entry: CacheEntry) -> dict[str, Any]:
     return {
         "provider": entry.provider,
         "model": entry.model,
-        "query": entry.query,
-        "response": entry.response,
         "messages": [
             {"content": entry.query, "type": "user"},
             {"content": entry.response, "type": "assistant"},
