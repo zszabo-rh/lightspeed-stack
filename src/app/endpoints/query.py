@@ -241,6 +241,7 @@ async def query_endpoint_handler(  # pylint: disable=R0914
 
     user_id, _, _skip_userid_check, token = auth
 
+    started_at = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     user_conversation: UserConversation | None = None
     if query_request.conversation_id:
         logger.debug(
@@ -330,6 +331,7 @@ async def query_endpoint_handler(  # pylint: disable=R0914
             topic_summary=topic_summary,
         )
 
+        completed_at = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
         store_conversation_into_cache(
             configuration,
             user_id,
@@ -338,6 +340,8 @@ async def query_endpoint_handler(  # pylint: disable=R0914
             model_id,
             query_request.query,
             summary.llm_response,
+            started_at,
+            completed_at,
             _skip_userid_check,
             topic_summary,
         )
