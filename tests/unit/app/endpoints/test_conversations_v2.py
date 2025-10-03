@@ -10,7 +10,12 @@ from models.cache_entry import CacheEntry
 def test_transform_message() -> None:
     """Test the transform_chat_message transformation function."""
     entry = CacheEntry(
-        query="query", response="response", provider="provider", model="model"
+        query="query",
+        response="response",
+        provider="provider",
+        model="model",
+        started_at="2024-01-01T00:00:00Z",
+        completed_at="2024-01-01T00:00:05Z",
     )
     transformed = transform_chat_message(entry)
     assert transformed is not None
@@ -20,6 +25,12 @@ def test_transform_message() -> None:
 
     assert "model" in transformed
     assert transformed["model"] == "model"
+
+    assert "started_at" in transformed
+    assert transformed["started_at"] == "2024-01-01T00:00:00Z"
+
+    assert "completed_at" in transformed
+    assert transformed["completed_at"] == "2024-01-01T00:00:05Z"
 
     assert "messages" in transformed
     assert len(transformed["messages"]) == 2
