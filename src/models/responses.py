@@ -96,7 +96,10 @@ class QueryResponse(BaseModel):
         ],
     )
 
-    rag_chunks: list[RAGChunk] = []
+    rag_chunks: list[RAGChunk] = Field(
+        [],
+        description="List of RAG chunks used to generate the response",
+    )
 
     tool_calls: Optional[list[ToolCall]] = Field(
         None,
@@ -310,7 +313,20 @@ class LivenessResponse(BaseModel):
 class NotAvailableResponse(BaseModel):
     """Model representing error response for readiness endpoint."""
 
-    detail: dict[str, str]
+    detail: dict[str, str] = Field(
+        ...,
+        description="Detailed information about readiness state",
+        examples=[
+            {
+                "response": "Service is not ready",
+                "cause": "Index is not ready",
+            },
+            {
+                "response": "Service is not ready",
+                "cause": "LLM is not ready",
+            },
+        ],
+    )
 
     # provides examples for /docs endpoint
     model_config = {
@@ -433,7 +449,11 @@ class AuthorizedResponse(BaseModel):
 class UnauthorizedResponse(BaseModel):
     """Model representing response for missing or invalid credentials."""
 
-    detail: str
+    detail: str = Field(
+        ...,
+        description="Details about the authorization issue",
+        examples=["Missing or invalid credentials provided by client"],
+    )
 
     # provides examples for /docs endpoint
     model_config = {
