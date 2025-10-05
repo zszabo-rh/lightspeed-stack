@@ -96,7 +96,10 @@ class QueryResponse(BaseModel):
         ],
     )
 
-    rag_chunks: list[RAGChunk] = []
+    rag_chunks: list[RAGChunk] = Field(
+        [],
+        description="List of RAG chunks used to generate the response",
+    )
 
     tool_calls: Optional[list[ToolCall]] = Field(
         None,
