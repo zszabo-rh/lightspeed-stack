@@ -436,7 +436,11 @@ class AuthorizedResponse(BaseModel):
 class UnauthorizedResponse(BaseModel):
     """Model representing response for missing or invalid credentials."""
 
-    detail: str
+    detail: str = Field(
+        ...,
+        description="Details about the authorization issue",
+        examples=["Missing or invalid credentials provided by client"],
+    )
 
     # provides examples for /docs endpoint
     model_config = {
