@@ -313,7 +313,20 @@ class LivenessResponse(BaseModel):
 class NotAvailableResponse(BaseModel):
     """Model representing error response for readiness endpoint."""
 
-    detail: dict[str, str]
+    detail: dict[str, str] = Field(
+        ...,
+        description="Detailed information about readiness state",
+        examples=[
+            {
+                "response": "Service is not ready",
+                "cause": "Index is not ready",
+            },
+            {
+                "response": "Service is not ready",
+                "cause": "LLM is not ready",
+            },
+        ],
+    )
 
     # provides examples for /docs endpoint
     model_config = {
