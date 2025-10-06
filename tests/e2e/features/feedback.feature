@@ -13,7 +13,7 @@ Feature: feedback endpoint API tests
     Given The system is in default state
     When The feedback is enabled
      Then The status code of the response is 200
-     And And the body of the response has the following structure
+     And the body of the response has the following structure
         """
         {
             "status": 
@@ -27,7 +27,7 @@ Feature: feedback endpoint API tests
     Given The system is in default state
     When The feedback is disabled
      Then The status code of the response is 200
-     And And the body of the response has the following structure
+     And the body of the response has the following structure
         """
         {
             "status": 
@@ -46,7 +46,7 @@ Feature: feedback endpoint API tests
             }
         """
      Then The status code of the response is 422
-     And And the body of the response has the following structure
+     And the body of the response has the following structure
         """
         {
         "detail": [
@@ -123,7 +123,7 @@ Feature: feedback endpoint API tests
         }
         """
      Then The status code of the response is 422
-     And And the body of the response has the following structure
+     And the body of the response has the following structure
         """
         {
         "detail": [
@@ -211,7 +211,7 @@ Feature: feedback endpoint API tests
         }
         """
      Then The status code of the response is 422
-     And And the body of the response has the following structure
+     And the body of the response has the following structure
         """
         {
             "detail": [{
