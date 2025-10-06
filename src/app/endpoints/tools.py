@@ -29,26 +29,26 @@ tools_responses: dict[int | str, dict[str, Any]] = {
                 "example": {
                     "tools": [
                         {
-                            "identifier": "filesystem_read",
-                            "description": "Read contents of a file from the filesystem",
+                            "identifier": "",
+                            "description": "",
                             "parameters": [
                                 {
-                                    "name": "path",
-                                    "description": "Path to the file to read",
-                                    "parameter_type": "string",
-                                    "required": True
+                                    "name": "",
+                                    "description": "",
+                                    "parameter_type": "",
+                                    "required": "True/False",
+                                    "default": "null",
                                 }
                             ],
-                            "provider_id": "model-context-protocol",
-                            "toolgroup_id": "filesystem-tools",
-                            "server_source": "http://localhost:3000",
+                            "provider_id": "",
+                            "toolgroup_id": "",
+                            "server_source": "",
                             "type": "tool",
-                            "metadata": {}
                         }
                     ]
                 }
             }
-        }
+        },
     },
     500: {"description": "Connection to Llama Stack is broken or MCP server error"},
 }
@@ -63,7 +63,7 @@ async def tools_endpoint_handler(
     """
     Handle requests to the /tools endpoint.
 
-    Process GET requests to the /tools endpoint, returning a consolidated list of 
+    Process GET requests to the /tools endpoint, returning a consolidated list of
     available tools from all configured MCP servers.
 
     Raises:
@@ -85,83 +85,83 @@ async def tools_endpoint_handler(
     try:
         # Get Llama Stack client
         client = AsyncLlamaStackClientHolder().get_client()
-        
+
         consolidated_tools = []
-        
-        # First, get built-in tools from Llama Stack (like RAG tools)
+        mcp_server_names = (
+            {mcp_server.name for mcp_server in configuration.mcp_servers}
+            if configuration.mcp_servers
+            else set()
+        )
+
+        # Get all available toolgroups
         try:
-            logger.debug("Retrieving built-in tools from Llama Stack")
-            # Get all available toolgroups
+            logger.debug("Retrieving tools from all toolgroups")
             toolgroups_response = await client.toolgroups.list()
-            
+
             for toolgroup in toolgroups_response:
                 try:
                     # Get tools for each toolgroup
-                    tools_response = await client.tools.list(toolgroup_id=toolgroup.identifier)
-                    
+                    tools_response = await client.tools.list(
+                        toolgroup_id=toolgroup.identifier
+                    )
+
                     # Convert tools to dict format
+                    tools_count = 0
+                    server_source = "unknown"
+
                     for tool in tools_response:
                         tool_dict = dict(tool)
-                        # Add source information for built-in tools
-                        tool_dict["server_source"] = "builtin"
+
+                        # Determine server source based on toolgroup type
+                        if toolgroup.identifier in mcp_server_names:
+                            # This is an MCP server toolgroup
+                            mcp_server = next(
+                                (
+                                    s
+                                    for s in configuration.mcp_servers
+                                    if s.name == toolgroup.identifier
+                                ),
+                                None,
+                            )
+                            tool_dict["server_source"] = (
+                                mcp_server.url if mcp_server else toolgroup.identifier
+                            )
+                        else:
+                            # This is a built-in toolgroup
+                            tool_dict["server_source"] = "builtin"
+
                         consolidated_tools.append(tool_dict)
-                        
+                        tools_count += 1
+                        server_source = tool_dict["server_source"]
+
                     logger.debug(
-                        "Retrieved %d tools from built-in toolgroup %s", 
-                        len(tools_response), 
-                        toolgroup.identifier
+                        "Retrieved %d tools from toolgroup %s (source: %s)",
+                        tools_count,
+                        toolgroup.identifier,
+                        server_source,
                     )
-                    
+
                 except Exception as e:
                     logger.warning(
-                        "Failed to retrieve tools from toolgroup %s: %s", 
-                        toolgroup.identifier, 
-                        e
+                        "Failed to retrieve tools from toolgroup %s: %s",
+                        toolgroup.identifier,
+                        e,
                     )
                     continue
-                    
-        except Exception as e:
-            logger.warning("Failed to retrieve built-in tools: %s", e)
-        
-        # Then, iterate through each configured MCP server (if any)
-        if configuration.mcp_servers:
-            for mcp_server in configuration.mcp_servers:
-                try:
-                    logger.debug("Retrieving tools from MCP server: %s", mcp_server.name)
-                    
-                    # Get tools for this specific toolgroup (MCP server)
-                    tools_response = await client.tools.list(toolgroup_id=mcp_server.name)
-                    
-                    # Convert tools to dict format and add server source information
-                    for tool in tools_response:
-                        tool_dict = dict(tool)
-                        # Add server source information
-                        tool_dict["server_source"] = mcp_server.url
-                        consolidated_tools.append(tool_dict)
-                        
-                    logger.debug(
-                        "Retrieved %d tools from MCP server %s", 
-                        len(tools_response), 
-                        mcp_server.name
-                    )
-                    
-                except Exception as e:
-                    logger.warning(
-                        "Failed to retrieve tools from MCP server %s: %s", 
-                        mcp_server.name, 
-                        e
-                    )
-                    # Continue with other servers even if one fails
-                    continue
-        
-        logger.info("Retrieved total of %d tools (%d from built-in toolgroups, %d from MCP servers)", 
-                   len(consolidated_tools), 
-                   len([t for t in consolidated_tools if t.get("server_source") == "builtin"]),
-                   len([t for t in consolidated_tools if t.get("server_source") != "builtin"]))
-        
+
+        except (APIConnectionError, ValueError, AttributeError) as e:
+            logger.warning("Failed to retrieve tools from toolgroups: %s", e)
+
+        logger.info(
+            "Retrieved total of %d tools (%d from built-in toolgroups, %d from MCP servers)",
+            len(consolidated_tools),
+            len([t for t in consolidated_tools if t.get("server_source") == "builtin"]),
+            len([t for t in consolidated_tools if t.get("server_source") != "builtin"]),
+        )
+
         # Format tools with structured description parsing
         formatted_tools = format_tools_list(consolidated_tools)
-        
+
         return ToolsResponse(tools=formatted_tools)
 
     # Connection to Llama Stack server
