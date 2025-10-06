@@ -3,8 +3,7 @@
 import logging
 from typing import Annotated, Any
 
-from fastapi import APIRouter, HTTPException, Request, status
-from fastapi.params import Depends
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from llama_stack_client import APIConnectionError
 
 from authentication import get_auth_dependency
@@ -141,7 +140,9 @@ async def tools_endpoint_handler(
                         server_source,
                     )
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
+                    # Catch any exception from individual toolgroup failures to allow
+                    # processing of other toolgroups to continue (partial failure scenario)
                     logger.warning(
                         "Failed to retrieve tools from toolgroup %s: %s",
                         toolgroup.identifier,
@@ -149,7 +150,10 @@ async def tools_endpoint_handler(
                     )
                     continue
 
-        except (APIConnectionError, ValueError, AttributeError) as e:
+        except APIConnectionError as e:
+            logger.warning("Failed to retrieve tools from toolgroups: %s", e)
+            raise
+        except (ValueError, AttributeError) as e:
             logger.warning("Failed to retrieve tools from toolgroups: %s", e)
 
         logger.info(

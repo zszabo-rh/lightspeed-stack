@@ -1,12 +1,12 @@
 """Utility functions for formatting and parsing MCP tool descriptions."""
 
 import logging
-from typing import Any, Dict, List
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-def format_tool_response(tool_dict: Dict[str, Any]) -> Dict[str, Any]:
+def format_tool_response(tool_dict: dict[str, Any]) -> dict[str, Any]:
     """
     Format a tool dictionary to include only required fields.
 
@@ -47,6 +47,9 @@ def extract_clean_description(description: str) -> str:
     Returns:
         Clean description without metadata
     """
+    min_description_length = 20
+    fallback_truncation_length = 200
+
     try:
         # Look for the main description after all the metadata
         description_parts = description.split("\n\n")
@@ -66,7 +69,7 @@ def extract_clean_description(description: str) -> str:
                 ]
             ):
                 if (
-                    part.strip() and len(part.strip()) > 20
+                    part.strip() and len(part.strip()) > min_description_length
                 ):  # Reasonable description length
                     return part.strip()
 
@@ -77,14 +80,22 @@ def extract_clean_description(description: str) -> str:
                 return line.replace("USECASE=", "").strip()
 
         # Fallback to first 200 characters
-        return description[:200] + "..." if len(description) > 200 else description
+        return (
+            description[:fallback_truncation_length] + "..."
+            if len(description) > fallback_truncation_length
+            else description
+        )
 
     except (ValueError, AttributeError) as e:
         logger.warning("Failed to extract clean description: %s", e)
-        return description[:200] + "..." if len(description) > 200 else description
+        return (
+            description[:fallback_truncation_length] + "..."
+            if len(description) > fallback_truncation_length
+            else description
+        )
 
 
-def format_tools_list(tools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def format_tools_list(tools: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
     Format a list of tools with structured description parsing.
 

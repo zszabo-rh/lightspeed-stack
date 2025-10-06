@@ -359,6 +359,7 @@ class Action(str, Enum):
     FEEDBACK = "feedback"
     GET_MODELS = "get_models"
     GET_TOOLS = "get_tools"
+    GET_SHIELDS = "get_shields"
     GET_METRICS = "get_metrics"
     GET_CONFIG = "get_config"
 

@@ -40,7 +40,48 @@ class ToolsResponse(BaseModel):
     """Model representing a response to tools request."""
 
     tools: list[dict[str, Any]] = Field(
-        description="List of tools available from all configured MCP servers"
+        description=(
+            "List of tools available from all configured MCP servers and built-in toolgroups"
+        ),
+        examples=[
+            [
+                {
+                    "identifier": "filesystem_read",
+                    "description": "Read contents of a file from the filesystem",
+                    "parameters": [
+                        {
+                            "name": "path",
+                            "description": "Path to the file to read",
+                            "parameter_type": "string",
+                            "required": True,
+                            "default": None,
+                        }
+                    ],
+                    "provider_id": "model-context-protocol",
+                    "toolgroup_id": "filesystem-tools",
+                    "server_source": "http://localhost:3000",
+                    "type": "tool",
+                }
+            ]
+        ],
+    )
+
+
+class ShieldsResponse(BaseModel):
+    """Model representing a response to shields request."""
+
+    shields: list[dict[str, Any]] = Field(
+        ...,
+        description="List of shields available",
+        examples=[
+            {
+                "identifier": "lightspeed_question_validity-shield",
+                "provider_resource_id": "lightspeed_question_validity-shield",
+                "provider_id": "lightspeed_question_validity",
+                "type": "shield",
+                "params": {},
+            }
+        ],
     )
 
 
