@@ -395,8 +395,17 @@ class StatusResponse(BaseModel):
         ```
     """
 
-    functionality: str
-    status: dict
+    functionality: str = Field(
+        ...,
+        description="The functionality of the service",
+        examples=["feedback"],
+    )
+
+    status: dict = Field(
+        ...,
+        description="The status of the service",
+        examples=[{"enabled": True}],
+    )
 
     # provides examples for /docs endpoint
     model_config = {
