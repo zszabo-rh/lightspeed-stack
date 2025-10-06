@@ -22,7 +22,6 @@ from llama_stack_client.types.agents.turn_create_params import (
 from llama_stack_client.types.model_list_response import ModelListResponse
 from llama_stack_client.types.shared.interleaved_content_item import TextContentItem
 from llama_stack_client.types.tool_execution_step import ToolExecutionStep
-from pydantic import AnyUrl
 
 import constants
 import metrics
@@ -363,22 +362,7 @@ async def query_endpoint_handler(  # pylint: disable=R0914
             for tc in summary.tool_calls
         ]
 
-        logger.info("Extracting referenced documents...")
-        referenced_docs = []
-        doc_sources = set()
-        for chunk in summary.rag_chunks:
-            if chunk.source and chunk.source not in doc_sources:
-                doc_sources.add(chunk.source)
-                referenced_docs.append(
-                    ReferencedDocument(
-                        doc_url=(
-                            AnyUrl(chunk.source)
-                            if chunk.source.startswith("http")
-                            else None
-                        ),
-                        doc_title=chunk.source,
-                    )
-                )
+        logger.info("Using referenced documents from response...")
 
         logger.info("Building final response...")
         response = QueryResponse(

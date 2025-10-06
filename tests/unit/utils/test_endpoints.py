@@ -3,6 +3,7 @@
 import os
 import pytest
 from fastapi import HTTPException
+from pydantic import AnyUrl
 
 import constants
 from configuration import AppConfig
@@ -841,3 +842,107 @@ def test_get_topic_summary_system_prompt_no_customization():
 
     topic_summary_prompt = endpoints.get_topic_summary_system_prompt(cfg)
     assert topic_summary_prompt == constants.DEFAULT_TOPIC_SUMMARY_SYSTEM_PROMPT
+
+
+# Tests for unified create_referenced_documents function
+class TestCreateReferencedDocuments:
+    """Test cases for the unified create_referenced_documents function."""
+
+    def test_create_referenced_documents_empty_chunks(self):
+        """Test that empty chunks list returns empty result."""
+        result = endpoints.create_referenced_documents([])
+        assert not result
+
+    def test_create_referenced_documents_http_urls_referenced_document_format(self):
+        """Test HTTP URLs with ReferencedDocument format."""
+
+        mock_chunk1 = type("MockChunk", (), {"source": "https://example.com/doc1"})()
+        mock_chunk2 = type("MockChunk", (), {"source": "https://example.com/doc2"})()
+
+        result = endpoints.create_referenced_documents([mock_chunk1, mock_chunk2])
+
+        assert len(result) == 2
+        assert result[0].doc_url == AnyUrl("https://example.com/doc1")
+        assert result[0].doc_title == "doc1"
+        assert result[1].doc_url == AnyUrl("https://example.com/doc2")
+        assert result[1].doc_title == "doc2"
+
+    def test_create_referenced_documents_document_ids_with_metadata(self):
+        """Test document IDs with metadata enrichment."""
+
+        mock_chunk1 = type("MockChunk", (), {"source": "doc_id_1"})()
+        mock_chunk2 = type("MockChunk", (), {"source": "doc_id_2"})()
+
+        metadata_map = {
+            "doc_id_1": {"docs_url": "https://example.com/doc1", "title": "Document 1"},
+            "doc_id_2": {"docs_url": "https://example.com/doc2", "title": "Document 2"},
+        }
+
+        result = endpoints.create_referenced_documents(
+            [mock_chunk1, mock_chunk2], metadata_map
+        )
+
+        assert len(result) == 2
+        assert result[0].doc_url == AnyUrl("https://example.com/doc1")
+        assert result[0].doc_title == "Document 1"
+        assert result[1].doc_url == AnyUrl("https://example.com/doc2")
+        assert result[1].doc_title == "Document 2"
+
+    def test_create_referenced_documents_skips_tool_names(self):
+        """Test that tool names like 'knowledge_search' are skipped."""
+
+        mock_chunk1 = type("MockChunk", (), {"source": "knowledge_search"})()
+        mock_chunk2 = type("MockChunk", (), {"source": "https://example.com/doc1"})()
+
+        result = endpoints.create_referenced_documents([mock_chunk1, mock_chunk2])
+
+        assert len(result) == 1
+        assert result[0].doc_url == AnyUrl("https://example.com/doc1")
+        assert result[0].doc_title == "doc1"
+
+    def test_create_referenced_documents_skips_empty_sources(self):
+        """Test that chunks with empty or None sources are skipped."""
+
+        mock_chunk1 = type("MockChunk", (), {"source": None})()
+        mock_chunk2 = type("MockChunk", (), {"source": ""})()
+        mock_chunk3 = type("MockChunk", (), {"source": "https://example.com/doc1"})()
+
+        result = endpoints.create_referenced_documents(
+            [mock_chunk1, mock_chunk2, mock_chunk3]
+        )
+
+        assert len(result) == 1
+        assert result[0].doc_url == AnyUrl("https://example.com/doc1")
+        assert result[0].doc_title == "doc1"
+
+    def test_create_referenced_documents_deduplication(self):
+        """Test that duplicate sources are deduplicated."""
+
+        mock_chunk1 = type("MockChunk", (), {"source": "https://example.com/doc1"})()
+        mock_chunk2 = type(
+            "MockChunk", (), {"source": "https://example.com/doc1"}
+        )()  # Duplicate
+        mock_chunk3 = type("MockChunk", (), {"source": "doc_id_1"})()
+        mock_chunk4 = type("MockChunk", (), {"source": "doc_id_1"})()  # Duplicate
+
+        result = endpoints.create_referenced_documents(
+            [mock_chunk1, mock_chunk2, mock_chunk3, mock_chunk4]
+        )
+
+        assert len(result) == 2
+        assert result[0].doc_url == AnyUrl("https://example.com/doc1")
+        assert result[1].doc_title == "doc_id_1"
+
+    def test_create_referenced_documents_invalid_urls(self):
+        """Test handling of invalid URLs."""
+
+        mock_chunk1 = type("MockChunk", (), {"source": "not-a-valid-url"})()
+        mock_chunk2 = type("MockChunk", (), {"source": "https://example.com/doc1"})()
+
+        result = endpoints.create_referenced_documents([mock_chunk1, mock_chunk2])
+
+        assert len(result) == 2
+        assert result[0].doc_url is None
+        assert result[0].doc_title == "not-a-valid-url"
+        assert result[1].doc_url == AnyUrl("https://example.com/doc1")
+        assert result[1].doc_title == "doc1"

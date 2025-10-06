@@ -374,7 +374,13 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
                 ],
             ),
             attachments=[],
-            rag_chunks=[],
+            rag_chunks=[
+                {
+                    "content": " ".join(SAMPLE_KNOWLEDGE_SEARCH_RESULTS),
+                    "source": "knowledge_search",
+                    "score": None,
+                }
+            ],
             truncated=False,
         )
     else:
@@ -1668,3 +1674,44 @@ async def test_streaming_query_endpoint_rejects_model_provider_override_without_
     )
     assert exc_info.value.status_code == status.HTTP_403_FORBIDDEN
     assert exc_info.value.detail["response"] == expected_msg
+
+
+@pytest.mark.asyncio
+async def test_streaming_query_handles_none_event(mocker):
+    """Test that streaming query handles chunks with None events gracefully."""
+    mock_metrics(mocker)
+    # Mock the client
+    mock_client = mocker.AsyncMock()
+    mock_async_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
+    mock_async_lsc.return_value = mock_client
+    mock_client.models.list.return_value = [
+        mocker.Mock(identifier="model1", model_type="llm", provider_id="provider1"),
+    ]
+    # Create a mock chunk with None event
+    mock_chunk = mocker.Mock()
+    mock_chunk.event = None
+    # Create mock streaming response with None event chunk
+    mock_streaming_response = mocker.AsyncMock()
+    mock_streaming_response.__aiter__.return_value = [mock_chunk]
+    # Mock the retrieve_response to return our mock streaming response
+    mocker.patch(
+        "app.endpoints.streaming_query.retrieve_response",
+        return_value=(mock_streaming_response, "00000000-0000-0000-0000-000000000000"),
+    )
+    # Mock other dependencies
+    mocker.patch(
+        "app.endpoints.streaming_query.select_model_and_provider_id",
+        return_value=("fake_model_id", "fake_model_id", "fake_provider_id"),
+    )
+    mocker.patch(
+        "app.endpoints.streaming_query.is_transcripts_enabled",
+        return_value=False,
+    )
+    mock_database_operations(mocker)
+    query_request = QueryRequest(query="test query")
+    request = Request(scope={"type": "http"})
+    # This should not raise an exception
+    response = await streaming_query_endpoint_handler(
+        request, query_request, auth=MOCK_AUTH
+    )
+    assert isinstance(response, StreamingResponse)

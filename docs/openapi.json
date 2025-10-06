@@ -1597,7 +1597,11 @@
                 "properties": {
                     "conversation_id": {
                         "type": "string",
-                        "title": "Conversation Id"
+                        "title": "Conversation Id",
+                        "description": "Conversation ID (UUID)",
+                        "examples": [
+                            "c5260aec-4d82-4370-9fdf-05cf908b3f16"
+                        ]
                     },
                     "chat_history": {
                         "items": {
@@ -1605,7 +1609,24 @@
                             "type": "object"
                         },
                         "type": "array",
-                        "title": "Chat History"
+                        "title": "Chat History",
+                        "description": "The simplified chat history as a list of conversation turns",
+                        "examples": [
+                            {
+                                "completed_at": "2024-01-01T00:01:05Z",
+                                "messages": [
+                                    {
+                                        "content": "Hello",
+                                        "type": "user"
+                                    },
+                                    {
+                                        "content": "Hi there!",
+                                        "type": "assistant"
+                                    }
+                                ],
+                                "started_at": "2024-01-01T00:01:00Z"
+                            }
+                        ]
                     }
                 },
                 "type": "object",
@@ -1979,7 +2000,11 @@
                 "properties": {
                     "response": {
                         "type": "string",
-                        "title": "Response"
+                        "title": "Response",
+                        "description": "The response of the feedback request.",
+                        "examples": [
+                            "feedback received"
+                        ]
                     }
                 },
                 "type": "object",
@@ -2041,7 +2066,11 @@
                 "properties": {
                     "detail": {
                         "type": "string",
-                        "title": "Detail"
+                        "title": "Detail",
+                        "description": "Details about the authorization issue",
+                        "examples": [
+                            "Missing or invalid credentials provided by client"
+                        ]
                     }
                 },
                 "type": "object",
@@ -2715,6 +2744,7 @@
                         },
                         "type": "array",
                         "title": "Rag Chunks",
+                        "description": "List of RAG chunks used to generate the response",
                         "default": []
                     },
                     "tool_calls": {
@@ -2964,12 +2994,22 @@
                 "properties": {
                     "functionality": {
                         "type": "string",
-                        "title": "Functionality"
+                        "title": "Functionality",
+                        "description": "The functionality of the service",
+                        "examples": [
+                            "feedback"
+                        ]
                     },
                     "status": {
                         "additionalProperties": true,
                         "type": "object",
-                        "title": "Status"
+                        "title": "Status",
+                        "description": "The status of the service",
+                        "examples": [
+                            {
+                                "enabled": true
+                            }
+                        ]
                     }
                 },
                 "type": "object",
@@ -3071,7 +3111,11 @@
                 "properties": {
                     "detail": {
                         "type": "string",
-                        "title": "Detail"
+                        "title": "Detail",
+                        "description": "Details about the authorization issue",
+                        "examples": [
+                            "Missing or invalid credentials provided by client"
+                        ]
                     }
                 },
                 "type": "object",
