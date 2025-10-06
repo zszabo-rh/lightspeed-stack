@@ -62,7 +62,7 @@ Feature: streaming_query endpoint API tests
 
   Scenario: Check if LLM responds for streaming_query request with error for missing query
     Given The system is in default state
-    And I use "streaming_query" to ask question
+    When I use "streaming_query" to ask question
     """
     {"provider": "openai"}
     """
@@ -74,7 +74,7 @@ Feature: streaming_query endpoint API tests
 
   Scenario: Check if LLM responds for streaming_query request with error for missing model
     Given The system is in default state
-    And I use "streaming_query" to ask question
+    When I use "streaming_query" to ask question
     """
     {"query": "Say hello", "provider": "openai"}
     """
@@ -83,7 +83,7 @@ Feature: streaming_query endpoint API tests
 
   Scenario: Check if LLM responds for streaming_query request with error for missing provider
     Given The system is in default state
-    And I use "streaming_query" to ask question
+    When I use "streaming_query" to ask question
     """
     {"query": "Say hello", "model": "gpt-4-turbo"}
     """

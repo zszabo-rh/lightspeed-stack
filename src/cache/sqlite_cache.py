@@ -25,6 +25,8 @@ class SQLiteCache(Cache):
      user_id         | text                        | not null |
      conversation_id | text                        | not null |
      created_at      | int                         | not null |
+     started_at      | text                        |          |
+     completed_at    | text                        |          |
      query           | text                        |          |
      response        | text                        |          |
      provider        | text                        |          |
@@ -42,6 +44,8 @@ class SQLiteCache(Cache):
             user_id         text NOT NULL,
             conversation_id text NOT NULL,
             created_at      int NOT NULL,
+            started_at      text,
+            completed_at    text,
             query           text,
             response        text,
             provider        text,
@@ -66,15 +70,16 @@ class SQLiteCache(Cache):
         """
 
     SELECT_CONVERSATION_HISTORY_STATEMENT = """
-        SELECT query, response, provider, model
+        SELECT query, response, provider, model, started_at, completed_at
           FROM cache
          WHERE user_id=? AND conversation_id=?
          ORDER BY created_at
         """
 
     INSERT_CONVERSATION_HISTORY_STATEMENT = """
-        INSERT INTO cache(user_id, conversation_id, created_at, query, response, provider, model)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO cache(user_id, conversation_id, created_at, started_at, completed_at,
+                          query, response, provider, model)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
 
     QUERY_CACHE_SIZE = """
@@ -209,6 +214,8 @@ class SQLiteCache(Cache):
                 response=conversation_entry[1],
                 provider=conversation_entry[2],
                 model=conversation_entry[3],
+                started_at=conversation_entry[4],
+                completed_at=conversation_entry[5],
             )
             result.append(cache_entry)
 
@@ -243,6 +250,8 @@ class SQLiteCache(Cache):
                 user_id,
                 conversation_id,
                 current_time,
+                cache_entry.started_at,
+                cache_entry.completed_at,
                 cache_entry.query,
                 cache_entry.response,
                 cache_entry.provider,

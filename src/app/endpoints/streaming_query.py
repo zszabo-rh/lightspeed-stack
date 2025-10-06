@@ -4,6 +4,7 @@ import ast
 import json
 import logging
 import re
+from datetime import UTC, datetime
 from typing import Annotated, Any, AsyncIterator, Iterator, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -596,6 +597,7 @@ async def streaming_query_endpoint_handler(  # pylint: disable=R0915,R0914
     _ = request
 
     check_configuration_loaded(configuration)
+    started_at = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     # Enforce RBAC: optionally disallow overriding model/provider in requests
     validate_model_provider_override(query_request, request.state.authorized_actions)
@@ -719,6 +721,7 @@ async def streaming_query_endpoint_handler(  # pylint: disable=R0915,R0914
                         query_request.query, client, model_id
                     )
 
+            completed_at = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
             store_conversation_into_cache(
                 configuration,
                 user_id,
@@ -727,6 +730,8 @@ async def streaming_query_endpoint_handler(  # pylint: disable=R0915,R0914
                 model_id,
                 query_request.query,
                 summary.llm_response,
+                started_at,
+                completed_at,
                 _skip_userid_check,
                 topic_summary,
             )

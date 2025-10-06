@@ -189,6 +189,8 @@ def store_conversation_into_cache(
     model_id: str,
     query: str,
     response: str,
+    started_at: str,
+    completed_at: str,
     _skip_userid_check: bool,
     topic_summary: str | None,
 ) -> None:
@@ -203,6 +205,8 @@ def store_conversation_into_cache(
             response=response,
             provider=provider_id,
             model=model_id,
+            started_at=started_at,
+            completed_at=completed_at,
         )
         cache.insert_or_append(
             user_id, conversation_id, cache_entry, _skip_userid_check

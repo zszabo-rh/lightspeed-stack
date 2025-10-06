@@ -30,6 +30,27 @@ def ask_question(context: Context, endpoint: str) -> None:
     context.response = requests.post(url, json=data, timeout=DEFAULT_LLM_TIMEOUT)
 
 
+@step('I use "{endpoint}" to ask question with authorization header')
+def ask_question_authorized(context: Context, endpoint: str) -> None:
+    """Call the service REST API endpoint with question."""
+    base = f"http://{context.hostname}:{context.port}"
+    path = f"{context.api_prefix}/{endpoint}".replace("//", "/")
+    url = base + path
+
+    # Use context.text if available, otherwise use empty query
+    data = json.loads(context.text or "{}")
+    print(data)
+    context.response = requests.post(
+        url, json=data, headers=context.auth_headers, timeout=DEFAULT_LLM_TIMEOUT
+    )
+
+
+@step("I store conversation details")
+def store_conversation_details(context: Context) -> None:
+    """Store details about the conversation."""
+    context.response_data = json.loads(context.response.text)
+
+
 @step('I use "{endpoint}" to ask question with same conversation_id')
 def ask_question_in_same_conversation(context: Context, endpoint: str) -> None:
     """Call the service REST API endpoint with question, but use the existing conversation id."""
@@ -39,10 +60,13 @@ def ask_question_in_same_conversation(context: Context, endpoint: str) -> None:
 
     # Use context.text if available, otherwise use empty query
     data = json.loads(context.text or "{}")
+    headers = context.auth_headers if hasattr(context, "auth_headers") else {}
     data["conversation_id"] = context.response_data["conversation_id"]
 
     print(data)
-    context.response = requests.post(url, json=data, timeout=DEFAULT_LLM_TIMEOUT)
+    context.response = requests.post(
+        url, json=data, headers=headers, timeout=DEFAULT_LLM_TIMEOUT
+    )
 
 
 @then("The response should have proper LLM response format")

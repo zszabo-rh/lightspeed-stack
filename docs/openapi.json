@@ -28,7 +28,7 @@
                     "root"
                 ],
                 "summary": "Root Endpoint Handler",
-                "description": "Handle request to the / endpoint.",
+                "description": "Handle GET requests to the root (\"/\") endpoint and returns the static HTML index page.\n\nReturns:\n    HTMLResponse: The HTML content of the index page, including a heading,\n    embedded image with the service icon, and links to the API documentation\n    via Swagger UI and ReDoc.",
                 "operationId": "root_endpoint_handler__get",
                 "responses": {
                     "200": {
@@ -2142,7 +2142,9 @@
                         "examples": [
                             "0.2.1",
                             "0.2.2",
-                            "0.2.18"
+                            "0.2.18",
+                            "0.2.21",
+                            "0.2.22"
                         ]
                     }
                 },
@@ -2153,7 +2155,7 @@
                     "llama_stack_version"
                 ],
                 "title": "InfoResponse",
-                "description": "Model representing a response to an info request.\n\nAttributes:\n    name: Service name.\n    service_version: Service version.\n    llama_stack_version: Llama Stack version.\n\nExample:\n    ```python\n    info_response = InfoResponse(\n        name=\"Lightspeed Stack\",\n        service_version=\"1.0.0\",\n        llama_stack_version=\"0.2.21\",\n    )\n    ```",
+                "description": "Model representing a response to an info request.\n\nAttributes:\n    name: Service name.\n    service_version: Service version.\n    llama_stack_version: Llama Stack version.\n\nExample:\n    ```python\n    info_response = InfoResponse(\n        name=\"Lightspeed Stack\",\n        service_version=\"1.0.0\",\n        llama_stack_version=\"0.2.22\",\n    )\n    ```",
                 "examples": [
                     {
                         "llama_stack_version": "1.0.0",
