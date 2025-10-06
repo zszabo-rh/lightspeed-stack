@@ -361,7 +361,11 @@ class FeedbackResponse(BaseModel):
         ```
     """
 
-    response: str
+    response: str = Field(
+        ...,
+        description="The response of the feedback request.",
+        examples=["feedback received"],
+    )
 
     # provides examples for /docs endpoint
     model_config = {
