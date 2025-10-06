@@ -520,8 +520,26 @@ class ConversationResponse(BaseModel):
         ```
     """
 
-    conversation_id: str
-    chat_history: list[dict[str, Any]]
+    conversation_id: str = Field(
+        ...,
+        description="Conversation ID (UUID)",
+        examples=["c5260aec-4d82-4370-9fdf-05cf908b3f16"],
+    )
+
+    chat_history: list[dict[str, Any]] = Field(
+        ...,
+        description="The simplified chat history as a list of conversation turns",
+        examples=[
+            {
+                "messages": [
+                    {"content": "Hello", "type": "user"},
+                    {"content": "Hi there!", "type": "assistant"},
+                ],
+                "started_at": "2024-01-01T00:01:00Z",
+                "completed_at": "2024-01-01T00:01:05Z",
+            }
+        ],
+    )
 
     # provides examples for /docs endpoint
     model_config = {
