@@ -36,6 +36,24 @@ class ModelsResponse(BaseModel):
     )
 
 
+class ShieldsResponse(BaseModel):
+    """Model representing a response to shields request."""
+
+    shields: list[dict[str, Any]] = Field(
+        ...,
+        description="List of shields available",
+        examples=[
+            {
+                "identifier": "lightspeed_question_validity-shield",
+                "provider_resource_id": "lightspeed_question_validity-shield",
+                "provider_id": "lightspeed_question_validity",
+                "type": "shield",
+                "params": {},
+            }
+        ],
+    )
+
+
 class RAGChunk(BaseModel):
     """Model representing a RAG chunk used in the response."""
 

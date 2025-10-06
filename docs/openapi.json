@@ -123,6 +123,40 @@
                 }
             }
         },
+        "/v1/shields": {
+            "get": {
+                "tags": [
+                    "shields"
+                ],
+                "summary": "Shields Endpoint Handler",
+                "description": "Handle requests to the /shields endpoint.\n\nProcess GET requests to the /shields endpoint, returning a list of available\nshields from the Llama Stack service.\n\nRaises:\n    HTTPException: If unable to connect to the Llama Stack server or if\n    shield retrieval fails for any reason.\n\nReturns:\n    ShieldsResponse: An object containing the list of available shields.",
+                "operationId": "shields_endpoint_handler_v1_shields_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ShieldsResponse"
+                                }
+                            }
+                        },
+                        "shields": [
+                            {
+                                "identifier": "lightspeed_question_validity-shield",
+                                "provider_resource_id": "lightspeed_question_validity-shield",
+                                "provider_id": "lightspeed_question_validity",
+                                "type": "shield",
+                                "params": {}
+                            }
+                        ]
+                    },
+                    "500": {
+                        "description": "Connection to Llama Stack is broken"
+                    }
+                }
+            }
+        },
         "/v1/query": {
             "post": {
                 "tags": [
@@ -1082,6 +1116,7 @@
                     "delete_conversation",
                     "feedback",
                     "get_models",
+                    "get_shields",
                     "get_metrics",
                     "get_config",
                     "info",
@@ -2989,6 +3024,34 @@
                 "type": "object",
                 "title": "ServiceConfiguration",
                 "description": "Service configuration."
+            },
+            "ShieldsResponse": {
+                "properties": {
+                    "shields": {
+                        "items": {
+                            "additionalProperties": true,
+                            "type": "object"
+                        },
+                        "type": "array",
+                        "title": "Shields",
+                        "description": "List of shields available",
+                        "examples": [
+                            {
+                                "identifier": "lightspeed_question_validity-shield",
+                                "params": {},
+                                "provider_id": "lightspeed_question_validity",
+                                "provider_resource_id": "lightspeed_question_validity-shield",
+                                "type": "shield"
+                            }
+                        ]
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "shields"
+                ],
+                "title": "ShieldsResponse",
+                "description": "Model representing a response to shields request."
             },
             "StatusResponse": {
                 "properties": {
