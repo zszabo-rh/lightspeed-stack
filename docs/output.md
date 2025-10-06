@@ -760,8 +760,8 @@ Example:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| conversation_id | string |  |
-| chat_history | array |  |
+| conversation_id | string | Conversation ID (UUID) |
+| chat_history | array | The simplified chat history as a list of conversation turns |
 
 
 ## ConversationsListResponse
@@ -931,7 +931,7 @@ Example:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| response | string |  |
+| response | string | The response of the feedback request. |
 
 
 ## FeedbackStatusUpdateRequest
@@ -989,7 +989,7 @@ Model representing response for forbidden access.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| detail | string |  |
+| detail | string | Details about the authorization issue |
 
 
 ## HTTPValidationError
@@ -1247,7 +1247,7 @@ Attributes:
 |-------|------|-------------|
 | conversation_id |  | The optional conversation ID (UUID) |
 | response | string | Response from LLM |
-| rag_chunks | array |  |
+| rag_chunks | array | List of RAG chunks used to generate the response |
 | tool_calls |  | List of tool calls made during response generation |
 | referenced_documents | array | List of documents referenced in generating the response |
 
@@ -1363,8 +1363,8 @@ Example:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| functionality | string |  |
-| status | object |  |
+| functionality | string | The functionality of the service |
+| status | object | The status of the service |
 
 
 ## TLSConfiguration
@@ -1401,7 +1401,7 @@ Model representing response for missing or invalid credentials.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| detail | string |  |
+| detail | string | Details about the authorization issue |
 
 
 ## UserDataCollection
