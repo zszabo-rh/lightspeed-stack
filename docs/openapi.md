@@ -80,6 +80,32 @@ Returns:
 |-------------|-------------|-----------|
 | 200 | Successful Response | [ModelsResponse](#modelsresponse) |
 | 500 | Connection to Llama Stack is broken |  |
+## GET `/v1/shields`
+
+> **Shields Endpoint Handler**
+
+Handle requests to the /shields endpoint.
+
+Process GET requests to the /shields endpoint, returning a list of available
+shields from the Llama Stack service.
+
+Raises:
+    HTTPException: If unable to connect to the Llama Stack server or if
+    shield retrieval fails for any reason.
+
+Returns:
+    ShieldsResponse: An object containing the list of available shields.
+
+
+
+
+
+### ✅ Responses
+
+| Status Code | Description | Component |
+|-------------|-------------|-----------|
+| 200 | Successful Response | [ShieldsResponse](#shieldsresponse) |
+| 500 | Connection to Llama Stack is broken |  |
 ## POST `/v1/query`
 
 > **Query Endpoint Handler**
@@ -1341,6 +1367,17 @@ Service configuration.
 | access_log | boolean |  |
 | tls_config |  |  |
 | cors |  |  |
+
+
+## ShieldsResponse
+
+
+Model representing a response to shields request.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| shields | array | List of shields available |
 
 
 ## StatusResponse
