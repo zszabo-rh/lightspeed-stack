@@ -256,15 +256,15 @@ async def query_endpoint_handler(  # pylint: disable=R0914
 
         if user_conversation is None:
             logger.warning(
-                "User %s attempted to query conversation %s they don't own",
-                user_id,
+                "Conversation %s not found for user %s",
                 query_request.conversation_id,
+                user_id,
             )
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
+                status_code=status.HTTP_404_NOT_FOUND,
                 detail={
-                    "response": "Access denied",
-                    "cause": "You do not have permission to access this conversation",
+                    "response": "Conversation not found",
+                    "cause": "The requested conversation does not exist.",
                 },
             )
     else:
