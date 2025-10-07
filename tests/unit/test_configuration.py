@@ -123,6 +123,7 @@ def test_init_from_dict() -> None:
     assert cfg.configuration.name == "foo"
 
     # check for llama_stack_configuration subsection
+    assert cfg.llama_stack_configuration.api_key is not None
     assert cfg.llama_stack_configuration.api_key.get_secret_value() == "xyzzy"
     assert cfg.llama_stack_configuration.url == "http://x.y.com:1234"
     assert cfg.llama_stack_configuration.use_as_library_client is False
@@ -254,7 +255,7 @@ mcp_servers: []
         )
 
     cfg = AppConfig()
-    cfg.load_configuration(cfg_filename)
+    cfg.load_configuration(str(cfg_filename))
     assert cfg.configuration is not None
     assert cfg.llama_stack_configuration is not None
     assert cfg.service_configuration is not None
@@ -291,7 +292,7 @@ mcp_servers:
         )
 
     cfg = AppConfig()
-    cfg.load_configuration(cfg_filename)
+    cfg.load_configuration(str(cfg_filename))
 
     assert len(cfg.mcp_servers) == 2
     assert cfg.mcp_servers[0].name == "filesystem-server"
@@ -458,7 +459,7 @@ customization:
         )
 
     cfg = AppConfig()
-    cfg.load_configuration(cfg_filename)
+    cfg.load_configuration(str(cfg_filename))
 
     assert cfg.customization is not None
     assert cfg.customization.system_prompt is not None
@@ -498,7 +499,7 @@ customization:
         )
 
     cfg = AppConfig()
-    cfg.load_configuration(cfg_filename)
+    cfg.load_configuration(str(cfg_filename))
 
     assert cfg.customization is not None
     assert cfg.customization.system_prompt is not None
@@ -536,7 +537,7 @@ customization:
         )
 
     cfg = AppConfig()
-    cfg.load_configuration(cfg_filename)
+    cfg.load_configuration(str(cfg_filename))
 
     assert (
         cfg.customization is not None and cfg.customization.custom_profile is not None
@@ -581,7 +582,7 @@ customization:
         )
 
     cfg = AppConfig()
-    cfg.load_configuration(cfg_filename)
+    cfg.load_configuration(str(cfg_filename))
 
     assert (
         cfg.customization is not None and cfg.customization.custom_profile is not None
