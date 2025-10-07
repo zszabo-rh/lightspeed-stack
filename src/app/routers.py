@@ -16,6 +16,7 @@ from app.endpoints import (
     conversations,
     conversations_v2,
     metrics,
+    tools,
 )
 
 
@@ -28,6 +29,7 @@ def include_routers(app: FastAPI) -> None:
     app.include_router(root.router)
     app.include_router(info.router, prefix="/v1")
     app.include_router(models.router, prefix="/v1")
+    app.include_router(tools.router, prefix="/v1")
     app.include_router(shields.router, prefix="/v1")
     app.include_router(query.router, prefix="/v1")
     app.include_router(streaming_query.router, prefix="/v1")

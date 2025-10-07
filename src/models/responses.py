@@ -36,6 +36,37 @@ class ModelsResponse(BaseModel):
     )
 
 
+class ToolsResponse(BaseModel):
+    """Model representing a response to tools request."""
+
+    tools: list[dict[str, Any]] = Field(
+        description=(
+            "List of tools available from all configured MCP servers and built-in toolgroups"
+        ),
+        examples=[
+            [
+                {
+                    "identifier": "filesystem_read",
+                    "description": "Read contents of a file from the filesystem",
+                    "parameters": [
+                        {
+                            "name": "path",
+                            "description": "Path to the file to read",
+                            "parameter_type": "string",
+                            "required": True,
+                            "default": None,
+                        }
+                    ],
+                    "provider_id": "model-context-protocol",
+                    "toolgroup_id": "filesystem-tools",
+                    "server_source": "http://localhost:3000",
+                    "type": "tool",
+                }
+            ]
+        ],
+    )
+
+
 class ShieldsResponse(BaseModel):
     """Model representing a response to shields request."""
 
