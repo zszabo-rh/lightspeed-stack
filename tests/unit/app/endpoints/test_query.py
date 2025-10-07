@@ -2031,6 +2031,30 @@ async def test_get_topic_summary_system_prompt_retrieval(mocker):
 
 
 @pytest.mark.asyncio
+async def test_query_endpoint_handler_conversation_not_found(mocker, dummy_request):
+    """Test that a 404 is raised for a non-existant conversation_id."""
+    mock_config = mocker.Mock()
+    mocker.patch("app.endpoints.query.configuration", mock_config)
+
+    mocker.patch(
+        "app.endpoints.query.validate_conversation_ownership", return_value=None
+    )
+
+    query_request = QueryRequest(
+        query="What is OpenStack?",
+        conversation_id="00000000-0000-0000-0000-000000000001",
+    )
+
+    with pytest.raises(HTTPException) as exc_info:
+        await query_endpoint_handler(
+            request=dummy_request, query_request=query_request, auth=MOCK_AUTH
+        )
+
+    assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
+    assert "Conversation not found" in exc_info.value.detail["response"]
+
+
+@pytest.mark.asyncio
 async def test_get_topic_summary_agent_creation_parameters(mocker):
     """Test that get_topic_summary creates agent with correct parameters."""
     # Mock the dependencies
