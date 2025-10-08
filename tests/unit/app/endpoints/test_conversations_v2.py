@@ -60,7 +60,7 @@ def test_transform_message() -> None:
 
 
 @pytest.fixture
-def mock_configuration(mocker):
+def mock_configuration():
     """Mock configuration with conversation cache."""
     mock_config = Mock()
     mock_cache = Mock()
