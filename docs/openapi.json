@@ -1032,8 +1032,7 @@
                         },
                         "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
                         "success": true,
-                        "message": "Topic summary updated successfully",
-                        "topic_summary": "Updated topic summary"
+                        "message": "Topic summary updated successfully"
                     },
                     "400": {
                         "description": "Missing or invalid credentials provided by client",

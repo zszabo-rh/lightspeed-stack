@@ -96,7 +96,6 @@ conversation_update_responses: dict[int | str, dict[str, Any]] = {
         "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
         "success": True,
         "message": "Topic summary updated successfully",
-        "topic_summary": "Updated topic summary",
     },
     400: {
         "description": "Missing or invalid credentials provided by client",
