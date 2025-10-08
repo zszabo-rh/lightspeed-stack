@@ -13,6 +13,7 @@ from pydantic import (
     ConfigDict,
     Field,
     model_validator,
+    constr,
     FilePath,
     AnyHttpUrl,
     PositiveInt,
@@ -545,6 +546,19 @@ class ConversationCacheConfiguration(ConfigurationBase):
         return self
 
 
+class ByokRag(ConfigurationBase):
+    """BYOK RAG configuration."""
+
+    rag_id: constr(min_length=1)  # type:ignore
+    rag_type: constr(min_length=1) = constants.DEFAULT_RAG_TYPE  # type:ignore
+    embedding_model: constr(min_length=1) = (  # type:ignore
+        constants.DEFAULT_EMBEDDING_MODEL
+    )
+    embedding_dimension: PositiveInt = constants.DEFAULT_EMBEDDING_DIMENSION
+    vector_db_id: constr(min_length=1)  # type:ignore
+    db_path: FilePath
+
+
 class Configuration(ConfigurationBase):
     """Global service configuration."""
 
@@ -563,6 +577,7 @@ class Configuration(ConfigurationBase):
     conversation_cache: ConversationCacheConfiguration = Field(
         default_factory=ConversationCacheConfiguration
     )
+    byok_rag: list[ByokRag] = Field(default_factory=list)
 
     def dump(self, filename: str = "configuration.json") -> None:
         """Dump actual configuration into JSON file."""
