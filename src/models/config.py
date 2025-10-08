@@ -1,7 +1,7 @@
 """Model with service configuration."""
 
 from pathlib import Path
-from typing import Optional, Any, Annotated, Pattern
+from typing import Optional, Any, Pattern
 from enum import Enum
 from functools import cached_property
 import re
