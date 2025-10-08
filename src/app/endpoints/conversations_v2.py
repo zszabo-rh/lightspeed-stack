@@ -10,9 +10,11 @@ from authorization.middleware import authorize
 from configuration import configuration
 from models.cache_entry import CacheEntry
 from models.config import Action
+from models.requests import ConversationUpdateRequest
 from models.responses import (
     ConversationDeleteResponse,
     ConversationResponse,
+    ConversationUpdateResponse,
     ConversationsListResponseV2,
     UnauthorizedResponse,
 )
@@ -87,6 +89,29 @@ conversations_list_responses: dict[int | str, dict[str, Any]] = {
             }
         ]
     }
+}
+
+conversation_update_responses: dict[int | str, dict[str, Any]] = {
+    200: {
+        "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
+        "success": True,
+        "message": "Topic summary updated successfully",
+        "topic_summary": "Updated topic summary",
+    },
+    400: {
+        "description": "Missing or invalid credentials provided by client",
+        "model": UnauthorizedResponse,
+    },
+    401: {
+        "description": "Unauthorized: Invalid or missing Bearer token",
+        "model": UnauthorizedResponse,
+    },
+    404: {
+        "detail": {
+            "response": "Conversation not found",
+            "cause": "The specified conversation ID does not exist.",
+        }
+    },
 }
 
 
@@ -204,6 +229,58 @@ async def delete_conversation_endpoint_handler(
         conversation_id=conversation_id,
         success=True,
         response="Conversation can not be deleted",
+    )
+
+
+@router.put(
+    "/conversations/{conversation_id}", responses=conversation_update_responses
+)
+@authorize(Action.UPDATE_CONVERSATION)
+async def update_conversation_endpoint_handler(
+    conversation_id: str,
+    update_request: ConversationUpdateRequest,
+    auth: Any = Depends(get_auth_dependency()),
+) -> ConversationUpdateResponse:
+    """Handle request to update a conversation topic summary by ID."""
+    check_configuration_loaded(configuration)
+    check_valid_conversation_id(conversation_id)
+
+    user_id = auth[0]
+    logger.info(
+        "Updating topic summary for conversation %s for user %s",
+        conversation_id,
+        user_id,
+    )
+
+    skip_userid_check = auth[2]
+
+    if configuration.conversation_cache is None:
+        logger.warning("Conversation cache is not configured")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "response": "Conversation cache is not configured",
+                "cause": "Conversation cache is not configured",
+            },
+        )
+
+    check_conversation_existence(user_id, conversation_id)
+
+    # Update the topic summary in the cache
+    configuration.conversation_cache.set_topic_summary(
+        user_id, conversation_id, update_request.topic_summary, skip_userid_check
+    )
+
+    logger.info(
+        "Successfully updated topic summary for conversation %s for user %s",
+        conversation_id,
+        user_id,
+    )
+
+    return ConversationUpdateResponse(
+        conversation_id=conversation_id,
+        success=True,
+        message="Topic summary updated successfully",
     )
 
 

@@ -77,6 +77,11 @@ def test_servers_section_present(spec: dict):
             "delete",
             {"200", "400", "401", "404", "503", "422"},
         ),
+        (
+            "/v1/conversations/{conversation_id}",
+            "put",
+            {"200", "400", "401", "404", "503", "422"},
+        ),
         ("/readiness", "get", {"200", "503"}),
         ("/liveness", "get", {"200"}),
         ("/authorized", "post", {"200", "400", "401", "403"}),
