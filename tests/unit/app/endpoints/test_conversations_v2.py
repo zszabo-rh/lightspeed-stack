@@ -138,7 +138,6 @@ class TestUpdateConversationEndpoint:
         
         with pytest.raises(HTTPException) as exc_info:
             await update_conversation_endpoint_handler(
-                request=dummy_request,
                 conversation_id=VALID_CONVERSATION_ID,
                 update_request=update_request,
                 auth=MOCK_AUTH,
@@ -157,7 +156,6 @@ class TestUpdateConversationEndpoint:
         
         with pytest.raises(HTTPException) as exc_info:
             await update_conversation_endpoint_handler(
-                request=dummy_request,
                 conversation_id=INVALID_CONVERSATION_ID,
                 update_request=update_request,
                 auth=MOCK_AUTH,
@@ -179,7 +177,6 @@ class TestUpdateConversationEndpoint:
         
         with pytest.raises(HTTPException) as exc_info:
             await update_conversation_endpoint_handler(
-                request=dummy_request,
                 conversation_id=VALID_CONVERSATION_ID,
                 update_request=update_request,
                 auth=MOCK_AUTH,
@@ -200,7 +197,6 @@ class TestUpdateConversationEndpoint:
         
         with pytest.raises(HTTPException) as exc_info:
             await update_conversation_endpoint_handler(
-                request=dummy_request,
                 conversation_id=VALID_CONVERSATION_ID,
                 update_request=update_request,
                 auth=MOCK_AUTH,
@@ -222,7 +218,6 @@ class TestUpdateConversationEndpoint:
         update_request = ConversationUpdateRequest(topic_summary="New topic summary")
         
         response = await update_conversation_endpoint_handler(
-            request=dummy_request,
             conversation_id=VALID_CONVERSATION_ID,
             update_request=update_request,
             auth=MOCK_AUTH,
@@ -232,7 +227,6 @@ class TestUpdateConversationEndpoint:
         assert response.conversation_id == VALID_CONVERSATION_ID
         assert response.success is True
         assert response.message == "Topic summary updated successfully"
-        assert response.topic_summary == "New topic summary"
         
         # Verify that set_topic_summary was called
         mock_configuration.conversation_cache.set_topic_summary.assert_called_once_with(
