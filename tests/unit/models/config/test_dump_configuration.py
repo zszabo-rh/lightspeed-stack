@@ -88,6 +88,7 @@ def test_dump_configuration(tmp_path) -> None:
         assert "customization" in content
         assert "inference" in content
         assert "database" in content
+        assert "byok_rag" in content
 
         # check the whole deserialized JSON file content
         assert content == {
@@ -169,6 +170,7 @@ def test_dump_configuration(tmp_path) -> None:
                 "sqlite": None,
                 "type": None,
             },
+            "byok_rag": [],
         }
 
 
