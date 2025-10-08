@@ -19,7 +19,7 @@ def mock_authorization_resolvers(mocker: Any) -> None:
         "authorization.middleware.get_authorization_resolvers"
     )
     mock_role_resolver = AsyncMock()
-    mock_access_resolver = AsyncMock()
+    mock_access_resolver = Mock()
     mock_role_resolver.resolve_roles.return_value = set()
     mock_access_resolver.check_access.return_value = True
     # get_actions should be synchronous, not async

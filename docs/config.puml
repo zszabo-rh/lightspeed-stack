@@ -19,6 +19,14 @@ class "AuthenticationConfiguration" as src.models.config.AuthenticationConfigura
 class "AuthorizationConfiguration" as src.models.config.AuthorizationConfiguration {
   access_rules : Optional[list[AccessRule]]
 }
+class "ByokRag" as src.models.config.ByokRag {
+  db_path : Annotated
+  embedding_dimension : Annotated
+  embedding_model : Annotated
+  rag_id : Annotated
+  rag_type : Annotated
+  vector_db_id : Annotated
+}
 class "CORSConfiguration" as src.models.config.CORSConfiguration {
   allow_credentials : bool
   allow_headers : list[str]
@@ -29,6 +37,7 @@ class "CORSConfiguration" as src.models.config.CORSConfiguration {
 class "Configuration" as src.models.config.Configuration {
   authentication : Optional[AuthenticationConfiguration]
   authorization : Optional[AuthorizationConfiguration]
+  byok_rag : Optional[list[ByokRag]]
   conversation_cache : Optional[ConversationCacheConfiguration]
   customization : Optional[Customization]
   database : Optional[DatabaseConfiguration]
@@ -155,6 +164,7 @@ class "UserDataCollection" as src.models.config.UserDataCollection {
 src.models.config.AccessRule --|> src.models.config.ConfigurationBase
 src.models.config.AuthenticationConfiguration --|> src.models.config.ConfigurationBase
 src.models.config.AuthorizationConfiguration --|> src.models.config.ConfigurationBase
+src.models.config.ByokRag --|> src.models.config.ConfigurationBase
 src.models.config.CORSConfiguration --|> src.models.config.ConfigurationBase
 src.models.config.Configuration --|> src.models.config.ConfigurationBase
 src.models.config.ConversationCacheConfiguration --|> src.models.config.ConfigurationBase
