@@ -129,6 +129,14 @@ CACHE_TYPE_POSTGRES = "postgres"
 CACHE_TYPE_NOOP = "noop"
 
 # BYOK RAG
+# Default RAG type for bring-your-own-knowledge RAG configurations, that type
+# needs to be supported by Llama Stack
 DEFAULT_RAG_TYPE = "inline::faiss"
+
+# Default sentence transformer model for embedding generation, that type needs
+# to be supported by Llama Stack and configured properly in providers and
+# models sections
 DEFAULT_EMBEDDING_MODEL = "sentence-transformers/all-mpnet-base-v2"
+
+# Default embedding vector dimension for the sentence transformer model
 DEFAULT_EMBEDDING_DIMENSION = 768
