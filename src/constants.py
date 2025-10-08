@@ -127,3 +127,8 @@ CACHE_TYPE_MEMORY = "memory"
 CACHE_TYPE_SQLITE = "sqlite"
 CACHE_TYPE_POSTGRES = "postgres"
 CACHE_TYPE_NOOP = "noop"
+
+# BYOK RAG
+DEFAULT_RAG_TYPE = "inline::faiss"
+DEFAULT_EMBEDDING_MODEL = "sentence-transformers/all-mpnet-base-v2"
+DEFAULT_EMBEDDING_DIMENSION = 768
