@@ -232,9 +232,7 @@ async def delete_conversation_endpoint_handler(
     )
 
 
-@router.put(
-    "/conversations/{conversation_id}", responses=conversation_update_responses
-)
+@router.put("/conversations/{conversation_id}", responses=conversation_update_responses)
 @authorize(Action.UPDATE_CONVERSATION)
 async def update_conversation_endpoint_handler(
     conversation_id: str,
