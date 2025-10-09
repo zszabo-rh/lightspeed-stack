@@ -209,7 +209,7 @@
                     "providers"
                 ],
                 "summary": "Providers Endpoint Handler",
-                "description": "Handle requests to the /providers endpoint.\n\nProcess GET requests to the /providers endpoint, returning a list of available\nproviders from the Llama Stack service.\n\nRaises:\n    HTTPException: If unable to connect to the Llama Stack server or if\n    providers retrieval fails for any reason.\n\nReturns:\n    ProvidersListResponse: An object containing the list of available providers.",
+                "description": "Handle GET requests to list all available providers.\n\nRetrieves providers from the Llama Stack service, groups them by API type.\n\nRaises:\n    HTTPException:\n        - 500 if configuration is not loaded,\n        - 500 if unable to connect to Llama Stack,\n        - 500 for any unexpected retrieval errors.\n\nReturns:\n    ProvidersListResponse: Object mapping API types to lists of providers.",
                 "operationId": "providers_endpoint_handler_v1_providers_get",
                 "responses": {
                     "200": {
@@ -221,33 +221,32 @@
                                 }
                             }
                         },
-
                         "providers": {
                             "agents": [
-                            {
-                                "provider_id": "meta-reference",
-                                "provider_type": "inline::meta-reference"
-                            }
+                                {
+                                    "provider_id": "meta-reference",
+                                    "provider_type": "inline::meta-reference"
+                                }
                             ],
                             "datasetio": [
-                            {
-                                "provider_id": "huggingface",
-                                "provider_type": "remote::huggingface"
-                            },
-                            {
-                                "provider_id": "localfs",
-                                "provider_type": "inline::localfs"
-                            }
+                                {
+                                    "provider_id": "huggingface",
+                                    "provider_type": "remote::huggingface"
+                                },
+                                {
+                                    "provider_id": "localfs",
+                                    "provider_type": "inline::localfs"
+                                }
                             ],
                             "inference": [
-                            {
-                                "provider_id": "sentence-transformers",
-                                "provider_type": "inline::sentence-transformers"
-                            },
-                            {
-                                "provider_id": "openai",
-                                "provider_type": "remote::openai"
-                            }
+                                {
+                                    "provider_id": "sentence-transformers",
+                                    "provider_type": "inline::sentence-transformers"
+                                },
+                                {
+                                    "provider_id": "openai",
+                                    "provider_type": "remote::openai"
+                                }
                             ]
                         }
                     },
@@ -259,61 +258,64 @@
         },
         "/v1/providers/{provider_id}": {
             "get": {
-                "summary": "Retrieve a single provider by ID",
-                "description": "Fetches detailed information about a specific provider, including its API, configuration, health status, provider ID, and type. Returns a 404 error if the provider with the specified ID does not exist, or a 500 error if there is a problem connecting to the Llama Stack service.",
+                "tags": [
+                    "providers"
+                ],
+                "summary": "Get Provider Endpoint Handler",
+                "description": "Retrieve a single provider by its unique ID.\n\nRaises:\n    HTTPException:\n        - 404 if provider with the given ID is not found,\n        - 500 if unable to connect to Llama Stack,\n        - 500 for any unexpected retrieval errors.\n\nReturns:\n    ProviderResponse: A single provider's details including API, config, health,\n    provider_id, and provider_type.",
+                "operationId": "get_provider_endpoint_handler_v1_providers__provider_id__get",
                 "parameters": [
-                {
-                    "name": "provider_id",
-                    "in": "path",
-                    "required": true,
-                    "description": "Unique identifier of the provider to retrieve",
-                    "schema": {
-                    "type": "string"
+                    {
+                        "name": "provider_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Provider Id"
+                        }
                     }
-                }
                 ],
                 "responses": {
-                "200": {
-                    "description": "Provider found successfully",
-                    "content": {
-                    "application/json": {
-                        "schema": { "$ref": "#/components/schemas/ProviderResponse" },
-                        "example": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProviderResponse"
+                                }
+                            }
+                        },
                         "api": "inference",
-                        "config": {"api_key": "********"},
+                        "config": {
+                            "api_key": "********"
+                        },
                         "health": {
                             "status": "Not Implemented",
                             "message": "Provider does not implement health check"
                         },
                         "provider_id": "openai",
                         "provider_type": "remote::openai"
-                        }
-                    }
-                    }
-                },
-                "404": {
-                    "description": "Provider with the specified ID was not found",
-                    "content": {
-                    "application/json": {
-                        "example": {
-                        "response": "Provider with given id not found"
-                        }
-                    }
-                    }
-                },
-                "500": {
-                    "description": "Unable to retrieve provider due to server error or connection issues",
-                    "content": {
-                    "application/json": {
-                        "example": {
+                    },
+                    "404": {
+                        "response": "Provider with given id not found",
+                        "description": "Not Found"
+                    },
+                    "500": {
                         "response": "Unable to retrieve list of providers",
-                        "cause": "Connection to Llama Stack is broken"
+                        "cause": "Connection to Llama Stack is broken",
+                        "description": "Internal Server Error"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
                         }
-                    }
                     }
                 }
-                },
-                "tags": ["providers"]
             }
         },
         "/v1/query": {
@@ -1536,6 +1538,52 @@
                     }
                 ]
             },
+            "ByokRag": {
+                "properties": {
+                    "rag_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Rag Id"
+                    },
+                    "rag_type": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Rag Type",
+                        "default": "inline::faiss"
+                    },
+                    "embedding_model": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Embedding Model",
+                        "default": "sentence-transformers/all-mpnet-base-v2"
+                    },
+                    "embedding_dimension": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0.0,
+                        "title": "Embedding Dimension",
+                        "default": 768
+                    },
+                    "vector_db_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Vector Db Id"
+                    },
+                    "db_path": {
+                        "type": "string",
+                        "format": "file-path",
+                        "title": "Db Path"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                    "rag_id",
+                    "vector_db_id",
+                    "db_path"
+                ],
+                "title": "ByokRag",
+                "description": "BYOK RAG configuration."
+            },
             "CORSConfiguration": {
                 "properties": {
                     "allow_origins": {
@@ -1632,6 +1680,13 @@
                     },
                     "conversation_cache": {
                         "$ref": "#/components/schemas/ConversationCacheConfiguration"
+                    },
+                    "byok_rag": {
+                        "items": {
+                            "$ref": "#/components/schemas/ByokRag"
+                        },
+                        "type": "array",
+                        "title": "Byok Rag"
                     }
                 },
                 "additionalProperties": false,
@@ -2878,101 +2933,146 @@
                 "description": "Model representing the health status of a provider.\n\nAttributes:\n    provider_id: The ID of the provider.\n    status: The health status ('ok', 'unhealthy', 'not_implemented').\n    message: Optional message about the health status."
             },
             "ProviderResponse": {
-                "type": "object",
-                "title": "ProviderResponse",
-                "description": "Model representing a provider and its configuration, health, and identification details.",
                 "properties": {
-                "api": {
-                    "type": "string",
-                    "description": "The API name this provider implements"
-                },
-                "config": {
-                    "type": "object",
-                    "description": "Configuration parameters for the provider",
-                    "additionalProperties": true
-                },
-                "health": {
-                    "type": "object",
-                    "description": "Current health status of the provider",
-                    "additionalProperties": true
-                },
-                "provider_id": {
-                    "type": "string",
-                    "description": "Unique identifier for the provider"
-                },
-                "provider_type": {
-                    "type": "string",
-                    "description": "The type of provider implementation"
-                }
-                },
-                "required": [
-                "api",
-                "config",
-                "health",
-                "provider_id",
-                "provider_type"
-                ],
-                "example": {
-                "api": "inference",
-                "config": {"api_key": "********"},
-                "health": {
-                    "status": "Not Implemented",
-                    "message": "Provider does not implement health check"
-                },
-                "provider_id": "openai",
-                "provider_type": "remote::openai"
-                }
-            },
-            "ProvidersListResponse": {
-                "type": "object",
-                "properties": {
-                    "providers": {
-                    "type": "object",
-                    "description": "Mapping of API type to list of its available providers",
-                    "additionalProperties": {
-                        "type": "array",
-                        "items": {
-                        "type": "object",
-                        "properties": {
-                            "provider_id": {
-                            "type": "string",
-                            "description": "Unique local identifier of provider"
-                            },
-                            "provider_type": {
-                            "type": "string",
-                            "description": "Llama stack identifier of provider (following schema <type>::<name>)"
-                            }
+                    "api": {
+                        "type": "string",
+                        "title": "Api",
+                        "description": "The API this provider implements",
+                        "example": "inference"
+                    },
+                    "config": {
+                        "additionalProperties": {
+                            "anyOf": [
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "items": {},
+                                    "type": "array"
+                                },
+                                {},
+                                {
+                                    "type": "null"
+                                }
+                            ]
                         },
-                        "required": ["provider_id", "provider_type"]
+                        "type": "object",
+                        "title": "Config",
+                        "description": "Provider configuration parameters",
+                        "example": {
+                            "api_key": "********"
                         }
                     },
-                    "examples": [
-                        {
-                        "inference": [
-                            {
-                            "provider_id": "sentence-transformers",
-                            "provider_type": "inline::sentence-transformers"
-                            },
-                            {
-                            "provider_id": "openai",
-                            "provider_type": "remote::openai"
-                            }
-                        ],
-                        "datasetio": [
-                            {
-                            "provider_id": "huggingface",
-                            "provider_type": "remote::huggingface"
-                            },
-                            {
-                            "provider_id": "localfs",
-                            "provider_type": "inline::localfs"
-                            }
-                        ]
+                    "health": {
+                        "additionalProperties": {
+                            "anyOf": [
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "items": {},
+                                    "type": "array"
+                                },
+                                {},
+                                {
+                                    "type": "null"
+                                }
+                            ]
+                        },
+                        "type": "object",
+                        "title": "Health",
+                        "description": "Current health status of the provider",
+                        "example": {
+                            "message": "Healthy",
+                            "status": "OK"
                         }
-                    ]
+                    },
+                    "provider_id": {
+                        "type": "string",
+                        "title": "Provider Id",
+                        "description": "Unique provider identifier",
+                        "example": "openai"
+                    },
+                    "provider_type": {
+                        "type": "string",
+                        "title": "Provider Type",
+                        "description": "Provider implementation type",
+                        "example": "remote::openai"
                     }
                 },
-                "required": ["providers"],
+                "additionalProperties": true,
+                "type": "object",
+                "required": [
+                    "api",
+                    "config",
+                    "health",
+                    "provider_id",
+                    "provider_type"
+                ],
+                "title": "ProviderResponse",
+                "description": "Model representing a response to get specific provider request."
+            },
+            "ProvidersListResponse": {
+                "properties": {
+                    "providers": {
+                        "additionalProperties": {
+                            "items": {
+                                "additionalProperties": true,
+                                "type": "object"
+                            },
+                            "type": "array"
+                        },
+                        "type": "object",
+                        "title": "Providers",
+                        "description": "List of available API types and their corresponding providers",
+                        "examples": [
+                            {
+                                "agents": [
+                                    {
+                                        "provider_id": "meta-reference",
+                                        "provider_type": "inline::meta-reference"
+                                    }
+                                ],
+                                "datasetio": [
+                                    {
+                                        "provider_id": "huggingface",
+                                        "provider_type": "remote::huggingface"
+                                    },
+                                    {
+                                        "provider_id": "localfs",
+                                        "provider_type": "inline::localfs"
+                                    }
+                                ],
+                                "inference": [
+                                    {
+                                        "provider_id": "sentence-transformers",
+                                        "provider_type": "inline::sentence-transformers"
+                                    },
+                                    {
+                                        "provider_id": "openai",
+                                        "provider_type": "remote::openai"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "providers"
+                ],
                 "title": "ProvidersListResponse",
                 "description": "Model representing a response to providers request."
             },

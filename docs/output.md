@@ -80,6 +80,33 @@ Returns:
 |-------------|-------------|-----------|
 | 200 | Successful Response | [ModelsResponse](#modelsresponse) |
 | 500 | Connection to Llama Stack is broken |  |
+## GET `/v1/tools`
+
+> **Tools Endpoint Handler**
+
+Handle requests to the /tools endpoint.
+
+Process GET requests to the /tools endpoint, returning a consolidated list of
+available tools from all configured MCP servers.
+
+Raises:
+    HTTPException: If unable to connect to the Llama Stack server or if
+    tool retrieval fails for any reason.
+
+Returns:
+    ToolsResponse: An object containing the consolidated list of available tools
+    with metadata including tool name, description, parameters, and server source.
+
+
+
+
+
+### ✅ Responses
+
+| Status Code | Description | Component |
+|-------------|-------------|-----------|
+| 200 | Successful Response | [ToolsResponse](#toolsresponse) |
+| 500 | Connection to Llama Stack is broken or MCP server error |  |
 ## GET `/v1/shields`
 
 > **Shields Endpoint Handler**
@@ -106,6 +133,66 @@ Returns:
 |-------------|-------------|-----------|
 | 200 | Successful Response | [ShieldsResponse](#shieldsresponse) |
 | 500 | Connection to Llama Stack is broken |  |
+## GET `/v1/providers`
+
+> **Providers Endpoint Handler**
+
+Handle GET requests to list all available providers.
+
+Retrieves providers from the Llama Stack service, groups them by API type.
+
+Raises:
+    HTTPException:
+        - 500 if configuration is not loaded,
+        - 500 if unable to connect to Llama Stack,
+        - 500 for any unexpected retrieval errors.
+
+Returns:
+    ProvidersListResponse: Object mapping API types to lists of providers.
+
+
+
+
+
+### ✅ Responses
+
+| Status Code | Description | Component |
+|-------------|-------------|-----------|
+| 200 | Successful Response | [ProvidersListResponse](#providerslistresponse) |
+| 500 | Connection to Llama Stack is broken |  |
+## GET `/v1/providers/{provider_id}`
+
+> **Get Provider Endpoint Handler**
+
+Retrieve a single provider by its unique ID.
+
+Raises:
+    HTTPException:
+        - 404 if provider with the given ID is not found,
+        - 500 if unable to connect to Llama Stack,
+        - 500 for any unexpected retrieval errors.
+
+Returns:
+    ProviderResponse: A single provider's details including API, config, health,
+    provider_id, and provider_type.
+
+
+
+### 🔗 Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| provider_id | string | True |  |
+
+
+### ✅ Responses
+
+| Status Code | Description | Component |
+|-------------|-------------|-----------|
+| 200 | Successful Response | [ProviderResponse](#providerresponse) |
+| 404 | Not Found |  |
+| 500 | Internal Server Error |  |
+| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## POST `/v1/query`
 
 > **Query Endpoint Handler**
@@ -442,6 +529,34 @@ Handle request to delete a conversation by ID.
 | 401 | Unauthorized: Invalid or missing Bearer token | [UnauthorizedResponse](#unauthorizedresponse) |
 | 404 | Not Found |  |
 | 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
+## PUT `/v2/conversations/{conversation_id}`
+
+> **Update Conversation Endpoint Handler**
+
+Handle request to update a conversation topic summary by ID.
+
+
+
+### 🔗 Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| conversation_id | string | True |  |
+
+
+### 📦 Request Body 
+
+[ConversationUpdateRequest](#conversationupdaterequest)
+
+### ✅ Responses
+
+| Status Code | Description | Component |
+|-------------|-------------|-----------|
+| 200 | Successful Response | [ConversationUpdateResponse](#conversationupdateresponse) |
+| 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse) |
+| 401 | Unauthorized: Invalid or missing Bearer token | [UnauthorizedResponse](#unauthorizedresponse) |
+| 404 | Not Found |  |
+| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## GET `/readiness`
 
 > **Readiness Probe Get Method**
@@ -624,6 +739,22 @@ Attributes:
 | skip_userid_check | boolean | Whether to skip the user ID check |
 
 
+## ByokRag
+
+
+BYOK RAG configuration.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| rag_id | string |  |
+| rag_type | string |  |
+| embedding_model | string |  |
+| embedding_dimension | integer |  |
+| vector_db_id | string |  |
+| db_path | string |  |
+
+
 ## CORSConfiguration
 
 
@@ -657,6 +788,7 @@ Global service configuration.
 | customization |  |  |
 | inference |  |  |
 | conversation_cache |  |  |
+| byok_rag | array |  |
 
 
 ## ConversationCacheConfiguration
@@ -788,6 +920,54 @@ Example:
 |-------|------|-------------|
 | conversation_id | string | Conversation ID (UUID) |
 | chat_history | array | The simplified chat history as a list of conversation turns |
+
+
+## ConversationUpdateRequest
+
+
+Model representing a request to update a conversation topic summary.
+
+Attributes:
+    topic_summary: The new topic summary for the conversation.
+
+Example:
+    ```python
+    update_request = ConversationUpdateRequest(
+        topic_summary="Discussion about machine learning algorithms"
+    )
+    ```
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| topic_summary | string | The new topic summary for the conversation |
+
+
+## ConversationUpdateResponse
+
+
+Model representing a response for updating a conversation topic summary.
+
+Attributes:
+    conversation_id: The conversation ID (UUID) that was updated.
+    success: Whether the update was successful.
+    message: A message about the update result.
+
+Example:
+    ```python
+    update_response = ConversationUpdateResponse(
+        conversation_id="123e4567-e89b-12d3-a456-426614174000",
+        success=True,
+        message="Topic summary updated successfully",
+    )
+    ```
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| conversation_id | string | The conversation ID (UUID) that was updated |
+| success | boolean | Whether the update was successful |
+| message | string | A message about the update result |
 
 
 ## ConversationsListResponse
@@ -1219,6 +1399,32 @@ Attributes:
 | message |  | Optional message about the health status |
 
 
+## ProviderResponse
+
+
+Model representing a response to get specific provider request.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| api | string | The API this provider implements |
+| config | object | Provider configuration parameters |
+| health | object | Current health status of the provider |
+| provider_id | string | Unique provider identifier |
+| provider_type | string | Provider implementation type |
+
+
+## ProvidersListResponse
+
+
+Model representing a response to providers request.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| providers | object | List of available API types and their corresponding providers |
+
+
 ## QueryRequest
 
 
@@ -1428,6 +1634,17 @@ Model representing a tool call made during response generation.
 | tool_name | string | Name of the tool called |
 | arguments | object | Arguments passed to the tool |
 | result |  | Result from the tool |
+
+
+## ToolsResponse
+
+
+Model representing a response to tools request.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| tools | array | List of tools available from all configured MCP servers and built-in toolgroups |
 
 
 ## UnauthorizedResponse
