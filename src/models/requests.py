@@ -8,6 +8,7 @@ from llama_stack_client.types.agents.turn_create_params import Document
 
 from log import get_logger
 from utils import suid
+from constants import MEDIA_TYPE_JSON, MEDIA_TYPE_TEXT
 
 logger = get_logger(__name__)
 
@@ -80,6 +81,7 @@ class QueryRequest(BaseModel):
         system_prompt: The optional system prompt.
         attachments: The optional attachments.
         no_tools: Whether to bypass all tools and MCP servers (default: False).
+        media_type: The optional media type for response format (application/json or text/plain).
 
     Example:
         ```python
@@ -144,12 +146,10 @@ class QueryRequest(BaseModel):
         examples=[True, False],
     )
 
-    # media_type is not used in 'lightspeed-stack' that only supports application/json.
-    # the field is kept here to enable compatibility with 'road-core' clients.
     media_type: Optional[str] = Field(
         None,
-        description="Media type (used just to enable compatibility)",
-        examples=["application/json"],
+        description="Media type for the response format",
+        examples=[MEDIA_TYPE_JSON, MEDIA_TYPE_TEXT],
     )
 
     # provides examples for /docs endpoint
@@ -214,10 +214,13 @@ class QueryRequest(BaseModel):
 
     @model_validator(mode="after")
     def validate_media_type(self) -> Self:
-        """Log use of media_type that is unsupported but kept for backward compatibility."""
-        if self.media_type:
-            logger.warning(
-                "media_type was set in the request but is not supported. The value will be ignored."
+        """Validate media_type field."""
+        if self.media_type and self.media_type not in [
+            MEDIA_TYPE_JSON,
+            MEDIA_TYPE_TEXT,
+        ]:
+            raise ValueError(
+                f"media_type must be either '{MEDIA_TYPE_JSON}' or '{MEDIA_TYPE_TEXT}'"
             )
         return self
 
