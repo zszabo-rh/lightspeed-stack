@@ -87,12 +87,6 @@ class JwtRolesResolver(RolesResolver):  # pylint: disable=too-few-public-methods
             return {}
 
         jwt_claims = unsafe_get_claims(token)
-
-        if not jwt_claims:
-            raise RoleResolutionError(
-                "Invalid authentication token: no JWT claims found"
-            )
-
         return jwt_claims
 
     @staticmethod
