@@ -57,7 +57,8 @@ COPY --from=builder /app-root/LICENSE /licenses/
 # Add uv to final image for derived images to add additional dependencies
 # with command:
 # $ uv pip install <dependency>
-RUN pip3.12 install "uv==0.8.15"
+# Temporarily disabled due to temp directory issues
+# RUN pip3.12 install "uv==0.8.15"
 
 USER root
 
