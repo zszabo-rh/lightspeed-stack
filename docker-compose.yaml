@@ -14,6 +14,8 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - BRAVE_SEARCH_API_KEY=${BRAVE_SEARCH_API_KEY:-}
       - TAVILY_SEARCH_API_KEY=${TAVILY_SEARCH_API_KEY:-}
+      - RHAIIS_URL=${RHAIIS_URL}
+      - RHAIIS_API_KEY=${RHAIIS_API_KEY}
     networks:
       - lightspeednet
     healthcheck:

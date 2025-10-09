@@ -55,8 +55,14 @@ The tables below summarize each provider category, containing the following atri
 | tgi | remote | `huggingface_hub`, `aiohttp` | ❌ |
 | together | remote | `together` | ❌ |
 | vertexai | remote | `litellm`, `google-cloud-aiplatform` | ❌ |
-| vllm | remote | `openai` | ❌ |
 | watsonx | remote | `ibm_watsonx_ai` | ❌ |
+
+Red Hat providers:
+
+| Name | Version Tested | Type | Pip Dependencies | Supported in LCS |
+|---|---|---|---|:---:|
+| RHAIIS (vllm) | 3.2.3 (on RHEL 9.20250429.0.4) | remote | `openai` | ✅ |
+
 
 ---
 
