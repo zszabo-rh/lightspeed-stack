@@ -865,3 +865,38 @@ class FeedbackStatusUpdateResponse(BaseModel):
             ]
         }
     }
+
+
+class ConversationUpdateResponse(BaseModel):
+    """Model representing a response for updating a conversation topic summary.
+
+    Attributes:
+        conversation_id: The conversation ID (UUID) that was updated.
+        success: Whether the update was successful.
+        message: A message about the update result.
+
+    Example:
+        ```python
+        update_response = ConversationUpdateResponse(
+            conversation_id="123e4567-e89b-12d3-a456-426614174000",
+            success=True,
+            message="Topic summary updated successfully",
+        )
+        ```
+    """
+
+    conversation_id: str = Field(
+        ...,
+        description="The conversation ID (UUID) that was updated",
+        examples=["123e4567-e89b-12d3-a456-426614174000"],
+    )
+    success: bool = Field(
+        ...,
+        description="Whether the update was successful",
+        examples=[True],
+    )
+    message: str = Field(
+        ...,
+        description="A message about the update result",
+        examples=["Topic summary updated successfully"],
+    )

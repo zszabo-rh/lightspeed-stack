@@ -123,6 +123,52 @@
                 }
             }
         },
+        "/v1/tools": {
+            "get": {
+                "tags": [
+                    "tools"
+                ],
+                "summary": "Tools Endpoint Handler",
+                "description": "Handle requests to the /tools endpoint.\n\nProcess GET requests to the /tools endpoint, returning a consolidated list of\navailable tools from all configured MCP servers.\n\nRaises:\n    HTTPException: If unable to connect to the Llama Stack server or if\n    tool retrieval fails for any reason.\n\nReturns:\n    ToolsResponse: An object containing the consolidated list of available tools\n    with metadata including tool name, description, parameters, and server source.",
+                "operationId": "tools_endpoint_handler_v1_tools_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ToolsResponse"
+                                },
+                                "example": {
+                                    "tools": [
+                                        {
+                                            "identifier": "",
+                                            "description": "",
+                                            "parameters": [
+                                                {
+                                                    "name": "",
+                                                    "description": "",
+                                                    "parameter_type": "",
+                                                    "required": "True/False",
+                                                    "default": "null"
+                                                }
+                                            ],
+                                            "provider_id": "",
+                                            "toolgroup_id": "",
+                                            "server_source": "",
+                                            "type": "tool"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Connection to Llama Stack is broken or MCP server error"
+                    }
+                }
+            }
+        },
         "/v1/shields": {
             "get": {
                 "tags": [
@@ -945,6 +991,87 @@
                         }
                     }
                 }
+            },
+            "put": {
+                "tags": [
+                    "conversations_v2"
+                ],
+                "summary": "Update Conversation Endpoint Handler",
+                "description": "Handle request to update a conversation topic summary by ID.",
+                "operationId": "update_conversation_endpoint_handler_v2_conversations__conversation_id__put",
+                "parameters": [
+                    {
+                        "name": "conversation_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Conversation Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ConversationUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ConversationUpdateResponse"
+                                }
+                            }
+                        },
+                        "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
+                        "success": true,
+                        "message": "Topic summary updated successfully"
+                    },
+                    "400": {
+                        "description": "Missing or invalid credentials provided by client",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UnauthorizedResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized: Invalid or missing Bearer token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UnauthorizedResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "detail": {
+                            "response": "Conversation not found",
+                            "cause": "The specified conversation ID does not exist."
+                        },
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/readiness": {
@@ -1114,8 +1241,10 @@
                     "get_conversation",
                     "list_conversations",
                     "delete_conversation",
+                    "update_conversation",
                     "feedback",
                     "get_models",
+                    "get_tools",
                     "get_shields",
                     "get_metrics",
                     "get_config",
@@ -1692,6 +1821,63 @@
                         "conversation_id": "123e4567-e89b-12d3-a456-426614174000"
                     }
                 ]
+            },
+            "ConversationUpdateRequest": {
+                "properties": {
+                    "topic_summary": {
+                        "type": "string",
+                        "maxLength": 1000,
+                        "minLength": 1,
+                        "title": "Topic Summary",
+                        "description": "The new topic summary for the conversation",
+                        "examples": [
+                            "Discussion about machine learning algorithms"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                    "topic_summary"
+                ],
+                "title": "ConversationUpdateRequest",
+                "description": "Model representing a request to update a conversation topic summary.\n\nAttributes:\n    topic_summary: The new topic summary for the conversation.\n\nExample:\n    ```python\n    update_request = ConversationUpdateRequest(\n        topic_summary=\"Discussion about machine learning algorithms\"\n    )\n    ```"
+            },
+            "ConversationUpdateResponse": {
+                "properties": {
+                    "conversation_id": {
+                        "type": "string",
+                        "title": "Conversation Id",
+                        "description": "The conversation ID (UUID) that was updated",
+                        "examples": [
+                            "123e4567-e89b-12d3-a456-426614174000"
+                        ]
+                    },
+                    "success": {
+                        "type": "boolean",
+                        "title": "Success",
+                        "description": "Whether the update was successful",
+                        "examples": [
+                            true
+                        ]
+                    },
+                    "message": {
+                        "type": "string",
+                        "title": "Message",
+                        "description": "A message about the update result",
+                        "examples": [
+                            "Topic summary updated successfully"
+                        ]
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "conversation_id",
+                    "success",
+                    "message"
+                ],
+                "title": "ConversationUpdateResponse",
+                "description": "Model representing a response for updating a conversation topic summary.\n\nAttributes:\n    conversation_id: The conversation ID (UUID) that was updated.\n    success: Whether the update was successful.\n    message: A message about the update result.\n\nExample:\n    ```python\n    update_response = ConversationUpdateResponse(\n        conversation_id=\"123e4567-e89b-12d3-a456-426614174000\",\n        success=True,\n        message=\"Topic summary updated successfully\",\n    )\n    ```"
             },
             "ConversationsListResponse": {
                 "properties": {
@@ -3169,6 +3355,45 @@
                 ],
                 "title": "ToolCall",
                 "description": "Model representing a tool call made during response generation."
+            },
+            "ToolsResponse": {
+                "properties": {
+                    "tools": {
+                        "items": {
+                            "additionalProperties": true,
+                            "type": "object"
+                        },
+                        "type": "array",
+                        "title": "Tools",
+                        "description": "List of tools available from all configured MCP servers and built-in toolgroups",
+                        "examples": [
+                            [
+                                {
+                                    "description": "Read contents of a file from the filesystem",
+                                    "identifier": "filesystem_read",
+                                    "parameters": [
+                                        {
+                                            "description": "Path to the file to read",
+                                            "name": "path",
+                                            "parameter_type": "string",
+                                            "required": true
+                                        }
+                                    ],
+                                    "provider_id": "model-context-protocol",
+                                    "server_source": "http://localhost:3000",
+                                    "toolgroup_id": "filesystem-tools",
+                                    "type": "tool"
+                                }
+                            ]
+                        ]
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "tools"
+                ],
+                "title": "ToolsResponse",
+                "description": "Model representing a response to tools request."
             },
             "UnauthorizedResponse": {
                 "properties": {
