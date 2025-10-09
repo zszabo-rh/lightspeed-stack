@@ -249,6 +249,8 @@ authorization:
 - `info` - Access the `/` endpoint, `/info` endpoint, `/readiness` endpoint, and `/liveness` endpoint
 - `get_config` - Access the `/config` endpoint
 - `get_models` - Access the `/models` endpoint
+- `list_providers` - Access the `/providers` endpoint
+- `get_provider` - Access the `/providers/{provider_id}` endpoint
 - `get_metrics` - Access the `/metrics` endpoint
 - `list_conversations` - Access the `/conversations` endpoint
 - `list_other_conversations` - Access conversations not owned by the user
