@@ -115,7 +115,7 @@ def request_endpoint(context: Context, endpoint: str, hostname: str, port: int) 
     )
 
 
-@then("The status code of the response is {status:d}")
+@step("The status code of the response is {status:d}")
 def check_status_code(context: Context, status: int) -> None:
     """Check the HTTP status code for latest response from tested service."""
     assert context.response is not None, "Request needs to be performed first"
@@ -363,7 +363,7 @@ def check_for_null_attribute(context: Context, attribute: str) -> None:
     ), f"Attribute {attribute} should be null, but it contains {value}"
 
 
-@then("And the body of the response has the following structure")
+@then("the body of the response has the following structure")
 def check_response_partially(context: Context) -> None:
     """Validate that the response body matches the expected JSON structure.
 
