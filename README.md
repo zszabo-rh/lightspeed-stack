@@ -22,6 +22,7 @@ The service includes comprehensive user data collection capabilities for various
 * [Configuration](#configuration)
     * [LLM Compatibility](#llm-compatibility)
     * [Set LLM provider and model](#set-llm-provider-and-model)
+    * [Supported providers](#supported-providers)
     * [Integration with Llama Stack](#integration-with-llama-stack)
     * [Llama Stack as separate server](#llama-stack-as-separate-server)
         * [MCP Server and Tool Configuration](#mcp-server-and-tool-configuration)
@@ -123,6 +124,7 @@ Lightspeed Core Stack (LCS) supports the large language models from the provider
 | -------- | ---------------------------------------------- | ------------ | -------------- | -------------------------------------------------------------------------- |
 | OpenAI   | gpt-5, gpt-4o, gpt4-turbo, gpt-4.1, o1, o3, o4 | Yes          | remote::openai | [1](examples/openai-faiss-run.yaml) [2](examples/openai-pgvector-run.yaml) |
 | OpenAI   | gpt-3.5-turbo, gpt-4                           | No           | remote::openai |                                                                            |
+| RHAIIS (vLLM)| meta-llama/Llama-3.1-8B-Instruct           | Yes          | remote::vllm   | [1](tests/e2e/configs/run-rhaiis.yaml)                                     |
 
 The "provider_type" is used in the llama stack configuration file when refering to the provider.
 
@@ -156,6 +158,9 @@ models:
     provider_model_id: gpt-4-turbo
 ```
 
+## Supported providers
+
+For a comprehensive list of supported providers, take a look [here](docs/providers.md).
 
 ## Integration with Llama Stack
 

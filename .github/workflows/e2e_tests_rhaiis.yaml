@@ -1,0 +1,175 @@
+# .github/workflows/e2e_tests_rhaiis.yaml
+name: RHAIIS E2E Tests
+
+on:
+  schedule:
+    - cron: "0 0 * * *"  # Runs once a day at midnight UTC
+  workflow_dispatch:
+
+
+jobs:
+  e2e_tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [ "rhaiis" ]
+    env:
+      RHAIIS_URL: ${{ secrets.RHAIIS_URL }}
+      RHAIIS_API_KEY: ${{ secrets.RHAIIS_API_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # On PR_TARGET → the fork (or same repo) that opened the PR.
+          # On push      → falls back to the current repository.
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+
+          # On PR_TARGET → the PR head *commit* (reproducible).
+          # On push      → the pushed commit that triggered the workflow.
+          ref: ${{ github.event.pull_request.head.ref || github.sha }}
+
+          # Don’t keep credentials when running untrusted PR code under PR_TARGET.
+          persist-credentials: ${{ github.event_name != 'pull_request_target' }}
+
+      - name: Verify actual git checkout result
+        run: |
+          echo "=== Git Status After Checkout ==="
+          echo "Remote URLs:"
+          git remote -v
+          echo ""
+          echo "Current branch: $(git branch --show-current 2>/dev/null || echo 'detached HEAD')"
+          echo "Current commit: $(git rev-parse HEAD)"
+          echo "Current commit message: $(git log -1 --oneline)"
+          echo ""
+          echo "=== Recent commits (should show setup-metrics commits) ==="
+          git log --oneline -5
+
+      - uses: 1arp/create-a-file-action@0.4.5
+        with:
+          path: '.'
+          isAbsolutePath: false
+          file: 'lightspeed-stack.yaml'
+          content: |
+            name: Lightspeed Core Service (LCS)
+            service:
+              host: 0.0.0.0
+              port: 8080
+              auth_enabled: false
+              workers: 1
+              color_log: true
+              access_log: true
+            llama_stack:
+              # Uses a remote llama-stack service
+              # The instance would have already been started with a llama-stack-run.yaml file
+              use_as_library_client: false
+              # Alternative for "as library use"
+              # use_as_library_client: true
+              # library_client_config_path: <path-to-llama-stack-run.yaml-file>
+              url: http://llama-stack:8321
+              api_key: xyzzy
+            user_data_collection:
+              feedback_enabled: true
+              feedback_storage: "/tmp/data/feedback"
+              transcripts_enabled: true
+              transcripts_storage: "/tmp/data/transcripts"
+
+            authentication:
+              module: "noop"
+
+      - name: Select and configure run.yaml
+        env:
+          CONFIG_ENVIRONMENT: ${{ matrix.environment || 'rhaiis' }}
+        run: |
+          CONFIGS_DIR="tests/e2e/configs"
+          ENVIRONMENT="$CONFIG_ENVIRONMENT"
+          
+          echo "Looking for configurations in $CONFIGS_DIR/"
+          
+          # List available configurations
+          if [ -d "$CONFIGS_DIR" ]; then
+            echo "Available configurations:"
+            ls -la "$CONFIGS_DIR"/*.yaml 2>/dev/null || echo "No YAML files found in $CONFIGS_DIR/"
+          else
+            echo "Configs directory '$CONFIGS_DIR' not found!"
+            exit 1
+          fi
+          
+          # Determine which config file to use
+          CONFIG_FILE="$CONFIGS_DIR/run-$ENVIRONMENT.yaml"
+          
+          echo "Looking for: $CONFIG_FILE"
+          
+          if [ -f "$CONFIG_FILE" ]; then
+            echo "Found config for environment: $ENVIRONMENT"
+            cp "$CONFIG_FILE" run.yaml
+          else
+            echo "Configuration file not found: $CONFIG_FILE"
+            echo "Available files in $CONFIGS_DIR:"
+            ls -la "$CONFIGS_DIR/"
+            exit 1
+          fi
+          
+          # Update paths for container environment (relative -> absolute)
+          sed -i 's|db_path: \.llama/distributions|db_path: /app-root/.llama/distributions|g' run.yaml
+          sed -i 's|db_path: tmp/|db_path: /app-root/.llama/distributions/|g' run.yaml
+          
+          echo "Successfully configured for environment: $ENVIRONMENT"
+          echo "Using configuration: $(basename "$CONFIG_FILE")"
+
+      - name: Test RHAIIS connectivity
+        env: 
+            RHAIIS_URL: ${{ secrets.RHAIIS_URL }}
+            RHAIIS_API_KEY: ${{ secrets.RHAIIS_API_KEY }}
+        run: |  
+          curl ${RHAIIS_URL}:8000/v1/models   -H "Authorization: Bearer ${RHAIIS_API_KEY}"  
+
+      - name: Run service manually
+        env: 
+            RHAIIS_URL: ${{ secrets.RHAIIS_URL }}
+            RHAIIS_API_KEY: ${{ secrets.RHAIIS_API_KEY }}
+        run: |         
+          docker compose version
+          docker compose up -d
+          
+          # Check for errors and show logs if any services failed
+          if docker compose ps | grep -E 'Exit|exited|stopped'; then
+            echo "Some services failed to start - showing logs:"
+            docker compose logs
+            exit 1
+          else
+            echo "All services started successfully"
+          fi
+
+      - name: Wait for services
+        run: |
+          echo "Waiting for services to be healthy..."
+          sleep 20  # adjust depending on boot time
+
+      - name: Quick connectivity test
+        run: |
+          echo "Testing basic connectivity before full test suite..."
+          curl -f http://localhost:8080/v1/models || {
+            echo "❌ Basic connectivity failed - showing logs before running full tests"
+            docker compose logs --tail=30
+            exit 1
+          }
+
+      - name: Run e2e tests
+        run: |
+          echo "Installing test dependencies..."
+          pip install uv
+          uv sync
+
+          echo "Running comprehensive e2e test suite..."
+          make test-e2e
+
+      - name: Show logs on failure
+        if: failure()
+        run: |
+          echo "=== Test failure logs ==="
+          echo "=== llama-stack logs ==="
+          docker compose logs llama-stack
+          
+          echo ""
+          echo "=== lightspeed-stack logs ==="
+          docker compose logs lightspeed-stack
