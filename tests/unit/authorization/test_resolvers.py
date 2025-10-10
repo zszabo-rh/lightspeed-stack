@@ -3,11 +3,13 @@
 import json
 import base64
 import re
+from contextlib import nullcontext as does_not_raise
 
 import pytest
 
 from authorization.resolvers import JwtRolesResolver, GenericAccessResolver
 from models.config import JwtRoleRule, AccessRule, JsonPathOperator, Action
+import constants
 
 
 def claims_to_token(claims: dict) -> str:
@@ -21,25 +23,38 @@ def claims_to_token(claims: dict) -> str:
     return f"foo_header.{b64_encoded_claims}.foo_signature"
 
 
+def claims_to_auth_tuple(claims: dict) -> tuple:
+    """Convert JWT claims dictionary to an auth tuple."""
+    return ("user", "token", False, claims_to_token(claims))
+
+
 class TestJwtRolesResolver:
     """Test cases for JwtRolesResolver."""
 
-    async def test_resolve_roles_redhat_employee(self):
-        """Test role extraction for RedHat employee JWT."""
-        role_rules = [
-            JwtRoleRule(
-                jsonpath="$.realm_access.roles[*]",
-                operator=JsonPathOperator.CONTAINS,
-                value="redhat:employees",
-                roles=["employee"],
-            )
-        ]
-        jwt_resolver = JwtRolesResolver(role_rules)
+    @pytest.fixture
+    async def employee_role_rule(self):
+        """Role rule for RedHat employees."""
+        return JwtRoleRule(
+            jsonpath="$.realm_access.roles[*]",
+            operator=JsonPathOperator.CONTAINS,
+            value="redhat:employees",
+            roles=["employee"],
+        )
 
-        jwt_claims = {
+    @pytest.fixture
+    async def employee_resolver(self, employee_role_rule):
+        """JwtRolesResolver with a rule for RedHat employees."""
+        return JwtRolesResolver([employee_role_rule])
+
+    @pytest.fixture
+    async def employee_claims(self):
+        """JWT claims for a RedHat employee."""
+        return {
+            "foo": "bar",
             "exp": 1754489339,
             "iat": 1754488439,
             "sub": "f:123:employee@redhat.com",
+            "email": "employee@redhat.com",
             "realm_access": {
                 "roles": [
                     "uma_authorization",
@@ -49,80 +64,122 @@ class TestJwtRolesResolver:
             },
         }
 
-        # Mock auth tuple with JWT claims as third element
-        auth = ("user", "token", False, claims_to_token(jwt_claims))
-        roles = await jwt_resolver.resolve_roles(auth)
-        assert "employee" in roles
-
-    async def test_resolve_roles_no_match(self):
-        """Test role extraction when no rules match."""
-        role_rules = [
-            JwtRoleRule(
-                jsonpath="$.realm_access.roles[*]",
-                operator=JsonPathOperator.CONTAINS,
-                value="redhat:employees",
-                roles=["employee"],
-            )
-        ]
-        jwt_resolver = JwtRolesResolver(role_rules)
-
-        jwt_claims = {
+    @pytest.fixture
+    async def non_employee_claims(self):
+        """JWT claims for a non-RedHat employee."""
+        return {
             "exp": 1754489339,
             "iat": 1754488439,
             "sub": "f:123:user@example.com",
             "realm_access": {"roles": ["uma_authorization", "default-roles-example"]},
         }
 
-        # Mock auth tuple with JWT claims as third element
-        auth = ("user", "token", False, claims_to_token(jwt_claims))
-        roles = await jwt_resolver.resolve_roles(auth)
-        assert len(roles) == 0
+    async def test_resolve_roles_redhat_employee(
+        self, employee_resolver, employee_claims
+    ):
+        """Test role extraction for RedHat employee JWT."""
+        assert "employee" in await employee_resolver.resolve_roles(
+            claims_to_auth_tuple(employee_claims)
+        )
 
-    async def test_resolve_roles_match_operator_email_domain(self):
+    async def test_resolve_roles_no_match(self, employee_resolver, non_employee_claims):
+        """Test no roles extracted for non-RedHat employee JWT."""
+        assert (
+            len(
+                await employee_resolver.resolve_roles(
+                    claims_to_auth_tuple(non_employee_claims)
+                )
+            )
+            == 0
+        )
+
+    async def test_negate_operator(self, employee_role_rule, non_employee_claims):
+        """Test role extraction with negated operator."""
+        negated_rule = employee_role_rule
+        negated_rule.negate = True
+
+        resolver = JwtRolesResolver([negated_rule])
+
+        assert "employee" in await resolver.resolve_roles(
+            claims_to_auth_tuple(non_employee_claims)
+        )
+
+    @pytest.fixture
+    async def email_rule_resolver(self):
+        """JwtRolesResolver with a rule for email domain."""
+        return JwtRolesResolver(
+            [
+                JwtRoleRule(
+                    jsonpath="$.email",
+                    operator=JsonPathOperator.MATCH,
+                    value=r"@redhat\.com$",
+                    roles=["redhat_employee"],
+                )
+            ]
+        )
+
+    @pytest.fixture
+    async def equals_rule_resolver(self):
+        """JwtRolesResolver with a rule for exact email match."""
+        return JwtRolesResolver(
+            [
+                JwtRoleRule(
+                    jsonpath="$.foo",
+                    operator=JsonPathOperator.EQUALS,
+                    value=["bar"],
+                    roles=["foobar"],
+                )
+            ]
+        )
+
+    async def test_resolve_roles_equals_operator(
+        self, equals_rule_resolver, employee_claims
+    ):
+        """Test role extraction using EQUALS operator."""
+        assert "foobar" in await equals_rule_resolver.resolve_roles(
+            claims_to_auth_tuple(employee_claims)
+        )
+
+    @pytest.fixture
+    async def in_rule_resolver(self):
+        """JwtRolesResolver with a rule for IN operator."""
+        return JwtRolesResolver(
+            [
+                JwtRoleRule(
+                    jsonpath="$.foo",
+                    operator=JsonPathOperator.IN,
+                    value=[["bar"], ["baz"]],
+                    roles=["in_role"],
+                )
+            ]
+        )
+
+    async def test_resolve_roles_in_operator(self, in_rule_resolver, employee_claims):
+        """Test role extraction using IN operator."""
+        assert "in_role" in await in_rule_resolver.resolve_roles(
+            claims_to_auth_tuple(employee_claims)
+        )
+
+    async def test_resolve_roles_match_operator_email_domain(
+        self, email_rule_resolver, employee_claims
+    ):
         """Test role extraction using MATCH operator with email domain regex."""
-        role_rules = [
-            JwtRoleRule(
-                jsonpath="$.email",
-                operator=JsonPathOperator.MATCH,
-                value=r"@redhat\.com$",
-                roles=["redhat_employee"],
-            )
-        ]
-        jwt_resolver = JwtRolesResolver(role_rules)
+        assert "redhat_employee" in await email_rule_resolver.resolve_roles(
+            claims_to_auth_tuple(employee_claims)
+        )
 
-        jwt_claims = {
-            "exp": 1754489339,
-            "iat": 1754488439,
-            "sub": "f:123:employee@redhat.com",
-            "email": "employee@redhat.com",
-        }
-
-        auth = ("user", "token", False, claims_to_token(jwt_claims))
-        roles = await jwt_resolver.resolve_roles(auth)
-        assert "redhat_employee" in roles
-
-    async def test_resolve_roles_match_operator_no_match(self):
+    async def test_resolve_roles_match_operator_no_match(
+        self, email_rule_resolver, non_employee_claims
+    ):
         """Test role extraction using MATCH operator with no match."""
-        role_rules = [
-            JwtRoleRule(
-                jsonpath="$.email",
-                operator=JsonPathOperator.MATCH,
-                value=r"@redhat\.com$",
-                roles=["redhat_employee"],
+        assert (
+            len(
+                await email_rule_resolver.resolve_roles(
+                    claims_to_auth_tuple(non_employee_claims)
+                )
             )
-        ]
-        jwt_resolver = JwtRolesResolver(role_rules)
-
-        jwt_claims = {
-            "exp": 1754489339,
-            "iat": 1754488439,
-            "sub": "f:123:user@example.com",
-            "email": "user@example.com",
-        }
-
-        auth = ("user", "token", False, claims_to_token(jwt_claims))
-        roles = await jwt_resolver.resolve_roles(auth)
-        assert len(roles) == 0
+            == 0
+        )
 
     async def test_resolve_roles_match_operator_invalid_regex(self):
         """Test that invalid regex patterns are rejected at rule creation time."""
@@ -192,9 +249,36 @@ class TestJwtRolesResolver:
         )
         assert equals_rule.compiled_regex is None
 
+    async def test_resolve_roles_with_no_user_token(self, employee_resolver):
+        """Test NO_USER_TOKEN returns empty claims."""
+        guest_tuple = (
+            "user",
+            "username",
+            False,
+            constants.NO_USER_TOKEN,
+        )
+
+        with does_not_raise():
+            # We don't truly care about the absence of roles,
+            # just that no exception is raised
+            assert len(await employee_resolver.resolve_roles(guest_tuple)) == 0
+
 
 class TestGenericAccessResolver:
     """Test cases for GenericAccessResolver."""
+
+    @pytest.fixture
+    def admin_access_rules(self):
+        """Access rules with admin role for testing."""
+        return [AccessRule(role="superuser", actions=[Action.ADMIN])]
+
+    @pytest.fixture
+    def multi_role_access_rules(self):
+        """Access rules with multiple roles for testing."""
+        return [
+            AccessRule(role="user", actions=[Action.QUERY, Action.GET_MODELS]),
+            AccessRule(role="moderator", actions=[Action.FEEDBACK]),
+        ]
 
     async def test_check_access_with_valid_role(self):
         """Test access check with valid role."""
@@ -230,3 +314,29 @@ class TestGenericAccessResolver:
 
         has_access = resolver.check_access(Action.QUERY, set())
         assert has_access is False
+
+    def test_admin_action_with_other_actions_raises_error(self):
+        """Test admin action with others raises ValueError."""
+        with pytest.raises(ValueError):
+            GenericAccessResolver(
+                [AccessRule(role="superuser", actions=[Action.ADMIN, Action.QUERY])]
+            )
+
+    def test_admin_role_allows_all_actions(self, admin_access_rules):
+        """Test admin action allows all actions via recursive check."""
+        resolver = GenericAccessResolver(admin_access_rules)
+        assert resolver.check_access(Action.QUERY, {"superuser"}) is True
+
+    def test_admin_get_actions_excludes_admin_action(self, admin_access_rules):
+        """Test get actions on a role with admin returns everything except ADMIN."""
+        resolver = GenericAccessResolver(admin_access_rules)
+        actions = resolver.get_actions({"superuser"})
+        assert Action.ADMIN not in actions
+        assert Action.QUERY in actions
+        assert len(actions) == len(set(Action)) - 1
+
+    def test_get_actions_for_regular_users(self, multi_role_access_rules):
+        """Test non-admin user gets only their specific actions."""
+        resolver = GenericAccessResolver(multi_role_access_rules)
+        actions = resolver.get_actions({"user", "moderator"})
+        assert actions == {Action.QUERY, Action.GET_MODELS, Action.FEEDBACK}
