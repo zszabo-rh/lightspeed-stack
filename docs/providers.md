@@ -36,7 +36,7 @@ The tables below summarize each provider category, containing the following atri
 | meta-reference | inline | `accelerate`, `fairscale`, `torch`, `torchvision`, `transformers`, `zmq`, `lm-format-enforcer`, `sentence-transformers`, `torchao==0.8.0`, `fbgemm-gpu-genai==1.1.2` | ❌ |
 | sentence-transformers | inline | `torch torchvision torchao>=0.12.0 --extra-index-url https://download.pytorch.org/whl/cpu`, `sentence-transformers --no-deps` | ❌ |
 | anthropic | remote | `litellm` | ❌ |
-| azure | remote | `itellm` | ❌ |
+| azure | remote | — | ✅ |
 | bedrock | remote | `boto3` | ❌ |
 | cerebras | remote | `cerebras_cloud_sdk` | ❌ |
 | databricks | remote | — | ❌ |
@@ -287,4 +287,4 @@ Red Hat providers:
 
 ---
 
-For a deeper understanding, see the [official llama-stack configuration documentation](https://llama-stack.readthedocs.io/en/latest/distributions/configuration.html).
+For a deeper understanding, see the [official llama-stack providers documentation](https://llamastack.github.io/docs/providers).
