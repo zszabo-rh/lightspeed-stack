@@ -418,12 +418,15 @@
                         "description": "Streaming response with Server-Sent Events",
                         "content": {
                             "application/json": {
-                                "schema": {}
-                            },
-                            "text/event-stream": {
                                 "schema": {
                                     "type": "string",
-                                    "example": "data: {\"event\": \"start\", \"data\": {\"conversation_id\": \"123e4567-e89b-12d3-a456-426614174000\"}}\n\ndata: {\"event\": \"token\", \"data\": {\"id\": 0, \"role\": \"inference\", \"token\": \"Hello\"}}\n\ndata: {\"event\": \"end\", \"data\": {\"referenced_documents\": [], \"truncated\": null, \"input_tokens\": 0, \"output_tokens\": 0}, \"available_quotas\": {}}\n\n"
+                                    "example": "data: {\"event\": \"start\", \"data\": {\"conversation_id\": \"123e4567-e89b-12d3-a456-426614174000\"}}\n\ndata: {\"event\": \"token\", \"data\": {\"id\": 0, \"token\": \"Hello\"}}\n\ndata: {\"event\": \"end\", \"data\": {\"referenced_documents\": [], \"truncated\": null, \"input_tokens\": 0, \"output_tokens\": 0}, \"available_quotas\": {}}\n\n"
+                                }
+                            },
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Hello world!\n\n---\n\nReference: https://example.com/doc"
                                 }
                             }
                         }
@@ -1425,7 +1428,7 @@
                     }
                 ]
             },
-            "AuthenticationConfiguration": {
+            "AuthenticationConfiguration-Input": {
                 "properties": {
                     "module": {
                         "type": "string",
@@ -1465,7 +1468,7 @@
                     "jwk_config": {
                         "anyOf": [
                             {
-                                "$ref": "#/components/schemas/JwkConfiguration"
+                                "$ref": "#/components/schemas/JwkConfiguration-Input"
                             },
                             {
                                 "type": "null"
@@ -1478,7 +1481,75 @@
                 "title": "AuthenticationConfiguration",
                 "description": "Authentication configuration."
             },
-            "AuthorizationConfiguration": {
+            "AuthenticationConfiguration-Output": {
+                "properties": {
+                    "module": {
+                        "type": "string",
+                        "title": "Module",
+                        "default": "noop"
+                    },
+                    "skip_tls_verification": {
+                        "type": "boolean",
+                        "title": "Skip Tls Verification",
+                        "default": false
+                    },
+                    "k8s_cluster_api": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "minLength": 1,
+                                "format": "uri"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "K8S Cluster Api"
+                    },
+                    "k8s_ca_cert_path": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "file-path"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "K8S Ca Cert Path"
+                    },
+                    "jwk_config": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/JwkConfiguration-Output"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "AuthenticationConfiguration",
+                "description": "Authentication configuration."
+            },
+            "AuthorizationConfiguration-Input": {
+                "properties": {
+                    "access_rules": {
+                        "items": {
+                            "$ref": "#/components/schemas/AccessRule"
+                        },
+                        "type": "array",
+                        "title": "Access Rules"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "AuthorizationConfiguration",
+                "description": "Authorization configuration."
+            },
+            "AuthorizationConfiguration-Output": {
                 "properties": {
                     "access_rules": {
                         "items": {
@@ -1653,12 +1724,12 @@
                         "title": "Mcp Servers"
                     },
                     "authentication": {
-                        "$ref": "#/components/schemas/AuthenticationConfiguration"
+                        "$ref": "#/components/schemas/AuthenticationConfiguration-Output"
                     },
                     "authorization": {
                         "anyOf": [
                             {
-                                "$ref": "#/components/schemas/AuthorizationConfiguration"
+                                "$ref": "#/components/schemas/AuthorizationConfiguration-Output"
                             },
                             {
                                 "type": "null"
@@ -2595,7 +2666,7 @@
                 "title": "JsonPathOperator",
                 "description": "Supported operators for JSONPath evaluation."
             },
-            "JwkConfiguration": {
+            "JwkConfiguration-Input": {
                 "properties": {
                     "url": {
                         "type": "string",
@@ -2604,7 +2675,7 @@
                         "title": "Url"
                     },
                     "jwt_configuration": {
-                        "$ref": "#/components/schemas/JwtConfiguration"
+                        "$ref": "#/components/schemas/JwtConfiguration-Input"
                     }
                 },
                 "additionalProperties": false,
@@ -2615,7 +2686,52 @@
                 "title": "JwkConfiguration",
                 "description": "JWK configuration."
             },
-            "JwtConfiguration": {
+            "JwkConfiguration-Output": {
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "minLength": 1,
+                        "format": "uri",
+                        "title": "Url"
+                    },
+                    "jwt_configuration": {
+                        "$ref": "#/components/schemas/JwtConfiguration-Output"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                    "url"
+                ],
+                "title": "JwkConfiguration",
+                "description": "JWK configuration."
+            },
+            "JwtConfiguration-Input": {
+                "properties": {
+                    "user_id_claim": {
+                        "type": "string",
+                        "title": "User Id Claim",
+                        "default": "user_id"
+                    },
+                    "username_claim": {
+                        "type": "string",
+                        "title": "Username Claim",
+                        "default": "username"
+                    },
+                    "role_rules": {
+                        "items": {
+                            "$ref": "#/components/schemas/JwtRoleRule"
+                        },
+                        "type": "array",
+                        "title": "Role Rules"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "JwtConfiguration",
+                "description": "JWT configuration."
+            },
+            "JwtConfiguration-Output": {
                 "properties": {
                     "user_id_claim": {
                         "type": "string",
@@ -3207,9 +3323,10 @@
                             }
                         ],
                         "title": "Media Type",
-                        "description": "Media type (used just to enable compatibility)",
+                        "description": "Media type for the response format",
                         "examples": [
-                            "application/json"
+                            "application/json",
+                            "text/plain"
                         ]
                     }
                 },
@@ -3219,7 +3336,7 @@
                     "query"
                 ],
                 "title": "QueryRequest",
-                "description": "Model representing a request for the LLM (Language Model).\n\nAttributes:\n    query: The query string.\n    conversation_id: The optional conversation ID (UUID).\n    provider: The optional provider.\n    model: The optional model.\n    system_prompt: The optional system prompt.\n    attachments: The optional attachments.\n    no_tools: Whether to bypass all tools and MCP servers (default: False).\n\nExample:\n    ```python\n    query_request = QueryRequest(query=\"Tell me about Kubernetes\")\n    ```",
+                "description": "Model representing a request for the LLM (Language Model).\n\nAttributes:\n    query: The query string.\n    conversation_id: The optional conversation ID (UUID).\n    provider: The optional provider.\n    model: The optional model.\n    system_prompt: The optional system prompt.\n    attachments: The optional attachments.\n    no_tools: Whether to bypass all tools and MCP servers (default: False).\n    media_type: The optional media type for response format (application/json or text/plain).\n\nExample:\n    ```python\n    query_request = QueryRequest(query=\"Tell me about Kubernetes\")\n    ```",
                 "examples": [
                     {
                         "attachments": [
@@ -3312,6 +3429,52 @@
                                 }
                             ]
                         ]
+                    },
+                    "truncated": {
+                        "type": "boolean",
+                        "title": "Truncated",
+                        "description": "Whether conversation history was truncated",
+                        "default": false,
+                        "examples": [
+                            false,
+                            true
+                        ]
+                    },
+                    "input_tokens": {
+                        "type": "integer",
+                        "title": "Input Tokens",
+                        "description": "Number of tokens sent to LLM",
+                        "default": 0,
+                        "examples": [
+                            150,
+                            250,
+                            500
+                        ]
+                    },
+                    "output_tokens": {
+                        "type": "integer",
+                        "title": "Output Tokens",
+                        "description": "Number of tokens received from LLM",
+                        "default": 0,
+                        "examples": [
+                            50,
+                            100,
+                            200
+                        ]
+                    },
+                    "available_quotas": {
+                        "additionalProperties": {
+                            "type": "integer"
+                        },
+                        "type": "object",
+                        "title": "Available Quotas",
+                        "description": "Quota available as measured by all configured quota limiters",
+                        "examples": [
+                            {
+                                "daily": 1000,
+                                "monthly": 50000
+                            }
+                        ]
                     }
                 },
                 "type": "object",
@@ -3319,10 +3482,16 @@
                     "response"
                 ],
                 "title": "QueryResponse",
-                "description": "Model representing LLM response to a query.\n\nAttributes:\n    conversation_id: The optional conversation ID (UUID).\n    response: The response.\n    rag_chunks: List of RAG chunks used to generate the response.\n    referenced_documents: The URLs and titles for the documents used to generate the response.\n    tool_calls: List of tool calls made during response generation.\n    TODO: truncated: Whether conversation history was truncated.\n    TODO: input_tokens: Number of tokens sent to LLM.\n    TODO: output_tokens: Number of tokens received from LLM.\n    TODO: available_quotas: Quota available as measured by all configured quota limiters\n    TODO: tool_results: List of tool results.",
+                "description": "Model representing LLM response to a query.\n\nAttributes:\n    conversation_id: The optional conversation ID (UUID).\n    response: The response.\n    rag_chunks: List of RAG chunks used to generate the response.\n    referenced_documents: The URLs and titles for the documents used to generate the response.\n    tool_calls: List of tool calls made during response generation.\n    truncated: Whether conversation history was truncated.\n    input_tokens: Number of tokens sent to LLM.\n    output_tokens: Number of tokens received from LLM.\n    available_quotas: Quota available as measured by all configured quota limiters.",
                 "examples": [
                     {
+                        "available_quotas": {
+                            "daily": 1000,
+                            "monthly": 50000
+                        },
                         "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
+                        "input_tokens": 150,
+                        "output_tokens": 75,
                         "rag_chunks": [
                             {
                                 "content": "OLM is a component of the Operator Framework toolkit...",
@@ -3347,7 +3516,8 @@
                                 },
                                 "tool_name": "knowledge_search"
                             }
-                        ]
+                        ],
+                        "truncated": false
                     }
                 ]
             },

@@ -261,7 +261,8 @@ Raises:
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Streaming response with Server-Sent Events | ...string |
+| 200 | Streaming response with Server-Sent Events | string
+string |
 | 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse) |
 | 401 | Unauthorized: Invalid or missing Bearer token for k8s auth | [UnauthorizedResponse](#unauthorizedresponse) |
 | 403 | User is not authorized | [ForbiddenResponse](#forbiddenresponse) |
@@ -695,7 +696,7 @@ metadata:
 | content | string | The actual attachment content |
 
 
-## AuthenticationConfiguration
+## AuthenticationConfiguration-Input
 
 
 Authentication configuration.
@@ -710,7 +711,33 @@ Authentication configuration.
 | jwk_config |  |  |
 
 
-## AuthorizationConfiguration
+## AuthenticationConfiguration-Output
+
+
+Authentication configuration.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| module | string |  |
+| skip_tls_verification | boolean |  |
+| k8s_cluster_api |  |  |
+| k8s_ca_cert_path |  |  |
+| jwk_config |  |  |
+
+
+## AuthorizationConfiguration-Input
+
+
+Authorization configuration.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| access_rules | array |  |
+
+
+## AuthorizationConfiguration-Output
 
 
 Authorization configuration.
@@ -1265,7 +1292,7 @@ Supported operators for JSONPath evaluation.
 
 
 
-## JwkConfiguration
+## JwkConfiguration-Input
 
 
 JWK configuration.
@@ -1277,7 +1304,32 @@ JWK configuration.
 | jwt_configuration |  |  |
 
 
-## JwtConfiguration
+## JwkConfiguration-Output
+
+
+JWK configuration.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| url | string |  |
+| jwt_configuration |  |  |
+
+
+## JwtConfiguration-Input
+
+
+JWT configuration.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| user_id_claim | string |  |
+| username_claim | string |  |
+| role_rules | array |  |
+
+
+## JwtConfiguration-Output
 
 
 JWT configuration.
@@ -1438,6 +1490,7 @@ Attributes:
     system_prompt: The optional system prompt.
     attachments: The optional attachments.
     no_tools: Whether to bypass all tools and MCP servers (default: False).
+    media_type: The optional media type for response format (application/json or text/plain).
 
 Example:
     ```python
@@ -1454,7 +1507,7 @@ Example:
 | system_prompt |  | The optional system prompt. |
 | attachments |  | The optional list of attachments. |
 | no_tools |  | Whether to bypass all tools and MCP servers |
-| media_type |  | Media type (used just to enable compatibility) |
+| media_type |  | Media type for the response format |
 
 
 ## QueryResponse
@@ -1468,11 +1521,10 @@ Attributes:
     rag_chunks: List of RAG chunks used to generate the response.
     referenced_documents: The URLs and titles for the documents used to generate the response.
     tool_calls: List of tool calls made during response generation.
-    TODO: truncated: Whether conversation history was truncated.
-    TODO: input_tokens: Number of tokens sent to LLM.
-    TODO: output_tokens: Number of tokens received from LLM.
-    TODO: available_quotas: Quota available as measured by all configured quota limiters
-    TODO: tool_results: List of tool results.
+    truncated: Whether conversation history was truncated.
+    input_tokens: Number of tokens sent to LLM.
+    output_tokens: Number of tokens received from LLM.
+    available_quotas: Quota available as measured by all configured quota limiters.
 
 
 | Field | Type | Description |
@@ -1482,6 +1534,10 @@ Attributes:
 | rag_chunks | array | List of RAG chunks used to generate the response |
 | tool_calls |  | List of tool calls made during response generation |
 | referenced_documents | array | List of documents referenced in generating the response |
+| truncated | boolean | Whether conversation history was truncated |
+| input_tokens | integer | Number of tokens sent to LLM |
+| output_tokens | integer | Number of tokens received from LLM |
+| available_quotas | object | Quota available as measured by all configured quota limiters |
 
 
 ## RAGChunk
