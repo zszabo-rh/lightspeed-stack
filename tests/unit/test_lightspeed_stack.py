@@ -3,7 +3,7 @@
 from lightspeed_stack import create_argument_parser
 
 
-def test_create_argument_parser():
+def test_create_argument_parser() -> None:
     """Test for create_argument_parser function."""
     arg_parser = create_argument_parser()
     # nothing more to test w/o actual parsing is done
