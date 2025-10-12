@@ -5,7 +5,7 @@ import subprocess
 from version import __version__
 
 
-def read_version_from_pyproject():
+def read_version_from_pyproject() -> str:
     """Read version from pyproject.toml file."""
     # it is not safe to just try to read version from pyproject.toml file directly
     # the PDM tool itself is able to retrieve the version, even if the version
@@ -18,7 +18,7 @@ def read_version_from_pyproject():
     return completed.stdout.decode("utf-8").strip()
 
 
-def test_version_handling():
+def test_version_handling() -> None:
     """Test how version is handled by the project."""
     source_version = __version__
     project_version = read_version_from_pyproject()
