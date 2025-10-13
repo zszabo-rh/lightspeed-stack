@@ -62,7 +62,7 @@ def dummy_request() -> Request:
     return req
 
 
-def mock_metrics(mocker):
+def mock_metrics(mocker) -> None:
     """Helper function to mock metrics operations for query endpoints."""
     mocker.patch(
         "app.endpoints.query.extract_and_update_token_metrics",
@@ -74,7 +74,7 @@ def mock_metrics(mocker):
     mocker.patch("metrics.llm_calls_total")
 
 
-def mock_database_operations(mocker):
+def mock_database_operations(mocker) -> None:
     """Helper function to mock database operations for query endpoints."""
     mocker.patch(
         "app.endpoints.query.validate_conversation_ownership", return_value=True
@@ -122,7 +122,9 @@ def setup_configuration_fixture():
 
 
 @pytest.mark.asyncio
-async def test_query_endpoint_handler_configuration_not_loaded(mocker, dummy_request):
+async def test_query_endpoint_handler_configuration_not_loaded(
+    mocker, dummy_request
+) -> None:
     """Test the query endpoint handler if configuration is not loaded."""
     # simulate state when no configuration is loaded
     mocker.patch(
@@ -143,7 +145,7 @@ async def test_query_endpoint_handler_configuration_not_loaded(mocker, dummy_req
     assert e.value.detail["response"] == "Configuration is not loaded"
 
 
-def test_is_transcripts_enabled(setup_configuration, mocker):
+def test_is_transcripts_enabled(setup_configuration, mocker) -> None:
     """Test that is_transcripts_enabled returns True when transcripts is not disabled."""
     # Override the transcripts_enabled setting
     mocker.patch.object(
@@ -156,7 +158,7 @@ def test_is_transcripts_enabled(setup_configuration, mocker):
     assert is_transcripts_enabled() is True, "Transcripts should be enabled"
 
 
-def test_is_transcripts_disabled(setup_configuration, mocker):
+def test_is_transcripts_disabled(setup_configuration, mocker) -> None:
     """Test that is_transcripts_enabled returns False when transcripts is disabled."""
     # Use default transcripts_enabled=False from setup
     mocker.patch("app.endpoints.query.configuration", setup_configuration)
@@ -166,7 +168,7 @@ def test_is_transcripts_disabled(setup_configuration, mocker):
 
 async def _test_query_endpoint_handler(
     mocker, dummy_request: Request, store_transcript_to_file=False
-):
+) -> None:
     """Test the query endpoint handler."""
     mock_client = mocker.AsyncMock()
     mock_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
@@ -195,7 +197,7 @@ async def _test_query_endpoint_handler(
     )
     conversation_id = "00000000-0000-0000-0000-000000000000"
     query = "What is OpenStack?"
-    referenced_documents = []
+    referenced_documents: list[ReferencedDocument] = []
 
     mocker.patch(
         "app.endpoints.query.retrieve_response",
@@ -253,7 +255,7 @@ async def _test_query_endpoint_handler(
 @pytest.mark.asyncio
 async def test_query_endpoint_handler_transcript_storage_disabled(
     mocker, dummy_request
-):
+) -> None:
     """Test the query endpoint handler with transcript storage disabled."""
     await _test_query_endpoint_handler(
         mocker, dummy_request, store_transcript_to_file=False
@@ -261,14 +263,14 @@ async def test_query_endpoint_handler_transcript_storage_disabled(
 
 
 @pytest.mark.asyncio
-async def test_query_endpoint_handler_store_transcript(mocker, dummy_request):
+async def test_query_endpoint_handler_store_transcript(mocker, dummy_request) -> None:
     """Test the query endpoint handler with transcript storage enabled."""
     await _test_query_endpoint_handler(
         mocker, dummy_request, store_transcript_to_file=True
     )
 
 
-def test_select_model_and_provider_id_from_request(mocker):
+def test_select_model_and_provider_id_from_request(mocker) -> None:
     """Test the select_model_and_provider_id function."""
     mocker.patch(
         "metrics.utils.configuration.inference.default_provider",
@@ -308,7 +310,7 @@ def test_select_model_and_provider_id_from_request(mocker):
     assert provider_id == "provider2"
 
 
-def test_select_model_and_provider_id_from_configuration(mocker):
+def test_select_model_and_provider_id_from_configuration(mocker) -> None:
     """Test the select_model_and_provider_id function."""
     mocker.patch(
         "metrics.utils.configuration.inference.default_provider",
@@ -345,7 +347,7 @@ def test_select_model_and_provider_id_from_configuration(mocker):
     assert provider_id == "default_provider"
 
 
-def test_select_model_and_provider_id_first_from_list(mocker):
+def test_select_model_and_provider_id_first_from_list(mocker) -> None:
     """Test the select_model_and_provider_id function when no model is specified."""
     model_list = [
         mocker.Mock(
@@ -372,7 +374,7 @@ def test_select_model_and_provider_id_first_from_list(mocker):
     assert provider_id == "provider1"
 
 
-def test_select_model_and_provider_id_invalid_model(mocker):
+def test_select_model_and_provider_id_invalid_model(mocker) -> None:
     """Test the select_model_and_provider_id function with an invalid model."""
     mock_client = mocker.Mock()
     mock_client.models.list.return_value = [
@@ -394,7 +396,7 @@ def test_select_model_and_provider_id_invalid_model(mocker):
     )
 
 
-def test_select_model_and_provider_id_no_available_models(mocker):
+def test_select_model_and_provider_id_no_available_models(mocker) -> None:
     """Test the select_model_and_provider_id function with no available models."""
     mock_client = mocker.Mock()
     # empty list of models
@@ -410,7 +412,7 @@ def test_select_model_and_provider_id_no_available_models(mocker):
     assert "No LLM model found in available models" in str(exc_info.value)
 
 
-def test_validate_attachments_metadata():
+def test_validate_attachments_metadata() -> None:
     """Test the validate_attachments_metadata function."""
     attachments = [
         Attachment(
@@ -429,7 +431,7 @@ def test_validate_attachments_metadata():
     validate_attachments_metadata(attachments)
 
 
-def test_validate_attachments_metadata_invalid_type():
+def test_validate_attachments_metadata_invalid_type() -> None:
     """Test the validate_attachments_metadata function with invalid attachment type."""
     attachments = [
         Attachment(
@@ -448,7 +450,7 @@ def test_validate_attachments_metadata_invalid_type():
     )
 
 
-def test_validate_attachments_metadata_invalid_content_type():
+def test_validate_attachments_metadata_invalid_content_type() -> None:
     """Test the validate_attachments_metadata function with invalid attachment type."""
     attachments = [
         Attachment(
@@ -468,7 +470,9 @@ def test_validate_attachments_metadata_invalid_content_type():
 
 
 @pytest.mark.asyncio
-async def test_retrieve_response_no_returned_message(prepare_agent_mocks, mocker):
+async def test_retrieve_response_no_returned_message(
+    prepare_agent_mocks, mocker
+) -> None:
     """Test the retrieve_response function."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message = None
@@ -504,7 +508,9 @@ async def test_retrieve_response_no_returned_message(prepare_agent_mocks, mocker
 
 
 @pytest.mark.asyncio
-async def test_retrieve_response_message_without_content(prepare_agent_mocks, mocker):
+async def test_retrieve_response_message_without_content(
+    prepare_agent_mocks, mocker
+) -> None:
     """Test the retrieve_response function."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = None
@@ -540,7 +546,9 @@ async def test_retrieve_response_message_without_content(prepare_agent_mocks, mo
 
 
 @pytest.mark.asyncio
-async def test_retrieve_response_vector_db_available(prepare_agent_mocks, mocker):
+async def test_retrieve_response_vector_db_available(
+    prepare_agent_mocks, mocker
+) -> None:
     """Test the retrieve_response function."""
     mock_metric = mocker.patch("metrics.llm_calls_validation_errors_total")
     mock_client, mock_agent = prepare_agent_mocks
@@ -586,7 +594,9 @@ async def test_retrieve_response_vector_db_available(prepare_agent_mocks, mocker
 
 
 @pytest.mark.asyncio
-async def test_retrieve_response_no_available_shields(prepare_agent_mocks, mocker):
+async def test_retrieve_response_no_available_shields(
+    prepare_agent_mocks, mocker
+) -> None:
     """Test the retrieve_response function."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -627,7 +637,9 @@ async def test_retrieve_response_no_available_shields(prepare_agent_mocks, mocke
 
 
 @pytest.mark.asyncio
-async def test_retrieve_response_one_available_shield(prepare_agent_mocks, mocker):
+async def test_retrieve_response_one_available_shield(
+    prepare_agent_mocks, mocker
+) -> None:
     """Test the retrieve_response function."""
 
     class MockShield:
@@ -681,7 +693,9 @@ async def test_retrieve_response_one_available_shield(prepare_agent_mocks, mocke
 
 
 @pytest.mark.asyncio
-async def test_retrieve_response_two_available_shields(prepare_agent_mocks, mocker):
+async def test_retrieve_response_two_available_shields(
+    prepare_agent_mocks, mocker
+) -> None:
     """Test the retrieve_response function."""
 
     class MockShield:
@@ -738,7 +752,9 @@ async def test_retrieve_response_two_available_shields(prepare_agent_mocks, mock
 
 
 @pytest.mark.asyncio
-async def test_retrieve_response_four_available_shields(prepare_agent_mocks, mocker):
+async def test_retrieve_response_four_available_shields(
+    prepare_agent_mocks, mocker
+) -> None:
     """Test the retrieve_response function."""
 
     class MockShield:
@@ -809,7 +825,9 @@ async def test_retrieve_response_four_available_shields(prepare_agent_mocks, moc
 
 
 @pytest.mark.asyncio
-async def test_retrieve_response_with_one_attachment(prepare_agent_mocks, mocker):
+async def test_retrieve_response_with_one_attachment(
+    prepare_agent_mocks, mocker
+) -> None:
     """Test the retrieve_response function."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -863,7 +881,9 @@ async def test_retrieve_response_with_one_attachment(prepare_agent_mocks, mocker
 
 
 @pytest.mark.asyncio
-async def test_retrieve_response_with_two_attachments(prepare_agent_mocks, mocker):
+async def test_retrieve_response_with_two_attachments(
+    prepare_agent_mocks, mocker
+) -> None:
     """Test the retrieve_response function."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -925,7 +945,7 @@ async def test_retrieve_response_with_two_attachments(prepare_agent_mocks, mocke
     )
 
 
-def test_parse_metadata_from_text_item_valid(mocker):
+def test_parse_metadata_from_text_item_valid(mocker) -> None:
     """Test parsing metadata from a TextContentItem."""
     text = """
     Some text...
@@ -941,7 +961,7 @@ def test_parse_metadata_from_text_item_valid(mocker):
     assert doc.doc_title == "Example Doc"
 
 
-def test_parse_metadata_from_text_item_missing_title(mocker):
+def test_parse_metadata_from_text_item_missing_title(mocker) -> None:
     """Test parsing metadata from a TextContentItem with missing title."""
     mock_item = mocker.Mock(spec=TextContentItem)
     mock_item.text = """Metadata: {"docs_url": "https://redhat.com"}"""
@@ -949,7 +969,7 @@ def test_parse_metadata_from_text_item_missing_title(mocker):
     assert doc is None
 
 
-def test_parse_metadata_from_text_item_missing_url(mocker):
+def test_parse_metadata_from_text_item_missing_url(mocker) -> None:
     """Test parsing metadata from a TextContentItem with missing url."""
     mock_item = mocker.Mock(spec=TextContentItem)
     mock_item.text = """Metadata: {"title": "Example Doc"}"""
@@ -957,7 +977,7 @@ def test_parse_metadata_from_text_item_missing_url(mocker):
     assert doc is None
 
 
-def test_parse_metadata_from_text_item_malformed_url(mocker):
+def test_parse_metadata_from_text_item_malformed_url(mocker) -> None:
     """Test parsing metadata from a TextContentItem with malformed url."""
     mock_item = mocker.Mock(spec=TextContentItem)
     mock_item.text = (
@@ -967,7 +987,7 @@ def test_parse_metadata_from_text_item_malformed_url(mocker):
     assert doc is None
 
 
-def test_parse_referenced_documents_single_doc(mocker):
+def test_parse_referenced_documents_single_doc(mocker) -> None:
     """Test parsing metadata from a Turn containing a single doc."""
     text_item = mocker.Mock(spec=TextContentItem)
     text_item.text = (
@@ -991,7 +1011,7 @@ def test_parse_referenced_documents_single_doc(mocker):
     assert docs[0].doc_title == "Example Doc"
 
 
-def test_parse_referenced_documents_multiple_docs(mocker):
+def test_parse_referenced_documents_multiple_docs(mocker) -> None:
     """Test parsing metadata from a Turn containing multiple docs."""
     text_item = mocker.Mock(spec=TextContentItem)
     text_item.text = SAMPLE_KNOWLEDGE_SEARCH_RESULTS
@@ -1020,7 +1040,7 @@ def test_parse_referenced_documents_multiple_docs(mocker):
     assert docs[1].doc_title == "Doc2"
 
 
-def test_parse_referenced_documents_ignores_other_tools(mocker):
+def test_parse_referenced_documents_ignores_other_tools(mocker) -> None:
     """Test parsing metadata from a Turn with the wrong tool name."""
     text_item = mocker.Mock(spec=TextContentItem)
     text_item.text = (
@@ -1043,7 +1063,7 @@ def test_parse_referenced_documents_ignores_other_tools(mocker):
 
 
 @pytest.mark.asyncio
-async def test_retrieve_response_with_mcp_servers(prepare_agent_mocks, mocker):
+async def test_retrieve_response_with_mcp_servers(prepare_agent_mocks, mocker) -> None:
     """Test the retrieve_response function with MCP servers configured."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -1124,7 +1144,7 @@ async def test_retrieve_response_with_mcp_servers(prepare_agent_mocks, mocker):
 @pytest.mark.asyncio
 async def test_retrieve_response_with_mcp_servers_empty_token(
     prepare_agent_mocks, mocker
-):
+) -> None:
     """Test the retrieve_response function with MCP servers and empty access token."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -1183,7 +1203,7 @@ async def test_retrieve_response_with_mcp_servers_empty_token(
 @pytest.mark.asyncio
 async def test_retrieve_response_with_mcp_servers_and_mcp_headers(
     prepare_agent_mocks, mocker
-):
+) -> None:
     """Test the retrieve_response function with MCP servers configured."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -1281,7 +1301,7 @@ async def test_retrieve_response_with_mcp_servers_and_mcp_headers(
 
 
 @pytest.mark.asyncio
-async def test_retrieve_response_shield_violation(prepare_agent_mocks, mocker):
+async def test_retrieve_response_shield_violation(prepare_agent_mocks, mocker) -> None:
     """Test the retrieve_response function."""
     mock_metric = mocker.patch("metrics.llm_calls_validation_errors_total")
     mock_client, mock_agent = prepare_agent_mocks
@@ -1334,21 +1354,24 @@ async def test_retrieve_response_shield_violation(prepare_agent_mocks, mocker):
     )
 
 
-def test_get_rag_toolgroups():
+def test_get_rag_toolgroups() -> None:
     """Test get_rag_toolgroups function."""
-    vector_db_ids = []
+    vector_db_ids: list[str] = []
     result = get_rag_toolgroups(vector_db_ids)
     assert result is None
 
     vector_db_ids = ["Vector-DB-1", "Vector-DB-2"]
     result = get_rag_toolgroups(vector_db_ids)
+    assert result is not None
     assert len(result) == 1
     assert result[0]["name"] == "builtin::rag/knowledge_search"
     assert result[0]["args"]["vector_db_ids"] == vector_db_ids
 
 
 @pytest.mark.asyncio
-async def test_query_endpoint_handler_on_connection_error(mocker, dummy_request):
+async def test_query_endpoint_handler_on_connection_error(
+    mocker, dummy_request
+) -> None:
     """Test the query endpoint handler."""
     mock_metric = mocker.patch("metrics.llm_calls_failures_total")
 
@@ -1374,7 +1397,9 @@ async def test_query_endpoint_handler_on_connection_error(mocker, dummy_request)
 
 
 @pytest.mark.asyncio
-async def test_auth_tuple_unpacking_in_query_endpoint_handler(mocker, dummy_request):
+async def test_auth_tuple_unpacking_in_query_endpoint_handler(
+    mocker, dummy_request
+) -> None:
     """Test that auth tuple is correctly unpacked in query endpoint handler."""
     # Mock dependencies
     mock_config = mocker.Mock()
@@ -1426,14 +1451,14 @@ async def test_auth_tuple_unpacking_in_query_endpoint_handler(mocker, dummy_requ
         request=dummy_request,
         query_request=QueryRequest(query="test query"),
         auth=("user123", "username", False, "auth_token_123"),
-        mcp_headers=None,
+        mcp_headers={},
     )
 
     assert mock_retrieve_response.call_args[0][3] == "auth_token_123"
 
 
 @pytest.mark.asyncio
-async def test_query_endpoint_handler_no_tools_true(mocker, dummy_request):
+async def test_query_endpoint_handler_no_tools_true(mocker, dummy_request) -> None:
     """Test the query endpoint handler with no_tools=True."""
     mock_client = mocker.AsyncMock()
     mock_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
@@ -1459,7 +1484,7 @@ async def test_query_endpoint_handler_no_tools_true(mocker, dummy_request):
     )
     conversation_id = "00000000-0000-0000-0000-000000000000"
     query = "What is OpenStack?"
-    referenced_documents = []
+    referenced_documents: list[ReferencedDocument] = []
 
     mocker.patch(
         "app.endpoints.query.retrieve_response",
@@ -1489,7 +1514,7 @@ async def test_query_endpoint_handler_no_tools_true(mocker, dummy_request):
 
 
 @pytest.mark.asyncio
-async def test_query_endpoint_handler_no_tools_false(mocker, dummy_request):
+async def test_query_endpoint_handler_no_tools_false(mocker, dummy_request) -> None:
     """Test the query endpoint handler with no_tools=False (default behavior)."""
     mock_client = mocker.AsyncMock()
     mock_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
@@ -1515,7 +1540,7 @@ async def test_query_endpoint_handler_no_tools_false(mocker, dummy_request):
     )
     conversation_id = "00000000-0000-0000-0000-000000000000"
     query = "What is OpenStack?"
-    referenced_documents = []
+    referenced_documents: list[ReferencedDocument] = []
 
     mocker.patch(
         "app.endpoints.query.retrieve_response",
@@ -1547,7 +1572,7 @@ async def test_query_endpoint_handler_no_tools_false(mocker, dummy_request):
 @pytest.mark.asyncio
 async def test_retrieve_response_no_tools_bypasses_mcp_and_rag(
     prepare_agent_mocks, mocker
-):
+) -> None:
     """Test that retrieve_response bypasses MCP servers and RAG when no_tools=True."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -1602,7 +1627,7 @@ async def test_retrieve_response_no_tools_bypasses_mcp_and_rag(
 @pytest.mark.asyncio
 async def test_retrieve_response_no_tools_false_preserves_functionality(
     prepare_agent_mocks, mocker
-):
+) -> None:
     """Test that retrieve_response preserves normal functionality when no_tools=False."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -1664,7 +1689,7 @@ async def test_retrieve_response_no_tools_false_preserves_functionality(
     )
 
 
-def test_no_tools_parameter_backward_compatibility():
+def test_no_tools_parameter_backward_compatibility() -> None:
     """Test that default behavior is unchanged when no_tools parameter is not specified."""
     # This test ensures that existing code that doesn't specify no_tools continues to work
     query_request = QueryRequest(query="What is OpenStack?")
@@ -1744,7 +1769,7 @@ def test_evaluate_model_hints(
     user_conversation,
     request_values,
     expected_values,
-):
+) -> None:
     """Test evaluate_model_hints function with various scenarios."""
     # Unpack fixtures
     request_provider, request_model = request_values
@@ -1765,7 +1790,7 @@ def test_evaluate_model_hints(
 @pytest.mark.asyncio
 async def test_query_endpoint_rejects_model_provider_override_without_permission(
     mocker, dummy_request
-):
+) -> None:
     """Assert 403 and message when request includes model/provider without MODEL_OVERRIDE."""
     # Patch endpoint configuration (no need to set customization)
     cfg = AppConfig()
@@ -1818,7 +1843,7 @@ async def test_query_endpoint_rejects_model_provider_override_without_permission
 
 
 @pytest.mark.asyncio
-async def test_get_topic_summary_successful_response(mocker):
+async def test_get_topic_summary_successful_response(mocker) -> None:
     """Test get_topic_summary with successful response from agent."""
     # Mock the dependencies
     mock_client = mocker.AsyncMock()
@@ -1874,7 +1899,7 @@ async def test_get_topic_summary_successful_response(mocker):
 
 
 @pytest.mark.asyncio
-async def test_get_topic_summary_empty_response(mocker):
+async def test_get_topic_summary_empty_response(mocker) -> None:
     """Test get_topic_summary with empty response from agent."""
     # Mock the dependencies
     mock_client = mocker.AsyncMock()
@@ -1911,7 +1936,7 @@ async def test_get_topic_summary_empty_response(mocker):
 
 
 @pytest.mark.asyncio
-async def test_get_topic_summary_none_content(mocker):
+async def test_get_topic_summary_none_content(mocker) -> None:
     """Test get_topic_summary with None content in response."""
     # Mock the dependencies
     mock_client = mocker.AsyncMock()
@@ -1948,7 +1973,7 @@ async def test_get_topic_summary_none_content(mocker):
 
 
 @pytest.mark.asyncio
-async def test_get_topic_summary_with_interleaved_content(mocker):
+async def test_get_topic_summary_with_interleaved_content(mocker) -> None:
     """Test get_topic_summary with interleaved content response."""
     # Mock the dependencies
     mock_client = mocker.AsyncMock()
@@ -1994,7 +2019,7 @@ async def test_get_topic_summary_with_interleaved_content(mocker):
 
 
 @pytest.mark.asyncio
-async def test_get_topic_summary_system_prompt_retrieval(mocker):
+async def test_get_topic_summary_system_prompt_retrieval(mocker) -> None:
     """Test that get_topic_summary properly retrieves and uses the system prompt."""
     # Mock the dependencies
     mock_client = mocker.AsyncMock()
@@ -2039,7 +2064,9 @@ async def test_get_topic_summary_system_prompt_retrieval(mocker):
 
 
 @pytest.mark.asyncio
-async def test_query_endpoint_handler_conversation_not_found(mocker, dummy_request):
+async def test_query_endpoint_handler_conversation_not_found(
+    mocker, dummy_request
+) -> None:
     """Test that a 404 is raised for a non-existant conversation_id."""
     mock_config = mocker.Mock()
     mocker.patch("app.endpoints.query.configuration", mock_config)
@@ -2063,7 +2090,7 @@ async def test_query_endpoint_handler_conversation_not_found(mocker, dummy_reque
 
 
 @pytest.mark.asyncio
-async def test_get_topic_summary_agent_creation_parameters(mocker):
+async def test_get_topic_summary_agent_creation_parameters(mocker) -> None:
     """Test that get_topic_summary creates agent with correct parameters."""
     # Mock the dependencies
     mock_client = mocker.AsyncMock()
@@ -2110,7 +2137,7 @@ async def test_get_topic_summary_agent_creation_parameters(mocker):
 
 
 @pytest.mark.asyncio
-async def test_get_topic_summary_create_turn_parameters(mocker):
+async def test_get_topic_summary_create_turn_parameters(mocker) -> None:
     """Test that get_topic_summary calls create_turn with correct parameters."""
     # Mock the dependencies
     mock_client = mocker.AsyncMock()
