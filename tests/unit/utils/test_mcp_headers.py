@@ -8,7 +8,7 @@ from fastapi import Request
 from utils import mcp_headers
 
 
-def test_extract_mcp_headers_empty_headers():
+def test_extract_mcp_headers_empty_headers() -> None:
     """Test the extract_mcp_headers function for request without any headers."""
     request = Mock(spec=Request)
     # no headers
@@ -18,7 +18,7 @@ def test_extract_mcp_headers_empty_headers():
     assert result == {}
 
 
-def test_extract_mcp_headers_mcp_headers_empty():
+def test_extract_mcp_headers_mcp_headers_empty() -> None:
     """Test the extract_mcp_headers function for request with empty MCP-HEADERS header."""
     request = Mock(spec=Request)
     # empty MCP-HEADERS
@@ -29,7 +29,7 @@ def test_extract_mcp_headers_mcp_headers_empty():
     assert result == {}
 
 
-def test_extract_mcp_headers_valid_mcp_header():
+def test_extract_mcp_headers_valid_mcp_header() -> None:
     """Test the extract_mcp_headers function for request with valid MCP-HEADERS header."""
     request = Mock(spec=Request)
     # valid MCP-HEADERS
@@ -41,7 +41,7 @@ def test_extract_mcp_headers_valid_mcp_header():
     assert result == expected
 
 
-def test_extract_mcp_headers_valid_mcp_headers():
+def test_extract_mcp_headers_valid_mcp_headers() -> None:
     """Test the extract_mcp_headers function for request with valid MCP-HEADERS headers."""
     request = Mock(spec=Request)
     # valid MCP-HEADERS
@@ -59,7 +59,7 @@ def test_extract_mcp_headers_valid_mcp_headers():
     assert result == expected
 
 
-def test_extract_mcp_headers_invalid_json_mcp_header():
+def test_extract_mcp_headers_invalid_json_mcp_header() -> None:
     """Test the extract_mcp_headers function for request with invalid MCP-HEADERS header."""
     request = Mock(spec=Request)
     # invalid MCP-HEADERS - not a JSON
@@ -70,7 +70,7 @@ def test_extract_mcp_headers_invalid_json_mcp_header():
     assert result == {}
 
 
-def test_extract_mcp_headers_invalid_mcp_header_type():
+def test_extract_mcp_headers_invalid_mcp_header_type() -> None:
     """Test the extract_mcp_headers function for request with invalid MCP-HEADERS header type."""
     request = Mock(spec=Request)
     # invalid MCP-HEADERS - not a dict
@@ -81,7 +81,7 @@ def test_extract_mcp_headers_invalid_mcp_header_type():
     assert result == {}
 
 
-def test_extract_mcp_headers_invalid_mcp_header_null_value():
+def test_extract_mcp_headers_invalid_mcp_header_null_value() -> None:
     """Test the extract_mcp_headers function for request with invalid MCP-HEADERS header type."""
     request = Mock(spec=Request)
     # invalid MCP-HEADERS - not a dict
@@ -93,7 +93,7 @@ def test_extract_mcp_headers_invalid_mcp_header_null_value():
 
 
 @pytest.mark.asyncio
-async def test_mcp_headers_dependency_empty_headers():
+async def test_mcp_headers_dependency_empty_headers() -> None:
     """Test the mcp_headers_dependency function for request with empty MCP-HEADERS header."""
     request = Mock(spec=Request)
     # empty MCP-HEADERS
@@ -105,7 +105,7 @@ async def test_mcp_headers_dependency_empty_headers():
 
 
 @pytest.mark.asyncio
-async def test_mcp_headers_dependency_mcp_headers_empty():
+async def test_mcp_headers_dependency_mcp_headers_empty() -> None:
     """Test the mcp_headers_dependency function for request with empty MCP-HEADERS header."""
     request = Mock(spec=Request)
     # empty MCP-HEADERS
@@ -117,7 +117,7 @@ async def test_mcp_headers_dependency_mcp_headers_empty():
 
 
 @pytest.mark.asyncio
-async def test_mcp_headers_dependency_valid_mcp_header():
+async def test_mcp_headers_dependency_valid_mcp_header() -> None:
     """Test the mcp_headers_dependency function for request with valid MCP-HEADERS header."""
     request = Mock(spec=Request)
     # valid MCP-HEADERS
@@ -130,7 +130,7 @@ async def test_mcp_headers_dependency_valid_mcp_header():
 
 
 @pytest.mark.asyncio
-async def test_mcp_headers_dependency_valid_mcp_headers():
+async def test_mcp_headers_dependency_valid_mcp_headers() -> None:
     """Test the mcp_headers_dependency function for request with valid MCP-HEADERS headers."""
     request = Mock(spec=Request)
     # valid MCP-HEADERS
@@ -149,7 +149,7 @@ async def test_mcp_headers_dependency_valid_mcp_headers():
 
 
 @pytest.mark.asyncio
-async def test_mcp_headers_dependency_invalid_json_mcp_header():
+async def test_mcp_headers_dependency_invalid_json_mcp_header() -> None:
     """Test the mcp_headers_dependency function for request with invalid MCP-HEADERS header."""
     request = Mock(spec=Request)
     # invalid MCP-HEADERS - not a JSON
@@ -161,7 +161,7 @@ async def test_mcp_headers_dependency_invalid_json_mcp_header():
 
 
 @pytest.mark.asyncio
-async def test_mcp_headers_dependency_invalid_mcp_header_type():
+async def test_mcp_headers_dependency_invalid_mcp_header_type() -> None:
     """Test the mcp_headers_dependency function for request with invalid MCP-HEADERS header type."""
     request = Mock(spec=Request)
     # invalid MCP-HEADERS - not a dict
@@ -173,7 +173,7 @@ async def test_mcp_headers_dependency_invalid_mcp_header_type():
 
 
 @pytest.mark.asyncio
-async def test_mcp_headers_dependency_invalid_mcp_header_null_value():
+async def test_mcp_headers_dependency_invalid_mcp_header_null_value() -> None:
     """Test the mcp_headers_dependency function for request with invalid MCP-HEADERS header type."""
     request = Mock(spec=Request)
     # invalid MCP-HEADERS - not a dict
