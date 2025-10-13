@@ -26,8 +26,9 @@ async def test_config_endpoint_handler_configuration_not_loaded(mocker):
     )
     auth = ("test_user", "token", {})
     with pytest.raises(HTTPException) as exc_info:
-        await config_endpoint_handler(auth=auth, request=request)
-
+        await config_endpoint_handler(
+            auth=auth, request=request  # pyright:ignore[reportArgumentType]
+        )
     assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
     assert exc_info.value.detail["response"] == "Configuration is not loaded"
 
@@ -73,6 +74,8 @@ async def test_config_endpoint_handler_configuration_loaded(mocker):
         }
     )
     auth = ("test_user", "token", {})
-    response = await config_endpoint_handler(auth=auth, request=request)
+    response = await config_endpoint_handler(
+        auth=auth, request=request  # pyright:ignore[reportArgumentType]
+    )
     assert response is not None
     assert response == cfg.configuration
