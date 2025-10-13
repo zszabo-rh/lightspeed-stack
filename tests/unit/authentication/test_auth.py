@@ -6,7 +6,7 @@ from constants import AUTH_MOD_NOOP, AUTH_MOD_NOOP_WITH_TOKEN, AUTH_MOD_K8S
 from configuration import configuration
 
 
-def test_get_auth_dependency_noop():
+def test_get_auth_dependency_noop() -> None:
     """Test getting Noop authentication dependency."""
     assert configuration.authentication_configuration is not None
     configuration.authentication_configuration.module = AUTH_MOD_NOOP
@@ -14,7 +14,7 @@ def test_get_auth_dependency_noop():
     assert isinstance(auth_dependency, noop.NoopAuthDependency)
 
 
-def test_get_auth_dependency_noop_with_token():
+def test_get_auth_dependency_noop_with_token() -> None:
     """Test getting Noop with token authentication dependency."""
     assert configuration.authentication_configuration is not None
     configuration.authentication_configuration.module = AUTH_MOD_NOOP_WITH_TOKEN
@@ -22,7 +22,7 @@ def test_get_auth_dependency_noop_with_token():
     assert isinstance(auth_dependency, noop_with_token.NoopWithTokenAuthDependency)
 
 
-def test_get_auth_dependency_k8s():
+def test_get_auth_dependency_k8s() -> None:
     """Test getting K8s authentication dependency."""
     assert configuration.authentication_configuration is not None
     configuration.authentication_configuration.module = AUTH_MOD_K8S
