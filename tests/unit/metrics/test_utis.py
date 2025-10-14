@@ -3,7 +3,7 @@
 from metrics.utils import setup_model_metrics, update_llm_token_count_from_turn
 
 
-async def test_setup_model_metrics(mocker):
+async def test_setup_model_metrics(mocker) -> None:
     """Test the setup_model_metrics function."""
 
     # Mock the LlamaStackAsLibraryClient
@@ -76,7 +76,7 @@ async def test_setup_model_metrics(mocker):
     )
 
 
-def test_update_llm_token_count_from_turn(mocker):
+def test_update_llm_token_count_from_turn(mocker) -> None:
     """Test the update_llm_token_count_from_turn function."""
     mocker.patch("metrics.utils.Tokenizer.get_instance")
     mock_formatter_class = mocker.patch("metrics.utils.ChatFormat")
