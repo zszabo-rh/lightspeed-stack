@@ -15,7 +15,7 @@ class Connectable:
     def __init__(self, raise_exception_from_foo: bool):
         """Initialize class used to test connection decorator."""
         self._raise_exception_from_foo = raise_exception_from_foo
-        self._connected = None
+        self._connected = False
 
     def connected(self) -> bool:
         """Predicate if connection is alive."""
@@ -36,7 +36,7 @@ class Connectable:
             raise SomeActionException("some_action error!")
 
 
-def test_connection_decorator():
+def test_connection_decorator() -> None:
     """Test the connection decorator."""
     c = Connectable(raise_exception_from_foo=False)
     c.disconnect()
@@ -47,7 +47,7 @@ def test_connection_decorator():
     assert c.connected() is True
 
 
-def test_connection_decorator_on_connection_exception():
+def test_connection_decorator_on_connection_exception() -> None:
     """Test the connection decorator."""
     c = Connectable(raise_exception_from_foo=True)
     c.disconnect()
