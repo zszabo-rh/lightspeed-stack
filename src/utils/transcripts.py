@@ -9,6 +9,7 @@ import json
 import logging
 import os
 from pathlib import Path
+import hashlib
 
 from configuration import configuration
 from models.requests import Attachment, QueryRequest
@@ -22,7 +23,8 @@ def construct_transcripts_path(user_id: str, conversation_id: str) -> Path:
     """Construct path to transcripts."""
     # these two normalizations are required by Snyk as it detects
     # this Path sanitization pattern
-    uid = os.path.normpath("/" + user_id).lstrip("/")
+    hashed_user_id = hashlib.sha256(user_id.encode("utf-8")).hexdigest()
+    uid = os.path.normpath("/" + hashed_user_id).lstrip("/")
     cid = os.path.normpath("/" + conversation_id).lstrip("/")
     file_path = (
         configuration.user_data_collection_configuration.transcripts_storage or ""
@@ -59,13 +61,15 @@ def store_transcript(  # pylint: disable=too-many-arguments,too-many-positional-
     transcripts_path = construct_transcripts_path(user_id, conversation_id)
     transcripts_path.mkdir(parents=True, exist_ok=True)
 
+    hashed_user_id = hashlib.sha256(user_id.encode("utf-8")).hexdigest()
+
     data_to_store = {
         "metadata": {
             "provider": provider_id,
             "model": model_id,
             "query_provider": query_request.provider,
             "query_model": query_request.model,
-            "user_id": user_id,
+            "user_id": hashed_user_id,
             "conversation_id": conversation_id,
             "timestamp": datetime.now(UTC).isoformat(),
         },

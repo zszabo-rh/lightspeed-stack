@@ -1,5 +1,6 @@
 """Unit tests for functions defined in utils.transcripts module."""
 
+import hashlib
 from configuration import AppConfig
 from models.requests import QueryRequest
 
@@ -39,11 +40,13 @@ def test_construct_transcripts_path(mocker):
 
     user_id = "user123"
     conversation_id = "123e4567-e89b-12d3-a456-426614174000"
+    hashed_user_id = hashlib.sha256(user_id.encode("utf-8")).hexdigest()
 
     path = construct_transcripts_path(user_id, conversation_id)
 
     assert (
-        str(path) == "/tmp/transcripts/user123/123e4567-e89b-12d3-a456-426614174000"
+        str(path)
+        == f"/tmp/transcripts/{hashed_user_id}/123e4567-e89b-12d3-a456-426614174000"
     ), "Path should be constructed correctly"
 
 
@@ -97,6 +100,7 @@ def test_store_transcript(mocker):
     )
 
     # Assert that the transcript was stored correctly
+    hashed_user_id = hashlib.sha256(user_id.encode("utf-8")).hexdigest()
     mock_json.dump.assert_called_once_with(
         {
             "metadata": {
@@ -104,7 +108,7 @@ def test_store_transcript(mocker):
                 "model": "fake-model",
                 "query_provider": query_request.provider,
                 "query_model": query_request.model,
-                "user_id": user_id,
+                "user_id": hashed_user_id,
                 "conversation_id": conversation_id,
                 "timestamp": mocker.ANY,
             },
