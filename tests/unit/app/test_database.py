@@ -16,17 +16,17 @@ from models.config import SQLiteDatabaseConfiguration, PostgreSQLDatabaseConfigu
 def reset_database_state_fixture():
     """Reset global database state before and after tests."""
     original_engine = database.engine
-    original_session_local = database.SessionLocal
+    original_session_local = database.session_local
 
     # Reset state before test
     database.engine = None
-    database.SessionLocal = None
+    database.session_local = None
 
     yield
 
     # Restore original state after test
     database.engine = original_engine
-    database.SessionLocal = original_session_local
+    database.session_local = original_session_local
 
 
 @pytest.fixture(name="base_postgres_config")
@@ -72,7 +72,7 @@ class TestGetSession:
         mock_session_local = mocker.MagicMock()
         mock_session = mocker.MagicMock(spec=Session)
         mock_session_local.return_value = mock_session
-        database.SessionLocal = mock_session_local
+        database.session_local = mock_session_local
 
         result = database.get_session()
 
@@ -81,7 +81,7 @@ class TestGetSession:
 
     def test_get_session_when_not_initialized(self):
         """Test get_session raises RuntimeError when not initialized."""
-        database.SessionLocal = None
+        database.session_local = None
 
         with pytest.raises(RuntimeError, match="Database session not initialized"):
             database.get_session()
@@ -257,7 +257,7 @@ class TestInitializeDatabase:
             autocommit=False, autoflush=False, bind=mock_engine
         )
         assert database.engine is mock_engine
-        assert database.SessionLocal is mock_session_local
+        assert database.session_local is mock_session_local
 
     def test_initialize_database_sqlite(
         self,

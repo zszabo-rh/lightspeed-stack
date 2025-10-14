@@ -14,7 +14,7 @@ from models.config import SQLiteDatabaseConfiguration, PostgreSQLDatabaseConfigu
 logger = get_logger(__name__)
 
 engine: Engine | None = None
-SessionLocal: sessionmaker | None = None
+session_local: sessionmaker | None = None
 
 
 def get_engine() -> Engine:
@@ -33,11 +33,11 @@ def create_tables() -> None:
 
 def get_session() -> Session:
     """Get a database session. Raises an error if not initialized."""
-    if SessionLocal is None:
+    if session_local is None:
         raise RuntimeError(
             "Database session not initialized. Call initialize_database() first."
         )
-    return SessionLocal()
+    return session_local()
 
 
 def _create_sqlite_engine(config: SQLiteDatabaseConfiguration, **kwargs: Any) -> Engine:
@@ -102,7 +102,7 @@ def initialize_database() -> None:
     """Initialize the database engine."""
     db_config = configuration.database_configuration
 
-    global engine, SessionLocal  # pylint: disable=global-statement
+    global engine, session_local  # pylint: disable=global-statement
 
     # Debug print all SQL statements if our logger is at-least DEBUG level
     echo = bool(logger.isEnabledFor(logging.DEBUG))
@@ -126,4 +126,4 @@ def initialize_database() -> None:
             assert isinstance(postgres_config, PostgreSQLDatabaseConfiguration)
             engine = _create_postgres_engine(postgres_config, **create_engine_kwargs)
 
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
