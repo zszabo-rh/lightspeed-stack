@@ -19,11 +19,16 @@ from utils.types import TurnSummary
 logger = logging.getLogger("utils.transcripts")
 
 
+def _hash_user_id(user_id: str) -> str:
+    """Hash the user ID using SHA-256."""
+    return hashlib.sha256(user_id.encode("utf-8")).hexdigest()
+
+
 def construct_transcripts_path(user_id: str, conversation_id: str) -> Path:
     """Construct path to transcripts."""
     # these two normalizations are required by Snyk as it detects
     # this Path sanitization pattern
-    hashed_user_id = hashlib.sha256(user_id.encode("utf-8")).hexdigest()
+    hashed_user_id = _hash_user_id(user_id)
     uid = os.path.normpath("/" + hashed_user_id).lstrip("/")
     cid = os.path.normpath("/" + conversation_id).lstrip("/")
     file_path = (
@@ -61,7 +66,7 @@ def store_transcript(  # pylint: disable=too-many-arguments,too-many-positional-
     transcripts_path = construct_transcripts_path(user_id, conversation_id)
     transcripts_path.mkdir(parents=True, exist_ok=True)
 
-    hashed_user_id = hashlib.sha256(user_id.encode("utf-8")).hexdigest()
+    hashed_user_id = _hash_user_id(user_id)
 
     data_to_store = {
         "metadata": {
