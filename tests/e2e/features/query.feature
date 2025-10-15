@@ -68,8 +68,8 @@ Feature: Query endpoint API tests
      """
      {"conversation_id": "123e4567-e89b-12d3-a456-426614174000", "query": "Write a simple code for reversing string"}
      """
-      Then The status code of the response is 403
-      And The body of the response contains User is not authorized to access this resource
+      Then The status code of the response is 404
+      And The body of the response contains Conversation not found
 
 Scenario: Check if LLM responds for query request with error for missing query
     Given The system is in default state

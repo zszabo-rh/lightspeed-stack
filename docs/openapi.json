@@ -693,39 +693,11 @@
                 "operationId": "get_conversations_list_endpoint_handler_v1_conversations_get",
                 "responses": {
                     "200": {
-                        "description": "Successful Response",
+                        "description": "List of conversations retrieved successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ConversationsListResponse"
-                                }
-                            }
-                        },
-                        "conversations": [
-                            {
-                                "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
-                                "created_at": "2024-01-01T00:00:00Z",
-                                "last_message_at": "2024-01-01T00:05:00Z",
-                                "last_used_model": "gemini/gemini-1.5-flash",
-                                "last_used_provider": "gemini",
-                                "message_count": 5
-                            },
-                            {
-                                "conversation_id": "456e7890-e12b-34d5-a678-901234567890",
-                                "created_at": "2024-01-01T01:00:00Z",
-                                "last_message_at": "2024-01-01T01:02:00Z",
-                                "last_used_model": "gemini/gemini-2.0-flash",
-                                "last_used_provider": "gemini",
-                                "message_count": 2
-                            }
-                        ]
-                    },
-                    "400": {
-                        "description": "Missing or invalid credentials provided by client",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/UnauthorizedResponse"
                                 }
                             }
                         }
@@ -741,10 +713,13 @@
                         }
                     },
                     "503": {
-                        "description": "Service Unavailable",
-                        "detail": {
-                            "response": "Unable to connect to Llama Stack",
-                            "cause": "Connection error."
+                        "description": "Service unavailable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ServiceUnavailableResponse"
+                                }
+                            }
                         }
                     }
                 }
@@ -771,38 +746,21 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful Response",
+                        "description": "Conversation retrieved successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ConversationResponse"
                                 }
                             }
-                        },
-                        "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
-                        "chat_history": [
-                            {
-                                "messages": [
-                                    {
-                                        "content": "Hi",
-                                        "type": "user"
-                                    },
-                                    {
-                                        "content": "Hello!",
-                                        "type": "assistant"
-                                    }
-                                ],
-                                "started_at": "2024-01-01T00:00:00Z",
-                                "completed_at": "2024-01-01T00:00:05Z"
-                            }
-                        ]
+                        }
                     },
                     "400": {
-                        "description": "Missing or invalid credentials provided by client",
+                        "description": "Invalid request",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/UnauthorizedResponse"
+                                    "$ref": "#/components/schemas/BadRequestResponse"
                                 }
                             }
                         }
@@ -817,19 +775,35 @@
                             }
                         }
                     },
+                    "403": {
+                        "description": "Client does not have permission to access conversation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AccessDeniedResponse"
+                                }
+                            }
+                        }
+                    },
                     "404": {
-                        "detail": {
-                            "response": "Conversation not found",
-                            "cause": "The specified conversation ID does not exist."
-                        },
-                        "description": "Not Found"
+                        "description": "Conversation not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NotFoundResponse"
+                                }
+                            }
+                        }
                     },
                     "503": {
-                        "detail": {
-                            "response": "Unable to connect to Llama Stack",
-                            "cause": "Connection error."
-                        },
-                        "description": "Service Unavailable"
+                        "description": "Service unavailable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ServiceUnavailableResponse"
+                                }
+                            }
+                        }
                     },
                     "422": {
                         "description": "Validation Error",
@@ -863,24 +837,21 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful Response",
+                        "description": "Conversation deleted successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ConversationDeleteResponse"
                                 }
                             }
-                        },
-                        "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
-                        "success": true,
-                        "message": "Conversation deleted successfully"
+                        }
                     },
                     "400": {
-                        "description": "Missing or invalid credentials provided by client",
+                        "description": "Invalid request",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/UnauthorizedResponse"
+                                    "$ref": "#/components/schemas/BadRequestResponse"
                                 }
                             }
                         }
@@ -895,19 +866,35 @@
                             }
                         }
                     },
+                    "403": {
+                        "description": "Client does not have permission to access conversation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AccessDeniedResponse"
+                                }
+                            }
+                        }
+                    },
                     "404": {
-                        "detail": {
-                            "response": "Conversation not found",
-                            "cause": "The specified conversation ID does not exist."
-                        },
-                        "description": "Not Found"
+                        "description": "Conversation not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NotFoundResponse"
+                                }
+                            }
+                        }
                     },
                     "503": {
-                        "detail": {
-                            "response": "Unable to connect to Llama Stack",
-                            "cause": "Connection error."
-                        },
-                        "description": "Service Unavailable"
+                        "description": "Service unavailable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ServiceUnavailableResponse"
+                                }
+                            }
+                        }
                     },
                     "422": {
                         "description": "Validation Error",
@@ -1323,6 +1310,27 @@
     },
     "components": {
         "schemas": {
+            "AccessDeniedResponse": {
+                "properties": {
+                    "detail": {
+                        "$ref": "#/components/schemas/DetailModel"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "detail"
+                ],
+                "title": "AccessDeniedResponse",
+                "description": "403 Access Denied - User does not have permission to perform the action.",
+                "examples": [
+                    {
+                        "detail": {
+                            "cause": "User 6789 does not have permission to access conversation with ID 123e4567-e89b-12d3-a456-426614174000.",
+                            "response": "Access denied"
+                        }
+                    }
+                ]
+            },
             "AccessRule": {
                 "properties": {
                     "role": {
@@ -1606,6 +1614,27 @@
                         "skip_userid_check": false,
                         "user_id": "123e4567-e89b-12d3-a456-426614174000",
                         "username": "user1"
+                    }
+                ]
+            },
+            "BadRequestResponse": {
+                "properties": {
+                    "detail": {
+                        "$ref": "#/components/schemas/DetailModel"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "detail"
+                ],
+                "title": "BadRequestResponse",
+                "description": "400 Bad Request - Invalid resource identifier.",
+                "examples": [
+                    {
+                        "detail": {
+                            "cause": "Conversation ID 123e4567-e89b-12d3-a456-426614174000 has invalid format",
+                            "response": "Invalid conversation ID format"
+                        }
                     }
                 ]
             },
@@ -2284,6 +2313,27 @@
                 "title": "DatabaseConfiguration",
                 "description": "Database configuration."
             },
+            "DetailModel": {
+                "properties": {
+                    "response": {
+                        "type": "string",
+                        "title": "Response",
+                        "description": "Short summary of the error"
+                    },
+                    "cause": {
+                        "type": "string",
+                        "title": "Cause",
+                        "description": "Detailed explanation of what caused the error"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "response",
+                    "cause"
+                ],
+                "title": "DetailModel",
+                "description": "Nested detail model for error responses."
+            },
             "ErrorResponse": {
                 "properties": {
                     "detail": {
@@ -2527,12 +2577,7 @@
             "ForbiddenResponse": {
                 "properties": {
                     "detail": {
-                        "type": "string",
-                        "title": "Detail",
-                        "description": "Details about the authorization issue",
-                        "examples": [
-                            "Missing or invalid credentials provided by client"
-                        ]
+                        "$ref": "#/components/schemas/DetailModel"
                     }
                 },
                 "type": "object",
@@ -2540,10 +2585,13 @@
                     "detail"
                 ],
                 "title": "ForbiddenResponse",
-                "description": "Model representing response for forbidden access.",
+                "description": "403 Forbidden - User does not have access to this resource.",
                 "examples": [
                     {
-                        "detail": "Forbidden: User is not authorized to access this resource"
+                        "detail": {
+                            "cause": "User 42 is not allowed to access conversation with ID 123e4567-e89b-12d3-a456-426614174000.",
+                            "response": "Access denied"
+                        }
                     }
                 ]
             },
@@ -2933,6 +2981,27 @@
                 ],
                 "title": "ModelsResponse",
                 "description": "Model representing a response to models request."
+            },
+            "NotFoundResponse": {
+                "properties": {
+                    "detail": {
+                        "$ref": "#/components/schemas/DetailModel"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "detail"
+                ],
+                "title": "NotFoundResponse",
+                "description": "404 Not Found - Resource does not exist.",
+                "examples": [
+                    {
+                        "detail": {
+                            "cause": "Conversation with ID 123e4567-e89b-12d3-a456-426614174000 does not exist.",
+                            "response": "Conversation not found"
+                        }
+                    }
+                ]
             },
             "PostgreSQLDatabaseConfiguration": {
                 "properties": {
@@ -3695,6 +3764,27 @@
                 "title": "ServiceConfiguration",
                 "description": "Service configuration."
             },
+            "ServiceUnavailableResponse": {
+                "properties": {
+                    "detail": {
+                        "$ref": "#/components/schemas/DetailModel"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "detail"
+                ],
+                "title": "ServiceUnavailableResponse",
+                "description": "503 Backend Unavailable - Unable to reach backend service.",
+                "examples": [
+                    {
+                        "detail": {
+                            "cause": "Connection error while trying to reach Llama Stack API.",
+                            "response": "Unable to connect to Llama Stack"
+                        }
+                    }
+                ]
+            },
             "ShieldsResponse": {
                 "properties": {
                     "shields": {
@@ -3882,12 +3972,7 @@
             "UnauthorizedResponse": {
                 "properties": {
                     "detail": {
-                        "type": "string",
-                        "title": "Detail",
-                        "description": "Details about the authorization issue",
-                        "examples": [
-                            "Missing or invalid credentials provided by client"
-                        ]
+                        "$ref": "#/components/schemas/DetailModel"
                     }
                 },
                 "type": "object",
@@ -3895,10 +3980,13 @@
                     "detail"
                 ],
                 "title": "UnauthorizedResponse",
-                "description": "Model representing response for missing or invalid credentials.",
+                "description": "401 Unauthorized - Missing or invalid credentials.",
                 "examples": [
                     {
-                        "detail": "Unauthorized: No auth header found"
+                        "detail": {
+                            "cause": "Missing or invalid credentials provided by client",
+                            "response": "Unauthorized"
+                        }
                     }
                 ]
             },

@@ -19,11 +19,16 @@ from models.responses import (
     ConversationResponse,
     ConversationsListResponse,
     UnauthorizedResponse,
+    NotFoundResponse,
+    AccessDeniedResponse,
+    BadRequestResponse,
+    ServiceUnavailableResponse,
 )
 from utils.endpoints import (
     check_configuration_loaded,
     delete_conversation,
-    validate_conversation_ownership,
+    can_access_conversation,
+    retrieve_conversation,
 )
 from utils.suid import check_suid
 
@@ -32,102 +37,70 @@ router = APIRouter(tags=["conversations"])
 
 conversation_responses: dict[int | str, dict[str, Any]] = {
     200: {
-        "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
-        "chat_history": [
-            {
-                "messages": [
-                    {"content": "Hi", "type": "user"},
-                    {"content": "Hello!", "type": "assistant"},
-                ],
-                "started_at": "2024-01-01T00:00:00Z",
-                "completed_at": "2024-01-01T00:00:05Z",
-            }
-        ],
+        "model": ConversationResponse,
+        "description": "Conversation retrieved successfully",
     },
     400: {
-        "description": "Missing or invalid credentials provided by client",
-        "model": UnauthorizedResponse,
+        "model": BadRequestResponse,
+        "description": "Invalid request",
     },
     401: {
-        "description": "Unauthorized: Invalid or missing Bearer token",
         "model": UnauthorizedResponse,
+        "description": "Unauthorized: Invalid or missing Bearer token",
+    },
+    403: {
+        "model": AccessDeniedResponse,
+        "description": "Client does not have permission to access conversation",
     },
     404: {
-        "detail": {
-            "response": "Conversation not found",
-            "cause": "The specified conversation ID does not exist.",
-        }
+        "model": NotFoundResponse,
+        "description": "Conversation not found",
     },
     503: {
-        "detail": {
-            "response": "Unable to connect to Llama Stack",
-            "cause": "Connection error.",
-        }
+        "model": ServiceUnavailableResponse,
+        "description": "Service unavailable",
     },
 }
 
 conversation_delete_responses: dict[int | str, dict[str, Any]] = {
     200: {
-        "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
-        "success": True,
-        "message": "Conversation deleted successfully",
+        "model": ConversationDeleteResponse,
+        "description": "Conversation deleted successfully",
     },
     400: {
-        "description": "Missing or invalid credentials provided by client",
-        "model": UnauthorizedResponse,
+        "model": BadRequestResponse,
+        "description": "Invalid request",
     },
     401: {
-        "description": "Unauthorized: Invalid or missing Bearer token",
         "model": UnauthorizedResponse,
+        "description": "Unauthorized: Invalid or missing Bearer token",
+    },
+    403: {
+        "model": AccessDeniedResponse,
+        "description": "Client does not have permission to access conversation",
     },
     404: {
-        "detail": {
-            "response": "Conversation not found",
-            "cause": "The specified conversation ID does not exist.",
-        }
+        "model": NotFoundResponse,
+        "description": "Conversation not found",
     },
     503: {
-        "detail": {
-            "response": "Unable to connect to Llama Stack",
-            "cause": "Connection error.",
-        }
+        "model": ServiceUnavailableResponse,
+        "description": "Service unavailable",
     },
 }
 
 conversations_list_responses: dict[int | str, dict[str, Any]] = {
     200: {
-        "conversations": [
-            {
-                "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
-                "created_at": "2024-01-01T00:00:00Z",
-                "last_message_at": "2024-01-01T00:05:00Z",
-                "last_used_model": "gemini/gemini-1.5-flash",
-                "last_used_provider": "gemini",
-                "message_count": 5,
-            },
-            {
-                "conversation_id": "456e7890-e12b-34d5-a678-901234567890",
-                "created_at": "2024-01-01T01:00:00Z",
-                "last_message_at": "2024-01-01T01:02:00Z",
-                "last_used_model": "gemini/gemini-2.0-flash",
-                "last_used_provider": "gemini",
-                "message_count": 2,
-            },
-        ]
-    },
-    400: {
-        "description": "Missing or invalid credentials provided by client",
-        "model": UnauthorizedResponse,
+        "model": ConversationsListResponse,
+        "description": "List of conversations retrieved successfully",
     },
     401: {
-        "description": "Unauthorized: Invalid or missing Bearer token",
         "model": UnauthorizedResponse,
+        "description": "Unauthorized: Invalid or missing Bearer token",
     },
     503: {
-        "detail": {
-            "response": "Unable to connect to Llama Stack",
-            "cause": "Connection error.",
-        }
+        "model": ServiceUnavailableResponse,
+        "description": "Service unavailable",
     },
 }
 
@@ -267,34 +240,42 @@ async def get_conversation_endpoint_handler(
         logger.error("Invalid conversation ID format: %s", conversation_id)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
-                "response": "Invalid conversation ID format",
-                "cause": f"Conversation ID {conversation_id} is not a valid UUID",
-            },
+            detail=BadRequestResponse(
+                resource="conversation", resource_id=conversation_id
+            ).dump_detail(),
         )
 
     user_id = auth[0]
-
-    user_conversation = validate_conversation_ownership(
-        user_id=user_id,
-        conversation_id=conversation_id,
+    if not can_access_conversation(
+        conversation_id,
+        user_id,
         others_allowed=(
             Action.READ_OTHERS_CONVERSATIONS in request.state.authorized_actions
         ),
-    )
-
-    if user_conversation is None:
+    ):
         logger.warning(
-            "User %s attempted to read conversation %s they don't own",
+            "User %s attempted to read conversation %s they don't have access to",
             user_id,
             conversation_id,
         )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail={
-                "response": "Access denied",
-                "cause": "You do not have permission to read this conversation",
-            },
+            detail=AccessDeniedResponse(
+                user_id=user_id,
+                resource="conversation",
+                resource_id=conversation_id,
+                action="read",
+            ).dump_detail(),
+        )
+
+    # If reached this, user is authorized to retreive this conversation
+    conversation = retrieve_conversation(conversation_id)
+    if conversation is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=NotFoundResponse(
+                resource="conversation", resource_id=conversation_id
+            ).dump_detail(),
         )
 
     agent_id = conversation_id
@@ -308,10 +289,9 @@ async def get_conversation_endpoint_handler(
             logger.error("No sessions found for conversation %s", conversation_id)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={
-                    "response": "Conversation not found",
-                    "cause": f"Conversation {conversation_id} could not be retrieved.",
-                },
+                detail=NotFoundResponse(
+                    resource="conversation", resource_id=conversation_id
+                ).dump_detail(),
             )
         session_id = str(agent_sessions[0].get("session_id"))
 
@@ -334,22 +314,23 @@ async def get_conversation_endpoint_handler(
         logger.error("Unable to connect to Llama Stack: %s", e)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail={
-                "response": "Unable to connect to Llama Stack",
-                "cause": str(e),
-            },
+            detail=ServiceUnavailableResponse(
+                backend_name="Llama Stack", cause=str(e)
+            ).dump_detail(),
         ) from e
+
     except NotFoundError as e:
         logger.error("Conversation not found: %s", e)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={
-                "response": "Conversation not found",
-                "cause": f"Conversation {conversation_id} could not be retrieved: {str(e)}",
-            },
+            detail=NotFoundResponse(
+                resource="conversation", resource_id=conversation_id
+            ).dump_detail(),
         ) from e
+
     except HTTPException:
         raise
+
     except Exception as e:
         # Handle case where session doesn't exist or other errors
         logger.exception("Error retrieving conversation %s: %s", conversation_id, e)
@@ -389,34 +370,42 @@ async def delete_conversation_endpoint_handler(
         logger.error("Invalid conversation ID format: %s", conversation_id)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
-                "response": "Invalid conversation ID format",
-                "cause": f"Conversation ID {conversation_id} is not a valid UUID",
-            },
+            detail=BadRequestResponse(
+                resource="conversation", resource_id=conversation_id
+            ).dump_detail(),
         )
 
     user_id = auth[0]
-
-    user_conversation = validate_conversation_ownership(
-        user_id=user_id,
-        conversation_id=conversation_id,
+    if not can_access_conversation(
+        conversation_id,
+        user_id,
         others_allowed=(
             Action.DELETE_OTHERS_CONVERSATIONS in request.state.authorized_actions
         ),
-    )
-
-    if user_conversation is None:
+    ):
         logger.warning(
-            "User %s attempted to delete conversation %s they don't own",
+            "User %s attempted to delete conversation %s they don't have access to",
             user_id,
             conversation_id,
         )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail={
-                "response": "Access denied",
-                "cause": "You do not have permission to delete this conversation",
-            },
+            detail=AccessDeniedResponse(
+                user_id=user_id,
+                resource="conversation",
+                resource_id=conversation_id,
+                action="delete",
+            ).dump_detail(),
+        )
+
+    # If reached this, user is authorized to retreive this conversation
+    conversation = retrieve_conversation(conversation_id)
+    if conversation is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=NotFoundResponse(
+                resource="conversation", resource_id=conversation_id
+            ).dump_detail(),
         )
 
     agent_id = conversation_id
@@ -452,25 +441,24 @@ async def delete_conversation_endpoint_handler(
         )
 
     except APIConnectionError as e:
-        logger.error("Unable to connect to Llama Stack: %s", e)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail={
-                "response": "Unable to connect to Llama Stack",
-                "cause": str(e),
-            },
+            detail=ServiceUnavailableResponse(
+                backend_name="Llama Stack", cause=str(e)
+            ).dump_detail(),
         ) from e
+
     except NotFoundError as e:
-        logger.error("Conversation not found: %s", e)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={
-                "response": "Conversation not found",
-                "cause": f"Conversation {conversation_id} could not be deleted: {str(e)}",
-            },
+            detail=NotFoundResponse(
+                resource="conversation", resource_id=conversation_id
+            ).dump_detail(),
         ) from e
+
     except HTTPException:
         raise
+
     except Exception as e:
         # Handle case where session doesn't exist or other errors
         logger.exception("Error deleting conversation %s: %s", conversation_id, e)

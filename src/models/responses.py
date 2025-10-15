@@ -1,3 +1,5 @@
+# pylint: disable=too-many-lines
+
 """Models for REST API responses."""
 
 from typing import Any, Optional, Union
@@ -595,42 +597,6 @@ class AuthorizedResponse(BaseModel):
     }
 
 
-class UnauthorizedResponse(BaseModel):
-    """Model representing response for missing or invalid credentials."""
-
-    detail: str = Field(
-        ...,
-        description="Details about the authorization issue",
-        examples=["Missing or invalid credentials provided by client"],
-    )
-
-    # provides examples for /docs endpoint
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "detail": "Unauthorized: No auth header found",
-                },
-            ]
-        }
-    }
-
-
-class ForbiddenResponse(UnauthorizedResponse):
-    """Model representing response for forbidden access."""
-
-    # provides examples for /docs endpoint
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "detail": "Forbidden: User is not authorized to access this resource",
-                },
-            ]
-        }
-    }
-
-
 class ConversationResponse(BaseModel):
     """Model representing a response for retrieving a conversation.
 
@@ -987,3 +953,177 @@ class ConversationUpdateResponse(BaseModel):
         description="A message about the update result",
         examples=["Topic summary updated successfully"],
     )
+
+
+class DetailModel(BaseModel):
+    """Nested detail model for error responses."""
+
+    response: str = Field(..., description="Short summary of the error")
+    cause: str = Field(..., description="Detailed explanation of what caused the error")
+
+
+class AbstractErrorResponse(BaseModel):
+    """Base class for all error responses.
+
+    Contains a nested `detail` field.
+    """
+
+    detail: DetailModel
+
+    def dump_detail(self) -> dict:
+        """Return dict in FastAPI HTTPException format."""
+        return self.detail.model_dump()
+
+
+class BadRequestResponse(AbstractErrorResponse):
+    """400 Bad Request - Invalid resource identifier."""
+
+    def __init__(self, resource: str, resource_id: str):
+        """Initialize a BadRequestResponse for invalid resource identifiers."""
+        super().__init__(
+            detail=DetailModel(
+                response="Invalid conversation ID format",
+                cause=f"{resource.title()} ID {resource_id} has invalid format",
+            )
+        )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "detail": {
+                        "response": "Invalid conversation ID format",
+                        "cause": "Conversation ID 123e4567-e89b-12d3-a456-426614174000 has invalid format",  # pylint: disable=line-too-long
+                    }
+                }
+            ]
+        }
+    }
+
+
+class AccessDeniedResponse(AbstractErrorResponse):
+    """403 Access Denied - User does not have permission to perform the action."""
+
+    def __init__(self, user_id: str, resource: str, resource_id: str, action: str):
+        """Initialize an AccessDeniedResponse when user lacks permission for an action."""
+        super().__init__(
+            detail=DetailModel(
+                response="Access denied",
+                cause=f"User {user_id} does not have permission to {action} {resource} with ID {resource_id}.",  # pylint: disable=line-too-long
+            )
+        )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "detail": {
+                        "response": "Access denied",
+                        "cause": "User 6789 does not have permission to access conversation with ID 123e4567-e89b-12d3-a456-426614174000.",  # pylint: disable=line-too-long
+                    }
+                }
+            ]
+        }
+    }
+
+
+class NotFoundResponse(AbstractErrorResponse):
+    """404 Not Found - Resource does not exist."""
+
+    def __init__(self, resource: str, resource_id: str):
+        """Initialize a NotFoundResponse when a resource cannot be located."""
+        super().__init__(
+            detail=DetailModel(
+                response=f"{resource.title()} not found",
+                cause=f"{resource.title()} with ID {resource_id} does not exist.",
+            )
+        )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "detail": {
+                        "response": "Conversation not found",
+                        "cause": "Conversation with ID 123e4567-e89b-12d3-a456-426614174000 does not exist.",  # pylint: disable=line-too-long
+                    }
+                }
+            ]
+        }
+    }
+
+
+class ServiceUnavailableResponse(AbstractErrorResponse):
+    """503 Backend Unavailable - Unable to reach backend service."""
+
+    def __init__(self, backend_name: str, cause: str):
+        """Initialize a ServiceUnavailableResponse when a backend service is unreachable."""
+        super().__init__(
+            detail=DetailModel(
+                response=f"Unable to connect to {backend_name}", cause=cause
+            )
+        )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "detail": {
+                        "response": "Unable to connect to Llama Stack",
+                        "cause": "Connection error while trying to reach Llama Stack API.",
+                    }
+                }
+            ]
+        }
+    }
+
+
+class UnauthorizedResponse(AbstractErrorResponse):
+    """401 Unauthorized - Missing or invalid credentials."""
+
+    def __init__(self, user_id: str | None = None):
+        """Initialize an UnauthorizedResponse when authentication fails."""
+        cause_msg = (
+            f"User {user_id} is unauthorized"
+            if user_id
+            else "Missing or invalid credentials provided by client"
+        )
+        super().__init__(detail=DetailModel(response="Unauthorized", cause=cause_msg))
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "detail": {
+                        "response": "Unauthorized",
+                        "cause": "Missing or invalid credentials provided by client",
+                    }
+                }
+            ]
+        }
+    }
+
+
+class ForbiddenResponse(UnauthorizedResponse):
+    """403 Forbidden - User does not have access to this resource."""
+
+    def __init__(self, user_id: str, resource: str, resource_id: str):
+        """Initialize a ForbiddenResponse when user is authenticated but lacks resource access."""
+        super().__init__(user_id=user_id)
+        self.detail = DetailModel(
+            response="Access denied",
+            cause=f"User {user_id} is not allowed to access {resource} with ID {resource_id}.",
+        )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "detail": {
+                        "response": "Access denied",
+                        "cause": "User 42 is not allowed to access conversation with ID 123e4567-e89b-12d3-a456-426614174000.",  # pylint: disable=line-too-long
+                    }
+                }
+            ]
+        }
+    }
