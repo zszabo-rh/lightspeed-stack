@@ -45,6 +45,7 @@ class "Configuration" as src.models.config.Configuration {
   llama_stack
   mcp_servers : Optional[list[ModelContextProtocolServer]]
   name : str
+  quota_handlers : Optional[QuotaHandlersConfig]
   service
   user_data_collection
   dump(filename: str) -> None
@@ -134,6 +135,11 @@ class "PostgreSQLDatabaseConfiguration" as src.models.config.PostgreSQLDatabaseC
   user : str
   check_postgres_configuration() -> Self
 }
+class "QuotaHandlersConfig" as src.models.config.QuotaHandlersConfig {
+  enable_token_history : bool
+  postgres : Optional[PostgreSQLDatabaseConfiguration]
+  sqlite : Optional[SQLiteDatabaseConfiguration]
+}
 class "SQLiteDatabaseConfiguration" as src.models.config.SQLiteDatabaseConfiguration {
   db_path : str
 }
@@ -178,6 +184,7 @@ src.models.config.JwtRoleRule --|> src.models.config.ConfigurationBase
 src.models.config.LlamaStackConfiguration --|> src.models.config.ConfigurationBase
 src.models.config.ModelContextProtocolServer --|> src.models.config.ConfigurationBase
 src.models.config.PostgreSQLDatabaseConfiguration --|> src.models.config.ConfigurationBase
+src.models.config.QuotaHandlersConfig --|> src.models.config.ConfigurationBase
 src.models.config.SQLiteDatabaseConfiguration --|> src.models.config.ConfigurationBase
 src.models.config.ServiceConfiguration --|> src.models.config.ConfigurationBase
 src.models.config.TLSConfiguration --|> src.models.config.ConfigurationBase

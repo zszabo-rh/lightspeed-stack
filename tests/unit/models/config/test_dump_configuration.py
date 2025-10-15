@@ -89,6 +89,7 @@ def test_dump_configuration(tmp_path) -> None:
         assert "inference" in content
         assert "database" in content
         assert "byok_rag" in content
+        assert "quota_handlers" in content
 
         # check the whole deserialized JSON file content
         assert content == {
@@ -171,6 +172,11 @@ def test_dump_configuration(tmp_path) -> None:
                 "type": None,
             },
             "byok_rag": [],
+            "quota_handlers": {
+                "sqlite": None,
+                "postgres": None,
+                "enable_token_history": False,
+            },
         }
 
 
