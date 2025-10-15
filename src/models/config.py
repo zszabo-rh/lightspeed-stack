@@ -564,6 +564,14 @@ class ByokRag(ConfigurationBase):
     db_path: FilePath
 
 
+class QuotaHandlersConfig(ConfigurationBase):
+    """Quota limiter configuration."""
+
+    sqlite: Optional[SQLiteDatabaseConfiguration] = None
+    storage: Optional[PostgreSQLDatabaseConfiguration] = None
+    enable_token_history: bool = False
+
+
 class Configuration(ConfigurationBase):
     """Global service configuration."""
 
@@ -583,6 +591,7 @@ class Configuration(ConfigurationBase):
         default_factory=ConversationCacheConfiguration
     )
     byok_rag: list[ByokRag] = Field(default_factory=list)
+    quota_handlers: QuotaHandlersConfig = Field(default_factory=QuotaHandlersConfig)
 
     def dump(self, filename: str = "configuration.json") -> None:
         """Dump actual configuration into JSON file."""
