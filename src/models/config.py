@@ -568,7 +568,7 @@ class QuotaHandlersConfig(ConfigurationBase):
     """Quota limiter configuration."""
 
     sqlite: Optional[SQLiteDatabaseConfiguration] = None
-    storage: Optional[PostgreSQLDatabaseConfiguration] = None
+    postgres: Optional[PostgreSQLDatabaseConfiguration] = None
     enable_token_history: bool = False
 
 

@@ -174,8 +174,8 @@ def test_dump_configuration(tmp_path) -> None:
             "byok_rag": [],
             "quota_handlers": {
                 "sqlite": None,
-                "storage": None,
-                "enable_token_history": False
+                "postgres": None,
+                "enable_token_history": False,
             },
         }
 
