@@ -17,6 +17,7 @@ from pydantic import (
     FilePath,
     AnyHttpUrl,
     PositiveInt,
+    NonNegativeInt,
     SecretStr,
 )
 
@@ -564,11 +565,31 @@ class ByokRag(ConfigurationBase):
     db_path: FilePath
 
 
-class QuotaHandlersConfig(ConfigurationBase):
+class QuotaLimiterConfiguration(ConfigurationBase):
+    """Configuration for one quota limiter."""
+
+    type: Literal["user_limiter", "cluster_limiter"]
+    name: str
+    initial_quota: NonNegativeInt
+    quota_increase: NonNegativeInt
+    period: str
+
+
+class QuotaSchedulerConfiguration(BaseModel):
+    """Quota scheduler configuration."""
+
+    period: PositiveInt = 1
+
+
+class QuotaHandlersConfiguration(ConfigurationBase):
     """Quota limiter configuration."""
 
     sqlite: Optional[SQLiteDatabaseConfiguration] = None
     postgres: Optional[PostgreSQLDatabaseConfiguration] = None
+    limiters: list[QuotaLimiterConfiguration] = Field(default_factory=list)
+    scheduler: QuotaSchedulerConfiguration = Field(
+        default_factory=QuotaSchedulerConfiguration
+    )
     enable_token_history: bool = False
 
 
@@ -591,7 +612,9 @@ class Configuration(ConfigurationBase):
         default_factory=ConversationCacheConfiguration
     )
     byok_rag: list[ByokRag] = Field(default_factory=list)
-    quota_handlers: QuotaHandlersConfig = Field(default_factory=QuotaHandlersConfig)
+    quota_handlers: QuotaHandlersConfiguration = Field(
+        default_factory=QuotaHandlersConfiguration
+    )
 
     def dump(self, filename: str = "configuration.json") -> None:
         """Dump actual configuration into JSON file."""

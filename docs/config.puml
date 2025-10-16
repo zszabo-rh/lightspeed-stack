@@ -45,7 +45,7 @@ class "Configuration" as src.models.config.Configuration {
   llama_stack
   mcp_servers : Optional[list[ModelContextProtocolServer]]
   name : str
-  quota_handlers : Optional[QuotaHandlersConfig]
+  quota_handlers : Optional[QuotaHandlersConfiguration]
   service
   user_data_collection
   dump(filename: str) -> None
@@ -135,10 +135,22 @@ class "PostgreSQLDatabaseConfiguration" as src.models.config.PostgreSQLDatabaseC
   user : str
   check_postgres_configuration() -> Self
 }
-class "QuotaHandlersConfig" as src.models.config.QuotaHandlersConfig {
+class "QuotaHandlersConfiguration" as src.models.config.QuotaHandlersConfiguration {
   enable_token_history : bool
+  limiters : Optional[list[QuotaLimiterConfiguration]]
   postgres : Optional[PostgreSQLDatabaseConfiguration]
+  scheduler : Optional[QuotaSchedulerConfiguration]
   sqlite : Optional[SQLiteDatabaseConfiguration]
+}
+class "QuotaLimiterConfiguration" as src.models.config.QuotaLimiterConfiguration {
+  initial_quota : Annotated
+  name : str
+  period : str
+  quota_increase : Annotated
+  type : Literal['user_limiter', 'cluster_limiter']
+}
+class "QuotaSchedulerConfiguration" as src.models.config.QuotaSchedulerConfiguration {
+  period : Annotated
 }
 class "SQLiteDatabaseConfiguration" as src.models.config.SQLiteDatabaseConfiguration {
   db_path : str
@@ -184,7 +196,8 @@ src.models.config.JwtRoleRule --|> src.models.config.ConfigurationBase
 src.models.config.LlamaStackConfiguration --|> src.models.config.ConfigurationBase
 src.models.config.ModelContextProtocolServer --|> src.models.config.ConfigurationBase
 src.models.config.PostgreSQLDatabaseConfiguration --|> src.models.config.ConfigurationBase
-src.models.config.QuotaHandlersConfig --|> src.models.config.ConfigurationBase
+src.models.config.QuotaHandlersConfiguration --|> src.models.config.ConfigurationBase
+src.models.config.QuotaLimiterConfiguration --|> src.models.config.ConfigurationBase
 src.models.config.SQLiteDatabaseConfiguration --|> src.models.config.ConfigurationBase
 src.models.config.ServiceConfiguration --|> src.models.config.ConfigurationBase
 src.models.config.TLSConfiguration --|> src.models.config.ConfigurationBase
