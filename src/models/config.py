@@ -587,7 +587,9 @@ class QuotaHandlersConfiguration(ConfigurationBase):
     sqlite: Optional[SQLiteDatabaseConfiguration] = None
     postgres: Optional[PostgreSQLDatabaseConfiguration] = None
     limiters: list[QuotaLimiterConfiguration] = Field(default_factory=list)
-    scheduler: QuotaSchedulerConfiguration = Field(default_factory=QuotaSchedulerConfiguration)
+    scheduler: QuotaSchedulerConfiguration = Field(
+        default_factory=QuotaSchedulerConfiguration
+    )
     enable_token_history: bool = False
 
 
@@ -610,7 +612,9 @@ class Configuration(ConfigurationBase):
         default_factory=ConversationCacheConfiguration
     )
     byok_rag: list[ByokRag] = Field(default_factory=list)
-    quota_handlers: QuotaHandlersConfiguration = Field(default_factory=QuotaHandlersConfiguration)
+    quota_handlers: QuotaHandlersConfiguration = Field(
+        default_factory=QuotaHandlersConfiguration
+    )
 
     def dump(self, filename: str = "configuration.json") -> None:
         """Dump actual configuration into JSON file."""
