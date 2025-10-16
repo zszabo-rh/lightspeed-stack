@@ -1,7 +1,5 @@
 """Unit tests for QuotaHandlersConfiguration model."""
 
-import pytest
-
 from models.config import QuotaHandlersConfiguration, QuotaSchedulerConfiguration
 
 
