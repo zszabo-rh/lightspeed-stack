@@ -4,6 +4,7 @@ import json
 import requests
 from behave import then, step  # pyright: ignore[reportAttributeAccessIssue]
 from behave.runner import Context
+from tests.e2e.utils.utils import replace_placeholders
 
 
 DEFAULT_LLM_TIMEOUT = 60
@@ -24,9 +25,11 @@ def ask_question(context: Context, endpoint: str) -> None:
     path = f"{context.api_prefix}/{endpoint}".replace("//", "/")
     url = base + path
 
-    # Use context.text if available, otherwise use empty query
-    data = json.loads(context.text or "{}")
-    print(data)
+    # Replace {MODEL} and {PROVIDER} placeholders with actual values
+    json_str = replace_placeholders(context, context.text or "{}")
+
+    data = json.loads(json_str)
+    print(f"Request data: {data}")
     context.response = requests.post(url, json=data, timeout=DEFAULT_LLM_TIMEOUT)
 
 
@@ -37,9 +40,11 @@ def ask_question_authorized(context: Context, endpoint: str) -> None:
     path = f"{context.api_prefix}/{endpoint}".replace("//", "/")
     url = base + path
 
-    # Use context.text if available, otherwise use empty query
-    data = json.loads(context.text or "{}")
-    print(data)
+    # Replace {MODEL} and {PROVIDER} placeholders with actual values
+    json_str = replace_placeholders(context, context.text or "{}")
+
+    data = json.loads(json_str)
+    print(f"Request data: {data}")
     context.response = requests.post(
         url, json=data, headers=context.auth_headers, timeout=DEFAULT_LLM_TIMEOUT
     )
@@ -58,12 +63,14 @@ def ask_question_in_same_conversation(context: Context, endpoint: str) -> None:
     path = f"{context.api_prefix}/{endpoint}".replace("//", "/")
     url = base + path
 
-    # Use context.text if available, otherwise use empty query
-    data = json.loads(context.text or "{}")
+    # Replace {MODEL} and {PROVIDER} placeholders with actual values
+    json_str = replace_placeholders(context, context.text or "{}")
+
+    data = json.loads(json_str)
     headers = context.auth_headers if hasattr(context, "auth_headers") else {}
     data["conversation_id"] = context.response_data["conversation_id"]
 
-    print(data)
+    print(f"Request data: {data}")
     context.response = requests.post(
         url, json=data, headers=headers, timeout=DEFAULT_LLM_TIMEOUT
     )

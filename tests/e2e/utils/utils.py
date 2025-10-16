@@ -6,6 +6,7 @@ import subprocess
 import time
 import jsonschema
 from typing import Any
+from behave.runner import Context
 
 
 def normalize_endpoint(endpoint: str) -> str:
@@ -141,3 +142,19 @@ def restart_container(container_name: str) -> None:
 
     # Wait for container to be healthy
     wait_for_container_health(container_name)
+
+
+def replace_placeholders(context: Context, text: str) -> str:
+    """Replace {MODEL} and {PROVIDER} placeholders with actual values from context.
+
+    Args:
+        context: Behave context containing default_model and default_provider
+        text: String that may contain {MODEL} and {PROVIDER} placeholders
+
+    Returns:
+        String with placeholders replaced by actual values
+
+    """
+    result = text.replace("{MODEL}", context.default_model)
+    result = result.replace("{PROVIDER}", context.default_provider)
+    return result

@@ -27,31 +27,39 @@ def check_llama_version(context: Context, llama_version: str) -> None:
     ), f"llama-stack version is {response_json["llama_stack_version"]}"
 
 
-@then("The body of the response for model {model} has proper structure")
-def check_model_structure(context: Context, model: str) -> None:
-    """Check that the gpt-4o-mini model has the correct structure and required fields."""
+@then("The body of the response has proper model structure")
+def check_model_structure(context: Context) -> None:
+    """Check that the first LLM model has the correct structure and required fields."""
     response_json = context.response.json()
     assert response_json is not None, "Response is not valid JSON"
 
     assert "models" in response_json, "Response missing 'models' field"
     models = response_json["models"]
-    assert len(models) > 0, "Models list should not be empty"
+    assert len(models) > 0, "Response has empty list of models"
 
-    gpt_model = None
-    for model_id in models:
-        if "gpt-4o-mini" in model_id.get("identifier", ""):
-            gpt_model = model_id
+    # Find first LLM model (same logic as environment.py)
+    llm_model = None
+    for model in models:
+        if model.get("api_model_type") == "llm":
+            llm_model = model
             break
 
-    assert gpt_model is not None
+    assert llm_model is not None, "No LLM model found in response"
 
-    assert gpt_model["type"] == "model", "type should be 'model'"
-    assert gpt_model["api_model_type"] == "llm", "api_model_type should be 'llm'"
-    assert gpt_model["model_type"] == "llm", "model_type should be 'llm'"
-    assert gpt_model["provider_id"] == "openai", "provider_id should be 'openai'"
+    # Get expected values from context
+    expected_model = context.default_model
+    expected_provider = context.default_provider
+
+    # Validate structure and values
+    assert llm_model["type"] == "model", "type should be 'model'"
+    assert llm_model["api_model_type"] == "llm", "api_model_type should be 'llm'"
+    assert llm_model["model_type"] == "llm", "model_type should be 'llm'"
     assert (
-        gpt_model["provider_resource_id"] == model
-    ), "provider_resource_id should be 'gpt-4o-mini'"
+        llm_model["provider_id"] == expected_provider
+    ), f"provider_id should be '{expected_provider}'"
     assert (
-        gpt_model["identifier"] == f"openai/{model}"
-    ), "identifier should be 'openai/gpt-4o-mini'"
+        llm_model["provider_resource_id"] == expected_model
+    ), f"provider_resource_id should be '{expected_model}'"
+    assert (
+        llm_model["identifier"] == f"{expected_provider}/{expected_model}"
+    ), f"identifier should be '{expected_provider}/{expected_model}'"
