@@ -114,7 +114,7 @@ Feature: conversations endpoint API tests
     Given The system is in default state
     And I set the Authorization header to Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ikpva
      When I use REST API conversation endpoint with conversation_id "abcdef" using HTTP GET method
-     Then The status code of the response is 422
+     Then The status code of the response is 400
 
   Scenario: Check if conversations/{conversation_id} GET endpoint fails when llama-stack is unavailable
     Given The system is in default state
@@ -153,10 +153,11 @@ Feature: conversations endpoint API tests
     Given The system is in default state
     And I set the Authorization header to Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ikpva
      When I use REST API conversation endpoint with conversation_id "abcdef" using HTTP DELETE method
-     Then The status code of the response is 422
+     Then The status code of the response is 400
 
   Scenario: Check if conversations DELETE endpoint fails when the conversation does not exist
     Given The system is in default state
+    And I set the Authorization header to Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ikpva
      When I use REST API conversation endpoint with conversation_id "12345678-abcd-0000-0123-456789abcdef" using HTTP DELETE method
      Then The status code of the response is 404
 

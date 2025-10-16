@@ -66,7 +66,7 @@ def test_servers_section_present(spec: dict):
         ("/v1/feedback", "post", {"200", "401", "403", "500", "422"}),
         ("/v1/feedback/status", "get", {"200"}),
         ("/v1/feedback/status", "put", {"200", "422"}),
-        ("/v1/conversations", "get", {"200", "400", "401", "503"}),
+        ("/v1/conversations", "get", {"200", "401", "503"}),
         (
             "/v1/conversations/{conversation_id}",
             "get",
