@@ -51,7 +51,7 @@ Feature: streaming_query endpoint API tests
     Then The status code of the response is 200
     And I use "streaming_query" to ask question with same conversation_id
     """
-    {"query": "Write a simple code for reversing string", "system_prompt": "provide coding assistance", "model": "gpt-4-turbo", "provider": "openai"}
+    {"query": "Write a simple code for reversing string", "system_prompt": "provide coding assistance", "model": "{MODEL}", "provider": "{PROVIDER}"}
     """
     Then The status code of the response is 200
     When I wait for the response to be completed
@@ -64,19 +64,19 @@ Feature: streaming_query endpoint API tests
     Given The system is in default state
     When I use "streaming_query" to ask question
     """
-    {"provider": "openai"}
+    {"provider": "{PROVIDER}"}
     """
      Then The status code of the response is 422
       And The body of the response is the following
           """
-          { "detail": [{"type": "missing", "loc": [ "body", "query" ], "msg": "Field required", "input": {"provider": "openai"}}] }
+          { "detail": [{"type": "missing", "loc": [ "body", "query" ], "msg": "Field required", "input": {"provider": "{PROVIDER}"}}] }
           """
 
   Scenario: Check if LLM responds for streaming_query request with error for missing model
     Given The system is in default state
     When I use "streaming_query" to ask question
     """
-    {"query": "Say hello", "provider": "openai"}
+    {"query": "Say hello", "provider": "{PROVIDER}"}
     """
      Then The status code of the response is 422
       And The body of the response contains Value error, Model must be specified if provider is specified
@@ -85,7 +85,7 @@ Feature: streaming_query endpoint API tests
     Given The system is in default state
     When I use "streaming_query" to ask question
     """
-    {"query": "Say hello", "model": "gpt-4-turbo"}
+    {"query": "Say hello", "model": "{MODEL}"}
     """
      Then The status code of the response is 422
       And The body of the response contains Value error, Provider must be specified if model is specified

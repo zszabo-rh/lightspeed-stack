@@ -34,7 +34,7 @@ Feature: Info tests
     Given The system is in default state
      When I access REST API endpoint "models" using HTTP GET method
      Then The status code of the response is 200
-      And The body of the response for model gpt-4o-mini has proper structure
+      And The body of the response has proper model structure
 
 
   Scenario: Check if models endpoint is working

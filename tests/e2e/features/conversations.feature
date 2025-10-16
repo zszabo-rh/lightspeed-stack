@@ -22,7 +22,7 @@ Feature: conversations endpoint API tests
      And The conversation with conversation_id from above is returned
      And The conversation details are following
      """
-     {"last_used_model": "gpt-4-turbo", "last_used_provider": "openai", "message_count": 1}
+     {"last_used_model": "{MODEL}", "last_used_provider": "{PROVIDER}", "message_count": 1}
      """
 
   Scenario: Check if conversations endpoint fails when the auth header is not present

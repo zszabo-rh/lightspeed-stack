@@ -20,14 +20,47 @@ from tests.e2e.utils.utils import (
     create_config_backup,
 )
 
-try:
-    import os  # noqa: F401
-except ImportError as e:
-    print("Warning: unable to import module:", e)
+
+def _fetch_models_from_service(hostname: str = "localhost", port: int = 8080) -> dict:
+    """Query /v1/models endpoint and return first LLM model.
+
+    Returns:
+        Dict with model_id and provider_id, or empty dict if unavailable
+    """
+    try:
+        url = f"http://{hostname}:{port}/v1/models"
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+
+        # Find first LLM model
+        for model in data.get("models", []):
+            if model.get("api_model_type") == "llm":
+                provider_id = model.get("provider_id")
+                model_id = model.get("provider_resource_id")
+                if provider_id and model_id:
+                    return {"model_id": model_id, "provider_id": provider_id}
+        return {}
+    except (requests.RequestException, ValueError, KeyError):
+        return {}
 
 
 def before_all(context: Context) -> None:
     """Run before and after the whole shooting match."""
+    # Get first LLM model from running service
+    llm_model = _fetch_models_from_service()
+
+    if llm_model:
+        context.default_model = llm_model["model_id"]
+        context.default_provider = llm_model["provider_id"]
+        print(
+            f"Detected LLM: {context.default_model} (provider: {context.default_provider})"
+        )
+    else:
+        # Fallback for development
+        context.default_model = "gpt-4-turbo"
+        context.default_provider = "openai"
+        print("⚠ Could not detect models, using fallback: gpt-4-turbo/openai")
 
 
 def before_scenario(context: Context, scenario: Scenario) -> None:

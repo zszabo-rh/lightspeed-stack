@@ -4,6 +4,7 @@ import json
 from behave import step, when, then  # pyright: ignore[reportAttributeAccessIssue]
 from behave.runner import Context
 import requests
+from tests.e2e.utils.utils import replace_placeholders
 
 # default timeout for HTTP operations
 DEFAULT_TIMEOUT = 10
@@ -109,7 +110,10 @@ def check_returned_conversation_id(context: Context) -> None:
 @then("The conversation details are following")
 def check_returned_conversation_content(context: Context) -> None:
     """Check the conversation content in response."""
-    expected_data = json.loads(context.text)
+    # Replace {MODEL} and {PROVIDER} placeholders with actual values
+    json_str = replace_placeholders(context, context.text or "{}")
+
+    expected_data = json.loads(json_str)
     found_conversation = context.found_conversation
 
     assert (

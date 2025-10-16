@@ -42,7 +42,7 @@ Feature: Query endpoint API tests
     And I store conversation details
     And I use "query" to ask question with same conversation_id
     """
-    {"query": "Write a simple code for reversing string", "system_prompt": "provide coding assistance", "model": "gpt-4-turbo", "provider": "openai"}
+    {"query": "Write a simple code for reversing string", "system_prompt": "provide coding assistance", "model": "{MODEL}", "provider": "{PROVIDER}"}
     """
     Then The status code of the response is 200
      And The response should contain following fragments
@@ -76,12 +76,12 @@ Scenario: Check if LLM responds for query request with error for missing query
      And I set the Authorization header to Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ikpva
      When I use "query" to ask question with authorization header
      """
-     {"provider": "openai"}
+     {"provider": "{PROVIDER}"}
      """
      Then The status code of the response is 422
      And The body of the response is the following
         """
-        { "detail": [{"type": "missing", "loc": [ "body", "query" ], "msg": "Field required", "input": {"provider": "openai"}}] }
+        { "detail": [{"type": "missing", "loc": [ "body", "query" ], "msg": "Field required", "input": {"provider": "{PROVIDER}"}}] }
         """
 
   Scenario: Check if LLM responds for query request with error for missing model
@@ -89,7 +89,7 @@ Scenario: Check if LLM responds for query request with error for missing query
      And I set the Authorization header to Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ikpva
      When I use "query" to ask question with authorization header
      """
-     {"query": "Say hello", "provider": "openai"}
+     {"query": "Say hello", "provider": "{PROVIDER}"}
      """
      Then The status code of the response is 422
       And The body of the response contains Value error, Model must be specified if provider is specified
@@ -99,7 +99,7 @@ Scenario: Check if LLM responds for query request with error for missing query
     And I set the Authorization header to Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ikpva
     When I use "query" to ask question with authorization header
     """
-    {"query": "Say hello", "model": "gpt-4-turbo"}
+    {"query": "Say hello", "model": "{MODEL}"}
     """
      Then The status code of the response is 422
       And The body of the response contains Value error, Provider must be specified if model is specified

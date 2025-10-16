@@ -7,6 +7,7 @@ from behave import then, when, step  # pyright: ignore[reportAttributeAccessIssu
 from behave.runner import Context
 from tests.e2e.utils.utils import (
     normalize_endpoint,
+    replace_placeholders,
     validate_json,
     validate_json_partially,
 )
@@ -170,7 +171,10 @@ def check_prediction_result(context: Context) -> None:
     assert context.response is not None, "Request needs to be performed first"
     assert context.text is not None, "Response does not contain any payload"
 
-    expected_body = json.loads(context.text)
+    # Replace {MODEL} and {PROVIDER} placeholders with actual values
+    json_str = replace_placeholders(context, context.text or "{}")
+
+    expected_body = json.loads(json_str)
     result = context.response.json()
 
     # compare both JSONs and print actual result in case of any difference
