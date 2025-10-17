@@ -131,7 +131,10 @@ server:
   tls_cafile: null
   tls_certfile: null
   tls_keyfile: null
-shields: []
+shields: 
+  - shield_id: llama-guard-shield
+    provider_id: llama-guard
+    provider_shield_id: "gpt-3.5-turbo"  # Model to use for safety checks
 vector_dbs:
   - vector_db_id: my_knowledge_base
     embedding_model: sentence-transformers/all-mpnet-base-v2

@@ -63,3 +63,37 @@ def check_model_structure(context: Context) -> None:
     assert (
         llm_model["identifier"] == f"{expected_provider}/{expected_model}"
     ), f"identifier should be '{expected_provider}/{expected_model}'"
+
+
+@then("The body of the response has proper shield structure")
+def check_shield_structure(context: Context) -> None:
+    """Check that the first shield has the correct structure and required fields."""
+    response_json = context.response.json()
+    assert response_json is not None, "Response is not valid JSON"
+
+    assert "shields" in response_json, "Response missing 'shields' field"
+    shields = response_json["shields"]
+    assert len(shields) > 0, "Response has empty list of shields"
+
+    # Find first shield
+    found_shield = None
+    for shield in shields:
+        if shield.get("type") == "shield":
+            found_shield = shield
+            break
+
+    assert found_shield is not None, "No shield found in response"
+
+    expected_model = context.default_model
+
+    # Validate structure and values
+    assert found_shield["type"] == "shield", "type should be 'shield'"
+    assert (
+        found_shield["provider_id"] == "llama-guard"
+    ), "provider_id should be 'llama-guard'"
+    assert (
+        found_shield["provider_resource_id"] == expected_model
+    ), f"provider_resource_id should be '{expected_model}'"
+    assert (
+        found_shield["identifier"] == "llama-guard-shield"
+    ), "identifier should be 'llama-guard-shield'"

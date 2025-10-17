@@ -123,7 +123,10 @@ server:
   tls_cafile: null
   tls_certfile: null
   tls_keyfile: null
-shields: []
+shields: 
+  - shield_id: llama-guard-shield
+    provider_id: llama-guard
+    provider_shield_id: "meta-llama/Llama-3.1-8B-Instruct"
 models:
   - metadata:
       embedding_dimension: 768 # Depends on chosen model
