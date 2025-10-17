@@ -80,7 +80,7 @@ def quota_scheduler(config: QuotaHandlersConfiguration) -> bool:
         for limiter in config.limiters:
             try:
                 quota_revocation(connection, limiter)
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught)
                 logger.error("Quota revoke error: %s", e)
         logger.info("Quota scheduler sync finished")
         sleep(period)
@@ -89,9 +89,7 @@ def quota_scheduler(config: QuotaHandlersConfiguration) -> bool:
     return True
 
 
-def quota_revocation(
-    connection: Any, quota_limiter: QuotaLimiterConfiguration
-) -> None:
+def quota_revocation(connection: Any, quota_limiter: QuotaLimiterConfiguration) -> None:
     """Quota revocation mechanism."""
     logger.info(
         "Quota revocation mechanism for limiter '%s' of type '%s'",
@@ -100,10 +98,10 @@ def quota_revocation(
     )
 
     if quota_limiter.type is None:
-        raise Exception("Limiter type not set, skipping revocation")
+        raise ValueError("Limiter type not set, skipping revocation")
 
     if quota_limiter.period is None:
-        raise Exception("Limiter period not set, skipping revocation")
+        raise ValueError("Limiter period not set, skipping revocation")
 
     subject_id = get_subject_id(quota_limiter.type)
 
@@ -184,6 +182,7 @@ def connect(config: QuotaHandlersConfiguration) -> Any:
         return connect_pg(config.postgres)
     if config.sqlite is not None:
         return connect_sqlite(config.sqlite)
+    return None
 
 
 def connect_pg(config: PostgreSQLDatabaseConfiguration) -> Any:
@@ -203,7 +202,8 @@ def connect_pg(config: PostgreSQLDatabaseConfiguration) -> Any:
         connection.autocommit = True
     return connection
 
-def connect_sqlite(config: SQLiteDatabaseConfiguration) -> None:
+
+def connect_sqlite(config: SQLiteDatabaseConfiguration) -> Any:
     """Initialize connection to database."""
     logger.info("Connecting to SQLite storage")
     # make sure the connection will have known state

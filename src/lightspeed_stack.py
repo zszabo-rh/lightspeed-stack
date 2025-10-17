@@ -124,7 +124,7 @@ def main() -> None:
     # start the runners
     start_quota_scheduler(configuration.configuration)
     # if every previous steps don't fail, start the service on specified port
-     start_uvicorn(configuration.service_configuration)
+    start_uvicorn(configuration.service_configuration)
     logger.info("Lightspeed Core Stack finished")
 
 
