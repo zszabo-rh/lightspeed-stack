@@ -144,3 +144,7 @@ DEFAULT_EMBEDDING_MODEL = "sentence-transformers/all-mpnet-base-v2"
 
 # Default embedding vector dimension for the sentence transformer model
 DEFAULT_EMBEDDING_DIMENSION = 768
+
+# quota limiters constants
+USER_QUOTA_LIMITER = "user_limiter"
+CLUSTER_QUOTA_LIMITER = "cluster_limiter"
