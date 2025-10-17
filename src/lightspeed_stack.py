@@ -14,6 +14,7 @@ from log import get_logger
 from configuration import configuration
 from llama_stack_configuration import generate_configuration
 from runners.uvicorn import start_uvicorn
+from runners.quota_scheduler import start_quota_scheduler
 
 FORMAT = "%(message)s"
 logging.basicConfig(
@@ -120,6 +121,8 @@ def main() -> None:
     # (step is needed because process context isn’t shared).
     os.environ["LIGHTSPEED_STACK_CONFIG_PATH"] = args.config_file
 
+    # start the runners
+    start_quota_scheduler(configuration.configuration)
     # if every previous steps don't fail, start the service on specified port
     start_uvicorn(configuration.service_configuration)
     logger.info("Lightspeed Core Stack finished")
