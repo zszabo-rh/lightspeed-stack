@@ -67,7 +67,7 @@ def wait_for_container_health(container_name: str, max_attempts: int = 3) -> Non
             print(f"Could not check health status for {container_name}")
 
 
-def validate_json_partially(actual: Any, expected: Any):
+def validate_json_partially(actual: Any, expected: Any) -> None:
     """Recursively validate that `actual` JSON contains all keys and values specified in `expected`.
 
     Extra elements/keys are ignored. Raises AssertionError if validation fails.
@@ -137,7 +137,7 @@ def restart_container(container_name: str) -> None:
             check=True,
         )
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
-        print(f"Failed to restart container {container_name}: {e.stderr}")
+        print(f"Failed to restart container {container_name}: {str(e.stderr)}")
         raise
 
     # Wait for container to be healthy
