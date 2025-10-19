@@ -1,6 +1,7 @@
 """Unit tests for the /config REST API endpoint."""
 
 import pytest
+from pytest_mock import MockerFixture
 
 from fastapi import HTTPException, Request, status
 from app.endpoints.config import config_endpoint_handler
@@ -9,7 +10,7 @@ from tests.unit.utils.auth_helpers import mock_authorization_resolvers
 
 
 @pytest.mark.asyncio
-async def test_config_endpoint_handler_configuration_not_loaded(mocker):
+async def test_config_endpoint_handler_configuration_not_loaded(mocker: MockerFixture):
     """Test the config endpoint handler."""
     mock_authorization_resolvers(mocker)
 
@@ -34,7 +35,7 @@ async def test_config_endpoint_handler_configuration_not_loaded(mocker):
 
 
 @pytest.mark.asyncio
-async def test_config_endpoint_handler_configuration_loaded(mocker):
+async def test_config_endpoint_handler_configuration_loaded(mocker: MockerFixture):
     """Test the config endpoint handler."""
     mock_authorization_resolvers(mocker)
 

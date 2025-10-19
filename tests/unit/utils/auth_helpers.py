@@ -1,12 +1,12 @@
 """Helper functions for mocking authorization in tests."""
 
-from typing import Any
 from unittest.mock import AsyncMock, Mock
+from pytest_mock import MockerFixture
 
 from models.config import Action
 
 
-def mock_authorization_resolvers(mocker: Any) -> None:
+def mock_authorization_resolvers(mocker: MockerFixture) -> None:
     """Mock authorization resolvers to allow all access.
 
     This function mocks the authorization middleware to bypass authorization

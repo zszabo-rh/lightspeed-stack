@@ -1,6 +1,7 @@
 """Unit tests for CacheFactory class."""
 
 import pytest
+from pytest_mock import MockerFixture
 
 from constants import (
     CACHE_TYPE_NOOP,
@@ -112,7 +113,9 @@ def test_conversation_cache_sqlite_improper_config(tmpdir):
         _ = CacheFactory.conversation_cache(cc)
 
 
-def test_conversation_cache_postgres(postgres_cache_config_fixture, mocker):
+def test_conversation_cache_postgres(
+    postgres_cache_config_fixture, mocker: MockerFixture
+):
     """Check if PostgreSQL is returned by factory with proper configuration."""
     mocker.patch("psycopg2.connect")
     cache = CacheFactory.conversation_cache(postgres_cache_config_fixture)

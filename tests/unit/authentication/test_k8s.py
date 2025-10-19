@@ -5,6 +5,8 @@
 import os
 
 import pytest
+from pytest_mock import MockerFixture
+
 from fastapi import HTTPException, Request
 from kubernetes.client import AuthenticationV1Api, AuthorizationV1Api
 from kubernetes.client.rest import ApiException
@@ -70,7 +72,7 @@ def test_singleton_pattern():
     assert k1 is k2
 
 
-async def test_auth_dependency_valid_token(mocker):
+async def test_auth_dependency_valid_token(mocker: MockerFixture):
     """Tests the auth dependency with a mocked valid-token."""
     dependency = K8SAuthDependency()
 
@@ -103,7 +105,7 @@ async def test_auth_dependency_valid_token(mocker):
     assert token == "valid-token"
 
 
-async def test_auth_dependency_invalid_token(mocker):
+async def test_auth_dependency_invalid_token(mocker: MockerFixture):
     """Test the auth dependency with a mocked invalid-token."""
     dependency = K8SAuthDependency()
 
@@ -135,7 +137,7 @@ async def test_auth_dependency_invalid_token(mocker):
     assert exc_info.value.status_code == 403
 
 
-async def test_cluster_id_is_used_for_kube_admin(mocker):
+async def test_cluster_id_is_used_for_kube_admin(mocker: MockerFixture):
     """Test the cluster id is used as user_id when user is kube:admin."""
     dependency = K8SAuthDependency()
     mock_authz_api = mocker.patch("authentication.k8s.K8sClientSingleton.get_authz_api")
@@ -175,7 +177,7 @@ async def test_cluster_id_is_used_for_kube_admin(mocker):
     assert token == "valid-token"
 
 
-def test_auth_dependency_config(mocker):
+def test_auth_dependency_config(mocker: MockerFixture):
     """Test the auth dependency can load kubeconfig file."""
     mocker.patch.dict(os.environ, {"MY_ENV_VAR": "mocked"})
 
@@ -189,7 +191,7 @@ def test_auth_dependency_config(mocker):
     ), "authz_client is not an instance of AuthorizationV1Api"
 
 
-def test_get_cluster_id(mocker):
+def test_get_cluster_id(mocker: MockerFixture):
     """Test get_cluster_id function."""
     mock_get_custom_objects_api = mocker.patch(
         "authentication.k8s.K8sClientSingleton.get_custom_objects_api"
@@ -228,7 +230,7 @@ def test_get_cluster_id(mocker):
         K8sClientSingleton._get_cluster_id()
 
 
-def test_get_cluster_id_in_cluster(mocker):
+def test_get_cluster_id_in_cluster(mocker: MockerFixture):
     """Test get_cluster_id function when running inside of cluster."""
     mocker.patch("authentication.k8s.RUNNING_IN_CLUSTER", True)
     mocker.patch("authentication.k8s.K8sClientSingleton.__new__")
@@ -240,7 +242,7 @@ def test_get_cluster_id_in_cluster(mocker):
     assert K8sClientSingleton.get_cluster_id() == "some-cluster-id"
 
 
-def test_get_cluster_id_outside_of_cluster(mocker):
+def test_get_cluster_id_outside_of_cluster(mocker: MockerFixture):
     """Test get_cluster_id function when running outside of cluster."""
     mocker.patch("authentication.k8s.RUNNING_IN_CLUSTER", False)
     mocker.patch("authentication.k8s.K8sClientSingleton.__new__")

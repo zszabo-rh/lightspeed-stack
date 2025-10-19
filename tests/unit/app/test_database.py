@@ -5,6 +5,7 @@
 from pathlib import Path
 import tempfile
 import pytest
+from pytest_mock import MockerFixture
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import Session
 
@@ -46,7 +47,7 @@ def base_postgres_config_fixture():
 class TestGetEngine:
     """Test cases for get_engine function."""
 
-    def test_get_engine_when_initialized(self, mocker):
+    def test_get_engine_when_initialized(self, mocker: MockerFixture):
         """Test get_engine returns engine when initialized."""
         mock_engine = mocker.MagicMock(spec=Engine)
         database.engine = mock_engine
@@ -67,7 +68,7 @@ class TestGetEngine:
 class TestGetSession:
     """Test cases for get_session function."""
 
-    def test_get_session_when_initialized(self, mocker):
+    def test_get_session_when_initialized(self, mocker: MockerFixture):
         """Test get_session returns session when initialized."""
         mock_session_local = mocker.MagicMock()
         mock_session = mocker.MagicMock(spec=Session)
@@ -90,7 +91,7 @@ class TestGetSession:
 class TestCreateTables:
     """Test cases for create_tables function."""
 
-    def test_create_tables_success(self, mocker):
+    def test_create_tables_success(self, mocker: MockerFixture):
         """Test create_tables calls Base.metadata.create_all with engine."""
         mock_base = mocker.patch("app.database.Base")
         mock_get_engine = mocker.patch("app.database.get_engine")
@@ -102,7 +103,7 @@ class TestCreateTables:
         mock_get_engine.assert_called_once()
         mock_base.metadata.create_all.assert_called_once_with(mock_engine)
 
-    def test_create_tables_when_engine_not_initialized(self, mocker):
+    def test_create_tables_when_engine_not_initialized(self, mocker: MockerFixture):
         """Test create_tables raises error when engine not initialized."""
         mock_get_engine = mocker.patch("app.database.get_engine")
         mock_get_engine.side_effect = RuntimeError("Database engine not initialized")
@@ -134,7 +135,7 @@ class TestCreateSqliteEngine:
         ):
             database._create_sqlite_engine(config)
 
-    def test_create_sqlite_engine_creation_failure(self, mocker):
+    def test_create_sqlite_engine_creation_failure(self, mocker: MockerFixture):
         """Test _create_sqlite_engine handles engine creation failure."""
         mock_create_engine = mocker.patch("app.database.create_engine")
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -150,7 +151,7 @@ class TestCreatePostgresEngine:
     """Test cases for _create_postgres_engine function."""
 
     def test_create_postgres_engine_success_default_schema(
-        self, mocker, base_postgres_config
+        self, mocker: MockerFixture, base_postgres_config
     ):
         """Test _create_postgres_engine creates engine successfully with default schema."""
         mock_create_engine = mocker.patch("app.database.create_engine")
@@ -170,7 +171,7 @@ class TestCreatePostgresEngine:
         assert expected_url == call_args[0][0]
 
     def test_create_postgres_engine_success_custom_schema(
-        self, mocker, base_postgres_config
+        self, mocker: MockerFixture, base_postgres_config
     ):
         """Test _create_postgres_engine creates engine successfully with custom schema."""
         mock_create_engine = mocker.patch("app.database.create_engine")
@@ -191,7 +192,9 @@ class TestCreatePostgresEngine:
         mock_connection.execute.assert_called_once()
         mock_connection.commit.assert_called_once()
 
-    def test_create_postgres_engine_with_ca_cert(self, mocker, base_postgres_config):
+    def test_create_postgres_engine_with_ca_cert(
+        self, mocker: MockerFixture, base_postgres_config
+    ):
         """Test _create_postgres_engine with CA certificate path."""
         mock_create_engine = mocker.patch("app.database.create_engine")
         mock_engine = mocker.MagicMock(spec=Engine)
@@ -209,7 +212,7 @@ class TestCreatePostgresEngine:
             assert call_args[1]["connect_args"]["sslrootcert"] == cert_file.name
 
     def test_create_postgres_engine_creation_failure(
-        self, mocker, base_postgres_config
+        self, mocker: MockerFixture, base_postgres_config
     ):
         """Test _create_postgres_engine handles engine creation failure."""
         mock_create_engine = mocker.patch("app.database.create_engine")
@@ -219,7 +222,7 @@ class TestCreatePostgresEngine:
             database._create_postgres_engine(base_postgres_config)
 
     def test_create_postgres_engine_schema_creation_failure(
-        self, mocker, base_postgres_config
+        self, mocker: MockerFixture, base_postgres_config
     ):
         """Test _create_postgres_engine handles schema creation failure."""
         mock_create_engine = mocker.patch("app.database.create_engine")
@@ -240,7 +243,12 @@ class TestInitializeDatabase:
     """Test cases for initialize_database function."""
 
     def _setup_common_mocks(
-        self, *, mocker, mock_sessionmaker, mock_logger, enable_debug=False
+        self,
+        *,
+        mocker: MockerFixture,
+        mock_sessionmaker,
+        mock_logger,
+        enable_debug=False,
     ):
         """Setup common mocks for initialize_database tests."""
         mock_engine = mocker.MagicMock(spec=Engine)
@@ -261,7 +269,7 @@ class TestInitializeDatabase:
 
     def test_initialize_database_sqlite(
         self,
-        mocker,
+        mocker: MockerFixture,
     ):
         """Test initialize_database with SQLite configuration."""
         # Setup mocks
@@ -295,7 +303,7 @@ class TestInitializeDatabase:
 
     def test_initialize_database_postgres(
         self,
-        mocker,
+        mocker: MockerFixture,
         base_postgres_config,
     ):
         """Test initialize_database with PostgreSQL configuration."""
