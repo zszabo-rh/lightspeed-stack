@@ -1,13 +1,16 @@
 # List of source files stored in `src/utils` directory
 
 ## [__init__.py](__init__.py)
-Utils.
+Utility classes and functions for the Lightspeed Stack core service.
 
 ## [checks.py](checks.py)
 Checks that are performed to configuration options.
 
 ## [common.py](common.py)
 Common utilities for the project.
+
+## [connection_decorator.py](connection_decorator.py)
+Decorator that makes sure the object is 'connected' according to it's connected predicate.
 
 ## [endpoints.py](endpoints.py)
 Utility functions for endpoint handlers.
@@ -20,6 +23,12 @@ MCP headers handling.
 
 ## [suid.py](suid.py)
 Session ID utility functions.
+
+## [token_counter.py](token_counter.py)
+Helper classes to count tokens sent and received by the LLM.
+
+## [tool_formatter.py](tool_formatter.py)
+Utility functions for formatting and parsing MCP tool descriptions.
 
 ## [transcripts.py](transcripts.py)
 Transcript handling.
