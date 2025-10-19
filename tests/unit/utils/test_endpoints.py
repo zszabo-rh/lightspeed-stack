@@ -284,7 +284,7 @@ async def test_get_agent_with_conversation_id(
 
 @pytest.mark.asyncio
 async def test_get_agent_with_conversation_id_and_no_agent_in_llama_stack(
-    setup_configuration, prepare_agent_mocks, mocker
+    setup_configuration, prepare_agent_mocks, mocker: MockerFixture
 ):
     """Test get_agent function when conversation_id is provided."""
     mock_client, mock_agent = prepare_agent_mocks
@@ -342,7 +342,7 @@ async def test_get_agent_with_conversation_id_and_no_agent_in_llama_stack(
 
 @pytest.mark.asyncio
 async def test_get_agent_no_conversation_id(
-    setup_configuration, prepare_agent_mocks, mocker
+    setup_configuration, prepare_agent_mocks, mocker: MockerFixture
 ):
     """Test get_agent function when conversation_id is None."""
     mock_client, mock_agent = prepare_agent_mocks
@@ -396,7 +396,7 @@ async def test_get_agent_no_conversation_id(
 
 @pytest.mark.asyncio
 async def test_get_agent_empty_shields(
-    setup_configuration, prepare_agent_mocks, mocker
+    setup_configuration, prepare_agent_mocks, mocker: MockerFixture
 ):
     """Test get_agent function with empty shields list."""
     mock_client, mock_agent = prepare_agent_mocks
@@ -450,7 +450,7 @@ async def test_get_agent_empty_shields(
 
 @pytest.mark.asyncio
 async def test_get_agent_multiple_mcp_servers(
-    setup_configuration, prepare_agent_mocks, mocker
+    setup_configuration, prepare_agent_mocks, mocker: MockerFixture
 ):
     """Test get_agent function with multiple MCP servers."""
     mock_client, mock_agent = prepare_agent_mocks
@@ -506,7 +506,7 @@ async def test_get_agent_multiple_mcp_servers(
 
 @pytest.mark.asyncio
 async def test_get_agent_session_persistence_enabled(
-    setup_configuration, prepare_agent_mocks, mocker
+    setup_configuration, prepare_agent_mocks, mocker: MockerFixture
 ):
     """Test get_agent function ensures session persistence is enabled."""
     mock_client, mock_agent = prepare_agent_mocks
@@ -555,7 +555,7 @@ async def test_get_agent_session_persistence_enabled(
 
 @pytest.mark.asyncio
 async def test_get_agent_no_tools_no_parser(
-    setup_configuration, prepare_agent_mocks, mocker
+    setup_configuration, prepare_agent_mocks, mocker: MockerFixture
 ):
     """Test get_agent function sets tool_parser=None when no_tools=True."""
     mock_client, mock_agent = prepare_agent_mocks
@@ -610,7 +610,7 @@ async def test_get_agent_no_tools_no_parser(
 
 @pytest.mark.asyncio
 async def test_get_agent_no_tools_false_preserves_parser(
-    setup_configuration, prepare_agent_mocks, mocker
+    setup_configuration, prepare_agent_mocks, mocker: MockerFixture
 ):
     """Test get_agent function preserves tool_parser when no_tools=False."""
     mock_client, mock_agent = prepare_agent_mocks
