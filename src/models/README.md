@@ -3,6 +3,9 @@
 ## [__init__.py](__init__.py)
 Pydantic models.
 
+## [cache_entry.py](cache_entry.py)
+Model for conversation history cache entry.
+
 ## [config.py](config.py)
 Model with service configuration.
 
