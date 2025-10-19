@@ -2,6 +2,7 @@
 
 import pytest
 from semver import Version
+from pytest_mock import MockerFixture
 
 from llama_stack_client.types import VersionInfo
 
@@ -17,7 +18,9 @@ from constants import (
 
 
 @pytest.mark.asyncio
-async def test_check_llama_stack_version_minimal_supported_version(mocker):
+async def test_check_llama_stack_version_minimal_supported_version(
+    mocker: MockerFixture,
+):
     """Test the check_llama_stack_version function."""
 
     # mock the Llama Stack client
@@ -31,7 +34,9 @@ async def test_check_llama_stack_version_minimal_supported_version(mocker):
 
 
 @pytest.mark.asyncio
-async def test_check_llama_stack_version_maximal_supported_version(mocker):
+async def test_check_llama_stack_version_maximal_supported_version(
+    mocker: MockerFixture,
+):
     """Test the check_llama_stack_version function."""
 
     # mock the Llama Stack client
@@ -45,7 +50,7 @@ async def test_check_llama_stack_version_maximal_supported_version(mocker):
 
 
 @pytest.mark.asyncio
-async def test_check_llama_stack_version_too_small_version(mocker):
+async def test_check_llama_stack_version_too_small_version(mocker: MockerFixture):
     """Test the check_llama_stack_version function."""
 
     # mock the Llama Stack client

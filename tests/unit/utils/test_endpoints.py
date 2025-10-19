@@ -1,7 +1,10 @@
 """Unit tests for endpoints utility functions."""
 
+# pylint: disable=too-many-lines
+
 import os
 import pytest
+from pytest_mock import MockerFixture
 from fastapi import HTTPException
 from pydantic import AnyUrl
 
@@ -245,7 +248,9 @@ def test_get_profile_prompt_with_enabled_query_system_prompt(
 
 
 @pytest.mark.asyncio
-async def test_get_agent_with_conversation_id(prepare_agent_mocks, mocker):
+async def test_get_agent_with_conversation_id(
+    prepare_agent_mocks, mocker: MockerFixture
+):
     """Test get_agent function when agent exists in llama stack."""
     mock_client, mock_agent = prepare_agent_mocks
     conversation_id = "test_conversation_id"
@@ -664,7 +669,9 @@ async def test_get_agent_no_tools_false_preserves_parser(
 
 
 @pytest.mark.asyncio
-async def test_get_temp_agent_basic_functionality(prepare_agent_mocks, mocker):
+async def test_get_temp_agent_basic_functionality(
+    prepare_agent_mocks, mocker: MockerFixture
+):
     """Test get_temp_agent function creates agent with correct parameters."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_session.return_value = "temp_session_id"
@@ -703,7 +710,9 @@ async def test_get_temp_agent_basic_functionality(prepare_agent_mocks, mocker):
 
 
 @pytest.mark.asyncio
-async def test_get_temp_agent_returns_valid_ids(prepare_agent_mocks, mocker):
+async def test_get_temp_agent_returns_valid_ids(
+    prepare_agent_mocks, mocker: MockerFixture
+):
     """Test get_temp_agent function returns valid agent_id and session_id."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.agent_id = "generated_agent_id"
@@ -736,7 +745,9 @@ async def test_get_temp_agent_returns_valid_ids(prepare_agent_mocks, mocker):
 
 
 @pytest.mark.asyncio
-async def test_get_temp_agent_no_persistence(prepare_agent_mocks, mocker):
+async def test_get_temp_agent_no_persistence(
+    prepare_agent_mocks, mocker: MockerFixture
+):
     """Test get_temp_agent function creates agent without session persistence."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_session.return_value = "temp_session_id"
@@ -818,7 +829,9 @@ def test_get_topic_summary_system_prompt_with_custom_profile():
     assert topic_summary_prompt == prompts.get("topic_summary")
 
 
-def test_get_topic_summary_system_prompt_with_custom_profile_no_topic_summary(mocker):
+def test_get_topic_summary_system_prompt_with_custom_profile_no_topic_summary(
+    mocker: MockerFixture,
+):
     """Test that default topic summary prompt is returned when custom profile has
     no topic_summary prompt.
     """

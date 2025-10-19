@@ -4,6 +4,7 @@
 
 from unittest.mock import Mock
 import pytest
+from pytest_mock import MockerFixture
 from fastapi import HTTPException, status
 
 from app.endpoints.conversations_v2 import (
@@ -71,13 +72,13 @@ def mock_configuration():
 class TestCheckValidConversationId:
     """Test cases for the check_valid_conversation_id function."""
 
-    def test_valid_conversation_id(self, mocker):
+    def test_valid_conversation_id(self, mocker: MockerFixture):
         """Test with a valid conversation ID."""
         mocker.patch("app.endpoints.conversations_v2.check_suid", return_value=True)
         # Should not raise an exception
         check_valid_conversation_id(VALID_CONVERSATION_ID)
 
-    def test_invalid_conversation_id(self, mocker):
+    def test_invalid_conversation_id(self, mocker: MockerFixture):
         """Test with an invalid conversation ID."""
         mocker.patch("app.endpoints.conversations_v2.check_suid", return_value=False)
 
@@ -117,7 +118,7 @@ class TestUpdateConversationEndpoint:
     """Test cases for the PUT /conversations/{conversation_id} endpoint."""
 
     @pytest.mark.asyncio
-    async def test_configuration_not_loaded(self, mocker):
+    async def test_configuration_not_loaded(self, mocker: MockerFixture):
         """Test the endpoint when configuration is not loaded."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations_v2.configuration", None)
@@ -134,7 +135,9 @@ class TestUpdateConversationEndpoint:
         assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
 
     @pytest.mark.asyncio
-    async def test_invalid_conversation_id_format(self, mocker, mock_configuration):
+    async def test_invalid_conversation_id_format(
+        self, mocker: MockerFixture, mock_configuration
+    ):
         """Test the endpoint with an invalid conversation ID format."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations_v2.configuration", mock_configuration)
@@ -153,7 +156,7 @@ class TestUpdateConversationEndpoint:
         assert "Invalid conversation ID format" in exc_info.value.detail["response"]
 
     @pytest.mark.asyncio
-    async def test_conversation_cache_not_configured(self, mocker):
+    async def test_conversation_cache_not_configured(self, mocker: MockerFixture):
         """Test the endpoint when conversation cache is not configured."""
         mock_authorization_resolvers(mocker)
         mock_config = Mock()
@@ -176,7 +179,9 @@ class TestUpdateConversationEndpoint:
         )
 
     @pytest.mark.asyncio
-    async def test_conversation_not_found(self, mocker, mock_configuration):
+    async def test_conversation_not_found(
+        self, mocker: MockerFixture, mock_configuration
+    ):
         """Test the endpoint when conversation does not exist."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations_v2.configuration", mock_configuration)
@@ -196,7 +201,7 @@ class TestUpdateConversationEndpoint:
         assert "Conversation not found" in exc_info.value.detail["response"]
 
     @pytest.mark.asyncio
-    async def test_successful_update(self, mocker, mock_configuration):
+    async def test_successful_update(self, mocker: MockerFixture, mock_configuration):
         """Test successful topic summary update."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations_v2.configuration", mock_configuration)

@@ -3,6 +3,7 @@
 from unittest.mock import Mock
 
 import pytest
+from pytest_mock import MockerFixture
 from llama_stack.providers.datatypes import HealthStatus
 from app.endpoints.health import (
     readiness_probe_get_method,
@@ -14,7 +15,7 @@ from tests.unit.utils.auth_helpers import mock_authorization_resolvers
 
 
 @pytest.mark.asyncio
-async def test_readiness_probe_fails_due_to_unhealthy_providers(mocker):
+async def test_readiness_probe_fails_due_to_unhealthy_providers(mocker: MockerFixture):
     """Test the readiness endpoint handler fails when providers are unhealthy."""
     mock_authorization_resolvers(mocker)
 
@@ -43,7 +44,9 @@ async def test_readiness_probe_fails_due_to_unhealthy_providers(mocker):
 
 
 @pytest.mark.asyncio
-async def test_readiness_probe_success_when_all_providers_healthy(mocker):
+async def test_readiness_probe_success_when_all_providers_healthy(
+    mocker: MockerFixture,
+):
     """Test the readiness endpoint handler succeeds when all providers are healthy."""
     mock_authorization_resolvers(mocker)
 
@@ -78,7 +81,7 @@ async def test_readiness_probe_success_when_all_providers_healthy(mocker):
 
 
 @pytest.mark.asyncio
-async def test_liveness_probe(mocker):
+async def test_liveness_probe(mocker: MockerFixture):
     """Test the liveness endpoint handler."""
     mock_authorization_resolvers(mocker)
 
@@ -111,7 +114,7 @@ class TestProviderHealthStatus:
 class TestGetProvidersHealthStatuses:
     """Test cases for the get_providers_health_statuses function."""
 
-    async def test_get_providers_health_statuses(self, mocker):
+    async def test_get_providers_health_statuses(self, mocker: MockerFixture):
         """Test get_providers_health_statuses with healthy providers."""
         # Mock the imports
         mock_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
@@ -162,7 +165,9 @@ class TestGetProvidersHealthStatuses:
         assert result[2].status == HealthStatus.ERROR.value
         assert result[2].message == "Connection failed"
 
-    async def test_get_providers_health_statuses_connection_error(self, mocker):
+    async def test_get_providers_health_statuses_connection_error(
+        self, mocker: MockerFixture
+    ):
         """Test get_providers_health_statuses when connection fails."""
         # Mock the imports
         mock_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")

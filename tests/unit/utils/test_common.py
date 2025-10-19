@@ -2,6 +2,7 @@
 
 from unittest.mock import Mock, AsyncMock
 from logging import Logger
+from pytest_mock import MockerFixture
 
 import pytest
 
@@ -18,7 +19,7 @@ from models.config import (
 
 
 @pytest.mark.asyncio
-async def test_register_mcp_servers_empty_list(mocker) -> None:
+async def test_register_mcp_servers_empty_list(mocker: MockerFixture) -> None:
     """Test register_mcp_servers with empty MCP servers list."""
     # Mock the logger
     mock_logger = Mock(spec=Logger)
@@ -49,7 +50,9 @@ async def test_register_mcp_servers_empty_list(mocker) -> None:
 
 
 @pytest.mark.asyncio
-async def test_register_mcp_servers_single_server_not_registered(mocker) -> None:
+async def test_register_mcp_servers_single_server_not_registered(
+    mocker: MockerFixture,
+) -> None:
     """Test register_mcp_servers with single MCP server that is not yet registered."""
     # Mock the logger
     mock_logger = Mock(spec=Logger)
@@ -94,7 +97,9 @@ async def test_register_mcp_servers_single_server_not_registered(mocker) -> None
 
 
 @pytest.mark.asyncio
-async def test_register_mcp_servers_single_server_already_registered(mocker) -> None:
+async def test_register_mcp_servers_single_server_already_registered(
+    mocker: MockerFixture,
+) -> None:
     """Test register_mcp_servers with single MCP server that is already registered."""
     # Mock the logger
     mock_logger = Mock(spec=Logger)
@@ -132,7 +137,9 @@ async def test_register_mcp_servers_single_server_already_registered(mocker) -> 
 
 
 @pytest.mark.asyncio
-async def test_register_mcp_servers_multiple_servers_mixed_registration(mocker) -> None:
+async def test_register_mcp_servers_multiple_servers_mixed_registration(
+    mocker: MockerFixture,
+) -> None:
     """Test register_mcp_servers with multiple MCP servers - some registered, some not."""
     # Mock the logger
     mock_logger = Mock(spec=Logger)
@@ -194,7 +201,7 @@ async def test_register_mcp_servers_multiple_servers_mixed_registration(mocker) 
 
 
 @pytest.mark.asyncio
-async def test_register_mcp_servers_with_custom_provider(mocker) -> None:
+async def test_register_mcp_servers_with_custom_provider(mocker: MockerFixture) -> None:
     """Test register_mcp_servers with MCP server using custom provider."""
     # Mock the logger
     mock_logger = Mock(spec=Logger)
@@ -235,7 +242,9 @@ async def test_register_mcp_servers_with_custom_provider(mocker) -> None:
 
 
 @pytest.mark.asyncio
-async def test_register_mcp_servers_async_with_library_client(mocker) -> None:
+async def test_register_mcp_servers_async_with_library_client(
+    mocker: MockerFixture,
+) -> None:
     """
     Test that `register_mcp_servers_async` correctly registers MCP
     servers when using the library client configuration.

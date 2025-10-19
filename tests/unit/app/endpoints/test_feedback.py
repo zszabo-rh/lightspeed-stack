@@ -2,6 +2,7 @@
 
 from fastapi import HTTPException, status
 import pytest
+from pytest_mock import MockerFixture
 
 from configuration import configuration
 from app.endpoints.feedback import (
@@ -27,7 +28,7 @@ def test_is_feedback_disabled():
     assert is_feedback_enabled() is False, "Feedback should be disabled"
 
 
-async def test_assert_feedback_enabled_disabled(mocker):
+async def test_assert_feedback_enabled_disabled(mocker: MockerFixture):
     """Test that assert_feedback_enabled raises HTTPException when feedback is disabled."""
 
     # Simulate feedback being disabled
@@ -40,7 +41,7 @@ async def test_assert_feedback_enabled_disabled(mocker):
     assert exc_info.value.detail == "Forbidden: Feedback is disabled"
 
 
-async def test_assert_feedback_enabled(mocker):
+async def test_assert_feedback_enabled(mocker: MockerFixture):
     """Test that assert_feedback_enabled does not raise an exception when feedback is enabled."""
 
     # Simulate feedback being enabled
@@ -90,7 +91,7 @@ async def test_feedback_endpoint_handler(mocker, feedback_request_data):
 
 
 @pytest.mark.asyncio
-async def test_feedback_endpoint_handler_error(mocker):
+async def test_feedback_endpoint_handler_error(mocker: MockerFixture):
     """Test that feedback_endpoint_handler raises an HTTPException on error."""
     mock_authorization_resolvers(mocker)
 
@@ -197,7 +198,7 @@ def test_store_feedback_on_io_error(mocker, feedback_request_data):
         store_feedback(user_id, feedback_request_data)
 
 
-async def test_update_feedback_status_different(mocker):
+async def test_update_feedback_status_different(mocker: MockerFixture):
     """Test that update_feedback_status returns the correct status with an update."""
     configuration.user_data_collection_configuration.feedback_enabled = True
 
@@ -214,7 +215,7 @@ async def test_update_feedback_status_different(mocker):
     }
 
 
-async def test_update_feedback_status_no_change(mocker):
+async def test_update_feedback_status_no_change(mocker: MockerFixture):
     """Test that update_feedback_status returns the correct status with no update."""
     configuration.user_data_collection_configuration.feedback_enabled = True
 

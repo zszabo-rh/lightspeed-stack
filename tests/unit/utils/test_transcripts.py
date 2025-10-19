@@ -1,6 +1,8 @@
 """Unit tests for functions defined in utils.transcripts module."""
 
 import hashlib
+from pytest_mock import MockerFixture
+
 from configuration import AppConfig
 from models.requests import QueryRequest
 
@@ -11,7 +13,7 @@ from utils.transcripts import (
 from utils.types import ToolCallSummary, TurnSummary
 
 
-def test_construct_transcripts_path(mocker):
+def test_construct_transcripts_path(mocker: MockerFixture):
     """Test the construct_transcripts_path function."""
 
     config_dict = {
@@ -50,7 +52,7 @@ def test_construct_transcripts_path(mocker):
     ), "Path should be constructed correctly"
 
 
-def test_store_transcript(mocker):
+def test_store_transcript(mocker: MockerFixture):
     """Test the store_transcript function."""
 
     mocker.patch("builtins.open", mocker.mock_open())

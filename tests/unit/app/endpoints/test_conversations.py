@@ -4,6 +4,7 @@
 
 from fastapi import HTTPException, status, Request
 import pytest
+from pytest_mock import MockerFixture
 from llama_stack_client import APIConnectionError, NotFoundError
 
 from app.endpoints.conversations import (
@@ -42,7 +43,7 @@ def dummy_request() -> Request:
 
 
 def create_mock_conversation(
-    mocker,
+    mocker: MockerFixture,
     conversation_id,
     created_at,
     last_message_at,
@@ -65,7 +66,7 @@ def create_mock_conversation(
     return mock_conversation
 
 
-def mock_database_session(mocker, query_result=None):
+def mock_database_session(mocker: MockerFixture, query_result=None):
     """Helper function to mock get_session with proper context manager support."""
     mock_session = mocker.Mock()
     if query_result is not None:
@@ -266,7 +267,7 @@ class TestGetConversationEndpoint:
     """Test cases for the GET /conversations/{conversation_id} endpoint."""
 
     @pytest.mark.asyncio
-    async def test_configuration_not_loaded(self, mocker, dummy_request):
+    async def test_configuration_not_loaded(self, mocker: MockerFixture, dummy_request):
         """Test the endpoint when configuration is not loaded."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", None)
@@ -283,7 +284,7 @@ class TestGetConversationEndpoint:
 
     @pytest.mark.asyncio
     async def test_invalid_conversation_id_format(
-        self, mocker, setup_configuration, dummy_request
+        self, mocker: MockerFixture, setup_configuration, dummy_request
     ):
         """Test the endpoint with an invalid conversation ID format."""
         mock_authorization_resolvers(mocker)
@@ -303,7 +304,7 @@ class TestGetConversationEndpoint:
 
     @pytest.mark.asyncio
     async def test_llama_stack_connection_error(
-        self, mocker, setup_configuration, dummy_request
+        self, mocker: MockerFixture, setup_configuration, dummy_request
     ):
         """Test the endpoint when LlamaStack connection fails."""
         mock_authorization_resolvers(mocker)
@@ -333,7 +334,7 @@ class TestGetConversationEndpoint:
 
     @pytest.mark.asyncio
     async def test_llama_stack_not_found_error(
-        self, mocker, setup_configuration, dummy_request
+        self, mocker: MockerFixture, setup_configuration, dummy_request
     ):
         """Test the endpoint when LlamaStack returns NotFoundError."""
         mock_authorization_resolvers(mocker)
@@ -366,7 +367,7 @@ class TestGetConversationEndpoint:
 
     @pytest.mark.asyncio
     async def test_session_retrieve_exception(
-        self, mocker, setup_configuration, dummy_request
+        self, mocker: MockerFixture, setup_configuration, dummy_request
     ):
         """Test the endpoint when session retrieval raises an exception."""
         mock_authorization_resolvers(mocker)
@@ -398,7 +399,11 @@ class TestGetConversationEndpoint:
 
     @pytest.mark.asyncio
     async def test_get_conversation_forbidden(
-        self, mocker, setup_configuration, dummy_request, mock_conversation
+        self,
+        mocker: MockerFixture,
+        setup_configuration,
+        dummy_request,
+        mock_conversation,
     ):
         """Test forbidden access when user lacks permission to read conversation."""
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
@@ -443,7 +448,7 @@ class TestGetConversationEndpoint:
     @pytest.mark.asyncio
     async def test_get_others_conversations_allowed_for_authorized_user(
         self,
-        mocker,
+        mocker: MockerFixture,
         setup_configuration,
         mock_conversation,
         dummy_request,
@@ -486,7 +491,7 @@ class TestGetConversationEndpoint:
     @pytest.mark.asyncio
     async def test_successful_conversation_retrieval(
         self,
-        mocker,
+        mocker: MockerFixture,
         setup_configuration,
         mock_session_data,
         expected_chat_history,
@@ -531,7 +536,7 @@ class TestDeleteConversationEndpoint:
     """Test cases for the DELETE /conversations/{conversation_id} endpoint."""
 
     @pytest.mark.asyncio
-    async def test_configuration_not_loaded(self, mocker, dummy_request):
+    async def test_configuration_not_loaded(self, mocker: MockerFixture, dummy_request):
         """Test the endpoint when configuration is not loaded."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", None)
@@ -548,7 +553,7 @@ class TestDeleteConversationEndpoint:
 
     @pytest.mark.asyncio
     async def test_invalid_conversation_id_format(
-        self, mocker, setup_configuration, dummy_request
+        self, mocker: MockerFixture, setup_configuration, dummy_request
     ):
         """Test the endpoint with an invalid conversation ID format."""
         mock_authorization_resolvers(mocker)
@@ -568,7 +573,7 @@ class TestDeleteConversationEndpoint:
 
     @pytest.mark.asyncio
     async def test_llama_stack_connection_error(
-        self, mocker, setup_configuration, dummy_request
+        self, mocker: MockerFixture, setup_configuration, dummy_request
     ):
         """Test the endpoint when LlamaStack connection fails."""
         mock_authorization_resolvers(mocker)
@@ -597,7 +602,7 @@ class TestDeleteConversationEndpoint:
 
     @pytest.mark.asyncio
     async def test_llama_stack_not_found_error(
-        self, mocker, setup_configuration, dummy_request
+        self, mocker: MockerFixture, setup_configuration, dummy_request
     ):
         """Test the endpoint when LlamaStack returns NotFoundError."""
         mock_authorization_resolvers(mocker)
@@ -630,7 +635,7 @@ class TestDeleteConversationEndpoint:
 
     @pytest.mark.asyncio
     async def test_session_deletion_exception(
-        self, mocker, setup_configuration, dummy_request
+        self, mocker: MockerFixture, setup_configuration, dummy_request
     ):
         """Test the endpoint when session deletion raises an exception."""
         mock_authorization_resolvers(mocker)
@@ -665,7 +670,11 @@ class TestDeleteConversationEndpoint:
 
     @pytest.mark.asyncio
     async def test_delete_conversation_forbidden(
-        self, mocker, setup_configuration, dummy_request, mock_conversation
+        self,
+        mocker: MockerFixture,
+        setup_configuration,
+        dummy_request,
+        mock_conversation,
     ):
         """Test forbidden deletion when user lacks permission to delete conversation."""
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
@@ -709,7 +718,11 @@ class TestDeleteConversationEndpoint:
 
     @pytest.mark.asyncio
     async def test_delete_others_conversations_allowed_for_authorized_user(
-        self, mocker, setup_configuration, mock_conversation, dummy_request
+        self,
+        mocker: MockerFixture,
+        setup_configuration,
+        mock_conversation,
+        dummy_request,
     ):
         """Test allowed deletion of another user's conversation for authorized user."""
         mocker.patch(
@@ -752,7 +765,7 @@ class TestDeleteConversationEndpoint:
 
     @pytest.mark.asyncio
     async def test_successful_conversation_deletion(
-        self, mocker, setup_configuration, dummy_request
+        self, mocker: MockerFixture, setup_configuration, dummy_request
     ):
         """Test successful conversation deletion."""
         mock_authorization_resolvers(mocker)
@@ -794,7 +807,7 @@ class TestGetConversationsListEndpoint:
     """Test cases for the GET /conversations endpoint."""
 
     @pytest.mark.asyncio
-    async def test_configuration_not_loaded(self, mocker, dummy_request):
+    async def test_configuration_not_loaded(self, mocker: MockerFixture, dummy_request):
         """Test the endpoint when configuration is not loaded."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", None)
@@ -809,7 +822,7 @@ class TestGetConversationsListEndpoint:
 
     @pytest.mark.asyncio
     async def test_successful_conversations_list_retrieval(
-        self, mocker, setup_configuration, dummy_request
+        self, mocker: MockerFixture, setup_configuration, dummy_request
     ):
         """Test successful retrieval of conversations list."""
         mock_authorization_resolvers(mocker)
@@ -869,7 +882,7 @@ class TestGetConversationsListEndpoint:
 
     @pytest.mark.asyncio
     async def test_empty_conversations_list(
-        self, mocker, setup_configuration, dummy_request
+        self, mocker: MockerFixture, setup_configuration, dummy_request
     ):
         """Test when user has no conversations."""
         mock_authorization_resolvers(mocker)
@@ -887,7 +900,9 @@ class TestGetConversationsListEndpoint:
         assert response.conversations == []
 
     @pytest.mark.asyncio
-    async def test_database_exception(self, mocker, setup_configuration, dummy_request):
+    async def test_database_exception(
+        self, mocker: MockerFixture, setup_configuration, dummy_request
+    ):
         """Test when database query raises an exception."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
@@ -906,7 +921,7 @@ class TestGetConversationsListEndpoint:
 
     @pytest.mark.asyncio
     async def test_conversations_list_with_none_topic_summary(
-        self, mocker, setup_configuration, dummy_request
+        self, mocker: MockerFixture, setup_configuration, dummy_request
     ):
         """Test conversations list when topic_summary is None."""
         mock_authorization_resolvers(mocker)
@@ -940,7 +955,7 @@ class TestGetConversationsListEndpoint:
 
     @pytest.mark.asyncio
     async def test_conversations_list_with_mixed_topic_summaries(
-        self, mocker, setup_configuration, dummy_request
+        self, mocker: MockerFixture, setup_configuration, dummy_request
     ):
         """Test conversations list with mixed topic_summary values (some None, some not)."""
         mock_authorization_resolvers(mocker)
@@ -1005,7 +1020,7 @@ class TestGetConversationsListEndpoint:
 
     @pytest.mark.asyncio
     async def test_conversations_list_with_empty_topic_summary(
-        self, mocker, setup_configuration, dummy_request
+        self, mocker: MockerFixture, setup_configuration, dummy_request
     ):
         """Test conversations list when topic_summary is an empty string."""
         mock_authorization_resolvers(mocker)
@@ -1039,7 +1054,7 @@ class TestGetConversationsListEndpoint:
 
     @pytest.mark.asyncio
     async def test_conversations_list_topic_summary_field_presence(
-        self, mocker, setup_configuration, dummy_request
+        self, mocker: MockerFixture, setup_configuration, dummy_request
     ):
         """Test that topic_summary field is always present in ConversationDetails objects."""
         mock_authorization_resolvers(mocker)
