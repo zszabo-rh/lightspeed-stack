@@ -10,7 +10,7 @@ Checks that are performed to configuration options.
 Common utilities for the project.
 
 ## [connection_decorator.py](connection_decorator.py)
-Decocator that makes sure the object is 'connected' according to it's connected predicate.
+Decorator that makes sure the object is 'connected' according to it's connected predicate.
 
 ## [endpoints.py](endpoints.py)
 Utility functions for endpoint handlers.

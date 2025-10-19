@@ -1,10 +1,10 @@
-"""Decocator that makes sure the object is 'connected' according to it's connected predicate."""
+"""Decorator that makes sure the object is 'connected' according to it's connected predicate."""
 
 from typing import Any, Callable
 
 
 def connection(f: Callable) -> Callable:
-    """Decocator that makes sure the object is 'connected' according to it's connected predicate.
+    """Make decorator that makes sure the object is connected according to it's connected predicate.
 
     Example:
     ```python
