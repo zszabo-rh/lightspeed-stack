@@ -11,7 +11,7 @@ MOCK_AUTH = ("test-id", "test-user", True, "token")
 
 
 @pytest.mark.asyncio
-async def test_authorized_endpoint():
+async def test_authorized_endpoint() -> None:
     """Test the authorized endpoint handler."""
     response = await authorized_endpoint_handler(auth=MOCK_AUTH)
 
@@ -23,7 +23,7 @@ async def test_authorized_endpoint():
 
 
 @pytest.mark.asyncio
-async def test_authorized_unauthorized():
+async def test_authorized_unauthorized() -> None:
     """Test the authorized endpoint handler behavior under unauthorized conditions.
 
     Note: In real scenarios, FastAPI's dependency injection would prevent the handler
@@ -33,16 +33,20 @@ async def test_authorized_unauthorized():
     # Test scenario 1: None auth data (complete auth failure)
     with pytest.raises(TypeError):
         # This would occur if auth dependency somehow returned None
-        await authorized_endpoint_handler(auth=None)
+        await authorized_endpoint_handler(
+            auth=None  # pyright:ignore[reportArgumentType]
+        )
 
     # Test scenario 2: Invalid auth tuple structure
     with pytest.raises(ValueError):
         # This would occur if auth dependency returned malformed data
-        await authorized_endpoint_handler(auth=("incomplete-auth-data",))
+        await authorized_endpoint_handler(
+            auth=("incomplete-auth-data",)  # pyright:ignore[reportArgumentType]
+        )
 
 
 @pytest.mark.asyncio
-async def test_authorized_dependency_unauthorized():
+async def test_authorized_dependency_unauthorized() -> None:
     """Test that auth dependency raises HTTPException with 403 for unauthorized access."""
     # Test the auth utility function that would be called by auth dependencies
     # This simulates the unauthorized scenario that would prevent the handler from being called
