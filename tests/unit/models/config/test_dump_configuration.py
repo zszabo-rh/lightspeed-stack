@@ -4,6 +4,7 @@ import json
 
 from pathlib import Path
 
+from pydantic import SecretStr
 
 from models.config import (
     ModelContextProtocolServer,
@@ -47,7 +48,7 @@ def test_dump_configuration(tmp_path) -> None:
         llama_stack=LlamaStackConfiguration(
             use_as_library_client=True,
             library_client_config_path="tests/configuration/run.yaml",
-            api_key="whatever",
+            api_key=SecretStr("whatever"),
         ),
         user_data_collection=UserDataCollection(
             feedback_enabled=False, feedback_storage=None
@@ -57,7 +58,7 @@ def test_dump_configuration(tmp_path) -> None:
             postgres=PostgreSQLDatabaseConfiguration(
                 db="lightspeed_stack",
                 user="ls_user",
-                password="ls_password",
+                password=SecretStr("ls_password"),
                 port=5432,
                 ca_cert_path=None,
                 ssl_mode="require",
@@ -325,7 +326,7 @@ def test_dump_configuration_with_quota_limiters(tmp_path) -> None:
         llama_stack=LlamaStackConfiguration(
             use_as_library_client=True,
             library_client_config_path="tests/configuration/run.yaml",
-            api_key="whatever",
+            api_key=SecretStr("whatever"),
         ),
         user_data_collection=UserDataCollection(
             feedback_enabled=False, feedback_storage=None
@@ -335,7 +336,7 @@ def test_dump_configuration_with_quota_limiters(tmp_path) -> None:
             postgres=PostgreSQLDatabaseConfiguration(
                 db="lightspeed_stack",
                 user="ls_user",
-                password="ls_password",
+                password=SecretStr("ls_password"),
                 port=5432,
                 ca_cert_path=None,
                 ssl_mode="require",
