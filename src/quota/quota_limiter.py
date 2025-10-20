@@ -24,7 +24,7 @@ class QuotaLimiter(ABC):
 
     @abstractmethod
     def ensure_available_quota(self, subject_id: str = "") -> None:
-        """Ensure that there's avaiable quota left."""
+        """Ensure that there's available quota left."""
 
     @abstractmethod
     def consume_tokens(

@@ -1,5 +1,7 @@
 """Any exception that can occur when user does not have enough tokens available."""
 
+# pylint: disable=line-too-long)
+
 
 class QuotaExceedError(Exception):
     """Any exception that can occur when user does not have enough tokens available."""
