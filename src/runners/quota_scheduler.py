@@ -4,8 +4,6 @@ from typing import Any
 from threading import Thread
 from time import sleep
 
-import sqlite3
-import psycopg2
 
 import constants
 from log import get_logger
@@ -13,9 +11,10 @@ from models.config import (
     Configuration,
     QuotaHandlersConfiguration,
     QuotaLimiterConfiguration,
-    PostgreSQLDatabaseConfiguration,
-    SQLiteDatabaseConfiguration,
 )
+
+from quota.connect_pg import connect_pg
+from quota.connect_sqlite import connect_sqlite
 
 from quota.sql import (
     CREATE_QUOTA_TABLE,
@@ -209,41 +208,6 @@ def connect(config: QuotaHandlersConfiguration) -> Any:
     if config.sqlite is not None:
         return connect_sqlite(config.sqlite)
     return None
-
-
-def connect_pg(config: PostgreSQLDatabaseConfiguration) -> Any:
-    """Initialize connection to PostgreSQL database."""
-    logger.info("Connecting to PostgreSQL storage")
-    connection = psycopg2.connect(
-        host=config.host,
-        port=config.port,
-        user=config.user,
-        password=config.password.get_secret_value(),
-        dbname=config.db,
-        sslmode=config.ssl_mode,
-        # sslrootcert=config.ca_cert_path,
-        gssencmode=config.gss_encmode,
-    )
-    if connection is not None:
-        connection.autocommit = True
-    return connection
-
-
-def connect_sqlite(config: SQLiteDatabaseConfiguration) -> Any:
-    """Initialize connection to database."""
-    logger.info("Connecting to SQLite storage")
-    # make sure the connection will have known state
-    # even if SQLite is not alive
-    connection = None
-    try:
-        connection = sqlite3.connect(database=config.db_path)
-    except sqlite3.Error as e:
-        if connection is not None:
-            connection.close()
-        logger.exception("Error initializing SQLite cache:\n%s", e)
-        raise
-    connection.autocommit = True
-    return connection
 
 
 def init_tables(connection: Any) -> None:
