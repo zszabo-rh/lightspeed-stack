@@ -43,12 +43,14 @@ from configuration import configuration
 from constants import DEFAULT_RAG_TOOL, MEDIA_TYPE_JSON, MEDIA_TYPE_TEXT
 import metrics
 from metrics.utils import update_llm_token_count_from_turn
+from models.cache_entry import CacheEntry
 from models.config import Action
 from models.database.conversations import UserConversation
 from models.requests import QueryRequest
 from models.responses import ForbiddenResponse, UnauthorizedResponse
 from utils.endpoints import (
     check_configuration_loaded,
+    create_referenced_documents_with_metadata,
     create_rag_chunks_dict,
     get_agent,
     get_system_prompt,
@@ -863,16 +865,28 @@ async def streaming_query_endpoint_handler(  # pylint: disable=too-many-locals,t
                     )
 
             completed_at = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+            referenced_documents = create_referenced_documents_with_metadata(
+                summary, metadata_map
+            )
+
+            cache_entry = CacheEntry(
+                query=query_request.query,
+                response=summary.llm_response,
+                provider=provider_id,
+                model=model_id,
+                started_at=started_at,
+                completed_at=completed_at,
+                referenced_documents=(
+                    referenced_documents if referenced_documents else None
+                ),
+            )
+
             store_conversation_into_cache(
                 configuration,
                 user_id,
                 conversation_id,
-                provider_id,
-                model_id,
-                query_request.query,
-                summary.llm_response,
-                started_at,
-                completed_at,
+                cache_entry,
                 _skip_userid_check,
                 topic_summary,
             )

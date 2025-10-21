@@ -1787,6 +1787,9 @@
                         },
                         "type": "array",
                         "title": "Byok Rag"
+                    },
+                    "quota_handlers": {
+                        "$ref": "#/components/schemas/QuotaHandlersConfiguration"
                     }
                 },
                 "additionalProperties": false,
@@ -3590,6 +3593,103 @@
                     }
                 ]
             },
+            "QuotaHandlersConfiguration": {
+                "properties": {
+                    "sqlite": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/SQLiteDatabaseConfiguration"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "postgres": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/PostgreSQLDatabaseConfiguration"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "limiters": {
+                        "items": {
+                            "$ref": "#/components/schemas/QuotaLimiterConfiguration"
+                        },
+                        "type": "array",
+                        "title": "Limiters"
+                    },
+                    "scheduler": {
+                        "$ref": "#/components/schemas/QuotaSchedulerConfiguration"
+                    },
+                    "enable_token_history": {
+                        "type": "boolean",
+                        "title": "Enable Token History",
+                        "default": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "QuotaHandlersConfiguration",
+                "description": "Quota limiter configuration."
+            },
+            "QuotaLimiterConfiguration": {
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "user_limiter",
+                            "cluster_limiter"
+                        ],
+                        "title": "Type"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "initial_quota": {
+                        "type": "integer",
+                        "minimum": 0.0,
+                        "title": "Initial Quota"
+                    },
+                    "quota_increase": {
+                        "type": "integer",
+                        "minimum": 0.0,
+                        "title": "Quota Increase"
+                    },
+                    "period": {
+                        "type": "string",
+                        "title": "Period"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                    "type",
+                    "name",
+                    "initial_quota",
+                    "quota_increase",
+                    "period"
+                ],
+                "title": "QuotaLimiterConfiguration",
+                "description": "Configuration for one quota limiter."
+            },
+            "QuotaSchedulerConfiguration": {
+                "properties": {
+                    "period": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0.0,
+                        "title": "Period",
+                        "default": 1
+                    }
+                },
+                "type": "object",
+                "title": "QuotaSchedulerConfiguration",
+                "description": "Quota scheduler configuration."
+            },
             "RAGChunk": {
                 "properties": {
                     "content": {
@@ -3691,15 +3791,19 @@
                         "description": "URL of the referenced document"
                     },
                     "doc_title": {
-                        "type": "string",
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
                         "title": "Doc Title",
                         "description": "Title of the referenced document"
                     }
                 },
                 "type": "object",
-                "required": [
-                    "doc_title"
-                ],
                 "title": "ReferencedDocument",
                 "description": "Model representing a document referenced in generating a response.\n\nAttributes:\n    doc_url: Url to the referenced doc.\n    doc_title: Title of the referenced doc."
             },
