@@ -661,6 +661,8 @@ async def test_retrieve_response_four_available_shields(prepare_agent_mocks, moc
         ["output_shield3", "inout_shield4"],  # available_output_shields
         None,  # conversation_id
         False,  # no_tools
+        {},  # mcp_headers
+        mocker.ANY,  # agent_context_preloading
     )
 
     mock_agent.create_turn.assert_called_once_with(
@@ -1179,6 +1181,11 @@ async def test_retrieve_response_with_mcp_servers(prepare_agent_mocks, mocker):
         [],  # available_output_shields
         None,  # conversation_id
         False,  # no_tools
+        {
+            "http://localhost:3000": {"Authorization": "Bearer test_token_123"},
+            "https://git.example.com/mcp": {"Authorization": "Bearer test_token_123"},
+        },  # mcp_headers
+        mocker.ANY,  # agent_context_preloading
     )
 
     # Check that the agent's extra_headers property was set correctly
@@ -1251,6 +1258,8 @@ async def test_retrieve_response_with_mcp_servers_empty_token(
         [],  # available_output_shields
         None,  # conversation_id
         False,  # no_tools
+        {},  # mcp_headers (empty because token is empty)
+        mocker.ANY,  # agent_context_preloading
     )
 
     # Check that the agent's extra_headers property was set correctly (empty mcp_headers)
@@ -1326,16 +1335,6 @@ async def test_retrieve_response_with_mcp_servers_and_mcp_headers(mocker):
     assert conversation_id == "00000000-0000-0000-0000-000000000000"
 
     # Verify get_agent was called with the correct parameters
-    mock_get_agent.assert_called_once_with(
-        mock_client,
-        model_id,
-        mocker.ANY,  # system_prompt
-        [],  # available_input_shields
-        [],  # available_output_shields
-        None,  # conversation_id
-        False,  # no_tools
-    )
-
     expected_mcp_headers = {
         "http://localhost:3000": {"Authorization": "Bearer test_token_123"},
         "https://git.example.com/mcp": {"Authorization": "Bearer test_token_456"},
@@ -1344,6 +1343,18 @@ async def test_retrieve_response_with_mcp_servers_and_mcp_headers(mocker):
         },
         # we do not put "unknown-mcp-server" url as it's unknown to lightspeed-stack
     }
+    
+    mock_get_agent.assert_called_once_with(
+        mock_client,
+        model_id,
+        mocker.ANY,  # system_prompt
+        [],  # available_input_shields
+        [],  # available_output_shields
+        None,  # conversation_id
+        False,  # no_tools
+        expected_mcp_headers,  # mcp_headers
+        mocker.ANY,  # agent_context_preloading
+    )
     # Check that the agent's extra_headers property was set correctly
     expected_extra_headers = {
         "X-LlamaStack-Provider-Data": json.dumps({"mcp_headers": expected_mcp_headers})

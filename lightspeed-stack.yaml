@@ -23,3 +23,27 @@ user_data_collection:
 
 authentication:
   module: "noop"
+
+# Agent context preloading configuration
+# When enabled, configured MCP tools are called once when a new session is created
+# to provide initial context to the agent about available resources
+agent_context_preloading:
+  enabled: false  # Set to true to enable context preloading
+  intro_message: "Here is contextual information for this session:"
+  tools:
+    # Example tool configuration:
+    # Note: mcp_server must match the "name" field in the mcp_servers configuration
+    - tool_name: "list_clusters"
+      mcp_server: "mcp::assisted"  # Match this with your MCP server name
+      label: "Your Clusters"  # Optional: custom label for display
+      empty_message: "You currently have no clusters."  # Optional: message when result is empty
+    
+    # Additional examples (commented out):
+    # - tool_name: "list_versions"
+    #   mcp_server: "mcp::assisted"
+    #   label: "Available Versions"
+    #   empty_message: "No versions available."
+    #
+    # - tool_name: "list_operator_bundles"
+    #   mcp_server: "mcp::assisted"
+    #   label: "Available Operator Bundles"

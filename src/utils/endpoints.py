@@ -12,13 +12,13 @@ from models.cache_entry import CacheEntry
 from models.requests import QueryRequest
 from models.responses import ReferencedDocument
 from models.database.conversations import UserConversation
-from models.config import Action
+from models.config import Action, AgentContextPreloading
 from app.database import get_session
 from configuration import AppConfig
 from utils.suid import get_suid
 from utils.types import TurnSummary
 from utils.types import GraniteToolParser
-
+from utils.context_preloader import execute_preloading_tools
 
 from log import get_logger
 
@@ -273,6 +273,8 @@ async def get_agent(
     available_output_shields: list[str],
     conversation_id: str | None,
     no_tools: bool = False,
+    mcp_headers: dict[str, dict[str, str]] | None = None,
+    context_preloading_config: AgentContextPreloading | None = None,
 ) -> tuple[AsyncAgent, str, str]:
     """
     Create or reuse an AsyncAgent with session persistence.
@@ -356,8 +358,77 @@ async def get_agent(
         logger.debug("New conversation ID: %s", conversation_id)
         session_id = await agent.create_session(get_suid())
         logger.debug("New session ID: %s", session_id)
+        
+        # Inject initial context for new sessions if enabled
+        if context_preloading_config and context_preloading_config.enabled:
+            await inject_initial_context(
+                client,
+                agent,
+                session_id,
+                context_preloading_config,
+                mcp_headers or {},
+            )
 
     return agent, conversation_id, session_id
+
+
+async def inject_initial_context(
+    client: AsyncLlamaStackClient,
+    agent: AsyncAgent,
+    session_id: str,
+    config: AgentContextPreloading,
+    mcp_headers: dict[str, dict[str, str]],
+) -> None:
+    """Create hidden turn with preloaded context.
+    
+    This function executes configured MCP tools to gather context and creates
+    a synthetic assistant turn in the conversation history. This turn is marked
+    with a special prefix so it can be filtered out from user-facing responses.
+    
+    Args:
+        client: AsyncLlamaStackClient instance for tool execution.
+        agent: The agent instance to inject context into.
+        session_id: The session ID for the new conversation.
+        config: AgentContextPreloading configuration.
+        mcp_headers: MCP server authentication headers.
+    """
+    try:
+        logger.info("Injecting initial context for session %s", session_id)
+        
+        # Execute preloading tools and get formatted context
+        context_message = await execute_preloading_tools(client, config, mcp_headers)
+        
+        if not context_message:
+            logger.warning("No context generated from preloading tools")
+            return
+        
+        # Create a synthetic turn with the context
+        # We use a system-style message that will be stored in turn history
+        # but can be filtered out from user-facing responses
+        from llama_stack_client.types import UserMessage
+        
+        # Create a turn with the context as a user message
+        # The agent will respond, creating the context turn
+        response = await agent.create_turn(
+            messages=[UserMessage(role="user", content=context_message)],
+            session_id=session_id,
+            stream=False,
+        )
+        
+        logger.info("Successfully injected initial context for session %s", session_id)
+        logger.info("Context turn response: %s", response)
+        # Log the assistant's response to the context for debugging
+        if hasattr(response, 'output_message') and hasattr(response.output_message, 'content'):
+            logger.info("Assistant acknowledged context with: %s", response.output_message.content)
+        
+    except Exception as e:
+        # Log error but don't fail session creation
+        logger.error(
+            "Failed to inject initial context for session %s: %s",
+            session_id,
+            str(e),
+            exc_info=True,
+        )
 
 
 async def get_temp_agent(

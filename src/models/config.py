@@ -593,6 +593,23 @@ class QuotaHandlersConfiguration(ConfigurationBase):
     enable_token_history: bool = False
 
 
+class ContextPreloadingTool(ConfigurationBase):
+    """Configuration for a single context preloading tool."""
+
+    tool_name: str
+    mcp_server: str
+    label: Optional[str] = None  # Optional label for the tool output
+    empty_message: Optional[str] = None  # Message to display when result is empty
+
+
+class AgentContextPreloading(ConfigurationBase):
+    """Agent context preloading configuration."""
+
+    enabled: bool = False
+    intro_message: str = "Here is contextual information for this session:"
+    tools: list[ContextPreloadingTool] = Field(default_factory=list)
+
+
 class Configuration(ConfigurationBase):
     """Global service configuration."""
 
@@ -614,6 +631,9 @@ class Configuration(ConfigurationBase):
     byok_rag: list[ByokRag] = Field(default_factory=list)
     quota_handlers: QuotaHandlersConfiguration = Field(
         default_factory=QuotaHandlersConfiguration
+    )
+    agent_context_preloading: AgentContextPreloading = Field(
+        default_factory=AgentContextPreloading
     )
 
     def dump(self, filename: str = "configuration.json") -> None:

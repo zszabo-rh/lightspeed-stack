@@ -9,6 +9,7 @@ from llama_stack.core.stack import replace_env_vars
 
 import yaml
 from models.config import (
+    AgentContextPreloading,
     AuthorizationConfiguration,
     Configuration,
     Customization,
@@ -151,6 +152,13 @@ class AppConfig:
                 self._configuration.conversation_cache
             )
         return self._conversation_cache
+
+    @property
+    def agent_context_preloading(self) -> AgentContextPreloading:
+        """Return agent context preloading configuration."""
+        if self._configuration is None:
+            raise LogicError("logic error: configuration is not loaded")
+        return self._configuration.agent_context_preloading
 
 
 configuration: AppConfig = AppConfig()
