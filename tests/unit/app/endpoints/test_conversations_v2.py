@@ -2,9 +2,8 @@
 
 """Unit tests for the /conversations REST API endpoints."""
 
-from unittest.mock import Mock
-import pytest
 from pytest_mock import MockerFixture
+import pytest
 from fastapi import HTTPException, status
 
 from app.endpoints.conversations_v2 import (
@@ -123,10 +122,10 @@ class TestTransformChatMessage:
 
 
 @pytest.fixture
-def mock_configuration():
+def mock_configuration(mocker: MockerFixture):
     """Mock configuration with conversation cache."""
-    mock_config = Mock()
-    mock_cache = Mock()
+    mock_config = mocker.Mock()
+    mock_cache = mocker.Mock()
     mock_config.conversation_cache = mock_cache
     return mock_config
 
@@ -157,7 +156,7 @@ class TestCheckConversationExistence:
     def test_conversation_exists(self, mocker, mock_configuration):
         """Test when conversation exists."""
         mock_configuration.conversation_cache.list.return_value = [
-            Mock(conversation_id=VALID_CONVERSATION_ID)
+            mocker.Mock(conversation_id=VALID_CONVERSATION_ID)
         ]
         mocker.patch("app.endpoints.conversations_v2.configuration", mock_configuration)
 
@@ -221,7 +220,7 @@ class TestUpdateConversationEndpoint:
     async def test_conversation_cache_not_configured(self, mocker: MockerFixture):
         """Test the endpoint when conversation cache is not configured."""
         mock_authorization_resolvers(mocker)
-        mock_config = Mock()
+        mock_config = mocker.Mock()
         mock_config.conversation_cache = None
         mocker.patch("app.endpoints.conversations_v2.configuration", mock_config)
         mocker.patch("app.endpoints.conversations_v2.check_suid", return_value=True)
@@ -269,7 +268,7 @@ class TestUpdateConversationEndpoint:
         mocker.patch("app.endpoints.conversations_v2.configuration", mock_configuration)
         mocker.patch("app.endpoints.conversations_v2.check_suid", return_value=True)
         mock_configuration.conversation_cache.list.return_value = [
-            Mock(conversation_id=VALID_CONVERSATION_ID)
+            mocker.Mock(conversation_id=VALID_CONVERSATION_ID)
         ]
 
         update_request = ConversationUpdateRequest(topic_summary="New topic summary")

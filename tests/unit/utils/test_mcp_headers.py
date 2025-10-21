@@ -1,6 +1,6 @@
 """Unit tests for MCP headers utility functions."""
 
-from unittest.mock import Mock
+from pytest_mock import MockerFixture
 import pytest
 
 from fastapi import Request
@@ -8,9 +8,9 @@ from fastapi import Request
 from utils import mcp_headers
 
 
-def test_extract_mcp_headers_empty_headers() -> None:
+def test_extract_mcp_headers_empty_headers(mocker: MockerFixture) -> None:
     """Test the extract_mcp_headers function for request without any headers."""
-    request = Mock(spec=Request)
+    request = mocker.Mock(spec=Request)
     # no headers
     request.headers = {}
 
@@ -18,9 +18,9 @@ def test_extract_mcp_headers_empty_headers() -> None:
     assert result == {}
 
 
-def test_extract_mcp_headers_mcp_headers_empty() -> None:
+def test_extract_mcp_headers_mcp_headers_empty(mocker: MockerFixture) -> None:
     """Test the extract_mcp_headers function for request with empty MCP-HEADERS header."""
-    request = Mock(spec=Request)
+    request = mocker.Mock(spec=Request)
     # empty MCP-HEADERS
     request.headers = {"MCP-HEADERS": ""}
 
@@ -29,9 +29,9 @@ def test_extract_mcp_headers_mcp_headers_empty() -> None:
     assert result == {}
 
 
-def test_extract_mcp_headers_valid_mcp_header() -> None:
+def test_extract_mcp_headers_valid_mcp_header(mocker: MockerFixture) -> None:
     """Test the extract_mcp_headers function for request with valid MCP-HEADERS header."""
-    request = Mock(spec=Request)
+    request = mocker.Mock(spec=Request)
     # valid MCP-HEADERS
     request.headers = {"MCP-HEADERS": '{"http://www.redhat.com": {"auth": "token123"}}'}
 
@@ -41,9 +41,9 @@ def test_extract_mcp_headers_valid_mcp_header() -> None:
     assert result == expected
 
 
-def test_extract_mcp_headers_valid_mcp_headers() -> None:
+def test_extract_mcp_headers_valid_mcp_headers(mocker: MockerFixture) -> None:
     """Test the extract_mcp_headers function for request with valid MCP-HEADERS headers."""
-    request = Mock(spec=Request)
+    request = mocker.Mock(spec=Request)
     # valid MCP-HEADERS
     header1 = '"http://www.redhat.com": {"auth": "token123"}'
     header2 = '"http://www.example.com": {"auth": "tokenXYZ"}'
@@ -59,9 +59,9 @@ def test_extract_mcp_headers_valid_mcp_headers() -> None:
     assert result == expected
 
 
-def test_extract_mcp_headers_invalid_json_mcp_header() -> None:
+def test_extract_mcp_headers_invalid_json_mcp_header(mocker: MockerFixture) -> None:
     """Test the extract_mcp_headers function for request with invalid MCP-HEADERS header."""
-    request = Mock(spec=Request)
+    request = mocker.Mock(spec=Request)
     # invalid MCP-HEADERS - not a JSON
     request.headers = {"MCP-HEADERS": "this-is-invalid"}
 
@@ -70,9 +70,9 @@ def test_extract_mcp_headers_invalid_json_mcp_header() -> None:
     assert result == {}
 
 
-def test_extract_mcp_headers_invalid_mcp_header_type() -> None:
+def test_extract_mcp_headers_invalid_mcp_header_type(mocker: MockerFixture) -> None:
     """Test the extract_mcp_headers function for request with invalid MCP-HEADERS header type."""
-    request = Mock(spec=Request)
+    request = mocker.Mock(spec=Request)
     # invalid MCP-HEADERS - not a dict
     request.headers = {"MCP-HEADERS": "[]"}
 
@@ -81,9 +81,11 @@ def test_extract_mcp_headers_invalid_mcp_header_type() -> None:
     assert result == {}
 
 
-def test_extract_mcp_headers_invalid_mcp_header_null_value() -> None:
+def test_extract_mcp_headers_invalid_mcp_header_null_value(
+    mocker: MockerFixture,
+) -> None:
     """Test the extract_mcp_headers function for request with invalid MCP-HEADERS header type."""
-    request = Mock(spec=Request)
+    request = mocker.Mock(spec=Request)
     # invalid MCP-HEADERS - not a dict
     request.headers = {"MCP-HEADERS": "null"}
 
@@ -93,9 +95,9 @@ def test_extract_mcp_headers_invalid_mcp_header_null_value() -> None:
 
 
 @pytest.mark.asyncio
-async def test_mcp_headers_dependency_empty_headers() -> None:
+async def test_mcp_headers_dependency_empty_headers(mocker: MockerFixture) -> None:
     """Test the mcp_headers_dependency function for request with empty MCP-HEADERS header."""
-    request = Mock(spec=Request)
+    request = mocker.Mock(spec=Request)
     # empty MCP-HEADERS
     request.headers = {"MCP-HEADERS": ""}
 
@@ -105,9 +107,9 @@ async def test_mcp_headers_dependency_empty_headers() -> None:
 
 
 @pytest.mark.asyncio
-async def test_mcp_headers_dependency_mcp_headers_empty() -> None:
+async def test_mcp_headers_dependency_mcp_headers_empty(mocker: MockerFixture) -> None:
     """Test the mcp_headers_dependency function for request with empty MCP-HEADERS header."""
-    request = Mock(spec=Request)
+    request = mocker.Mock(spec=Request)
     # empty MCP-HEADERS
     request.headers = {"MCP-HEADERS": ""}
 
@@ -117,9 +119,9 @@ async def test_mcp_headers_dependency_mcp_headers_empty() -> None:
 
 
 @pytest.mark.asyncio
-async def test_mcp_headers_dependency_valid_mcp_header() -> None:
+async def test_mcp_headers_dependency_valid_mcp_header(mocker: MockerFixture) -> None:
     """Test the mcp_headers_dependency function for request with valid MCP-HEADERS header."""
-    request = Mock(spec=Request)
+    request = mocker.Mock(spec=Request)
     # valid MCP-HEADERS
     request.headers = {"MCP-HEADERS": '{"http://www.redhat.com": {"auth": "token123"}}'}
 
@@ -130,9 +132,9 @@ async def test_mcp_headers_dependency_valid_mcp_header() -> None:
 
 
 @pytest.mark.asyncio
-async def test_mcp_headers_dependency_valid_mcp_headers() -> None:
+async def test_mcp_headers_dependency_valid_mcp_headers(mocker: MockerFixture) -> None:
     """Test the mcp_headers_dependency function for request with valid MCP-HEADERS headers."""
-    request = Mock(spec=Request)
+    request = mocker.Mock(spec=Request)
     # valid MCP-HEADERS
     header1 = '"http://www.redhat.com": {"auth": "token123"}'
     header2 = '"http://www.example.com": {"auth": "tokenXYZ"}'
@@ -149,9 +151,11 @@ async def test_mcp_headers_dependency_valid_mcp_headers() -> None:
 
 
 @pytest.mark.asyncio
-async def test_mcp_headers_dependency_invalid_json_mcp_header() -> None:
+async def test_mcp_headers_dependency_invalid_json_mcp_header(
+    mocker: MockerFixture,
+) -> None:
     """Test the mcp_headers_dependency function for request with invalid MCP-HEADERS header."""
-    request = Mock(spec=Request)
+    request = mocker.Mock(spec=Request)
     # invalid MCP-HEADERS - not a JSON
     request.headers = {"MCP-HEADERS": "this-is-invalid"}
 
@@ -161,9 +165,11 @@ async def test_mcp_headers_dependency_invalid_json_mcp_header() -> None:
 
 
 @pytest.mark.asyncio
-async def test_mcp_headers_dependency_invalid_mcp_header_type() -> None:
+async def test_mcp_headers_dependency_invalid_mcp_header_type(
+    mocker: MockerFixture,
+) -> None:
     """Test the mcp_headers_dependency function for request with invalid MCP-HEADERS header type."""
-    request = Mock(spec=Request)
+    request = mocker.Mock(spec=Request)
     # invalid MCP-HEADERS - not a dict
     request.headers = {"MCP-HEADERS": "[]"}
 
@@ -173,9 +179,11 @@ async def test_mcp_headers_dependency_invalid_mcp_header_type() -> None:
 
 
 @pytest.mark.asyncio
-async def test_mcp_headers_dependency_invalid_mcp_header_null_value() -> None:
+async def test_mcp_headers_dependency_invalid_mcp_header_null_value(
+    mocker: MockerFixture,
+) -> None:
     """Test the mcp_headers_dependency function for request with invalid MCP-HEADERS header type."""
-    request = Mock(spec=Request)
+    request = mocker.Mock(spec=Request)
     # invalid MCP-HEADERS - not a dict
     request.headers = {"MCP-HEADERS": "null"}
 

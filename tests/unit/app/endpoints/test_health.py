@@ -1,9 +1,8 @@
 """Unit tests for the /health REST API endpoint."""
 
-from unittest.mock import Mock
+from pytest_mock import MockerFixture
 
 import pytest
-from pytest_mock import MockerFixture
 from llama_stack.providers.datatypes import HealthStatus
 from app.endpoints.health import (
     readiness_probe_get_method,
@@ -32,7 +31,7 @@ async def test_readiness_probe_fails_due_to_unhealthy_providers(mocker: MockerFi
     ]
 
     # Mock the Response object and auth
-    mock_response = Mock()
+    mock_response = mocker.Mock()
     auth = ("test_user", "token", {})
 
     response = await readiness_probe_get_method(auth=auth, response=mock_response)
@@ -68,7 +67,7 @@ async def test_readiness_probe_success_when_all_providers_healthy(
     ]
 
     # Mock the Response object and auth
-    mock_response = Mock()
+    mock_response = mocker.Mock()
     auth = ("test_user", "token", {})
 
     response = await readiness_probe_get_method(auth=auth, response=mock_response)
