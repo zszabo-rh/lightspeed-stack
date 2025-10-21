@@ -17,10 +17,9 @@ def connect_sqlite(config: SQLiteDatabaseConfiguration) -> Any:
     connection = None
     try:
         connection = sqlite3.connect(database=config.db_path)
-    except sqlite3.Error as e:
         if connection is not None:
-            connection.close()
+            connection.autocommit = True
+        return connection
+    except sqlite3.Error as e:
         logger.exception("Error initializing SQLite cache:\n%s", e)
         raise
-    connection.autocommit = True
-    return connection
