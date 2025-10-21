@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 from typing import Optional
 
+import sqlite3
 import psycopg2
 
 from log import get_logger
@@ -75,11 +76,18 @@ class QuotaLimiter(ABC):
         if self.connection is None:
             logger.warning("Not connected, need to reconnect later")
             return False
+        cursor = None
         try:
-            with self.connection.cursor() as cursor:
-                cursor.execute("SELECT 1")
+            cursor = self.connection.cursor()
+            cursor.execute("SELECT 1")
             logger.info("Connection to storage is ok")
             return True
-        except psycopg2.OperationalError as e:
+        except (psycopg2.OperationalError, sqlite3.Error) as e:
             logger.error("Disconnected from storage: %s", e)
             return False
+        finally:
+            if cursor is not None:
+                try:
+                    cursor.close()
+                except Exception:  # pylint: disable=broad-exception-caught
+                    logger.warning("Unable to close cursor")

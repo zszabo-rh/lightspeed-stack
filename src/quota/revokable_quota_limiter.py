@@ -10,9 +10,13 @@ from quota.quota_limiter import QuotaLimiter
 from quota.sql import (
     CREATE_QUOTA_TABLE,
     UPDATE_AVAILABLE_QUOTA_PG,
+    UPDATE_AVAILABLE_QUOTA_SQLITE,
     SELECT_QUOTA_PG,
+    SELECT_QUOTA_SQLITE,
     SET_AVAILABLE_QUOTA_PG,
+    SET_AVAILABLE_QUOTA_SQLITE,
     INIT_QUOTA_PG,
+    INIT_QUOTA_SQLITE,
 )
 
 logger = get_logger(__name__)
@@ -40,46 +44,80 @@ class RevokableQuotaLimiter(QuotaLimiter):
         """Retrieve available quota for given subject."""
         if self.subject_type == "c":
             subject_id = ""
-        with self.connection.cursor() as cursor:
-            cursor.execute(
-                SELECT_QUOTA_PG,
-                (subject_id, self.subject_type),
-            )
-            value = cursor.fetchone()
-            if value is None:
-                self._init_quota(subject_id)
-                return self.initial_quota
-            return value[0]
+        if self.sqlite_connection_config is not None:
+            return self._read_available_quota(SELECT_QUOTA_SQLITE, subject_id)
+        if self.postgres_connection_config is not None:
+            return self._read_available_quota(SELECT_QUOTA_PG, subject_id)
+        # default value is used only if quota limiter database is not setup
+        return 0
+
+    def _read_available_quota(self, query_statement: str, subject_id: str) -> int:
+        """Read available quota from selected database."""
+        # it is not possible to use context manager there, because SQLite does
+        # not support it
+        cursor = self.connection.cursor()
+        cursor.execute(
+            query_statement,
+            (subject_id, self.subject_type),
+        )
+        value = cursor.fetchone()
+        if value is None:
+            self._init_quota(subject_id)
+            return self.initial_quota
+        cursor.close()
+        return value[0]
 
     @connection
     def revoke_quota(self, subject_id: str = "") -> None:
         """Revoke quota for given subject."""
         if self.subject_type == "c":
             subject_id = ""
+
+        if self.postgres_connection_config is not None:
+            self._revoke_quota(SET_AVAILABLE_QUOTA_PG, subject_id)
+            return
+        if self.sqlite_connection_config is not None:
+            self._revoke_quota(SET_AVAILABLE_QUOTA_SQLITE, subject_id)
+            return
+
+    def _revoke_quota(self, set_statement: str, subject_id: str) -> None:
+        """Revoke quota in given database."""
         # timestamp to be used
         revoked_at = datetime.now()
 
-        with self.connection.cursor() as cursor:
-            cursor.execute(
-                SET_AVAILABLE_QUOTA_PG,
-                (self.initial_quota, revoked_at, subject_id, self.subject_type),
-            )
-            self.connection.commit()
+        cursor = self.connection.cursor()
+        cursor.execute(
+            set_statement,
+            (self.initial_quota, revoked_at, subject_id, self.subject_type),
+        )
+        self.connection.commit()
+        cursor.close()
 
     @connection
     def increase_quota(self, subject_id: str = "") -> None:
         """Increase quota for given subject."""
         if self.subject_type == "c":
             subject_id = ""
+
+        if self.postgres_connection_config is not None:
+            self._increase_quota(UPDATE_AVAILABLE_QUOTA_PG, subject_id)
+            return
+
+        if self.sqlite_connection_config is not None:
+            self._increase_quota(UPDATE_AVAILABLE_QUOTA_SQLITE, subject_id)
+            return
+
+    def _increase_quota(self, set_statement: str, subject_id: str) -> None:
+        """Increase quota in given database."""
         # timestamp to be used
         updated_at = datetime.now()
 
-        with self.connection.cursor() as cursor:
-            cursor.execute(
-                UPDATE_AVAILABLE_QUOTA_PG,
-                (self.increase_by, updated_at, subject_id, self.subject_type),
-            )
-            self.connection.commit()
+        cursor = self.connection.cursor()
+        cursor.execute(
+            set_statement,
+            (self.increase_by, updated_at, subject_id, self.subject_type),
+        )
+        self.connection.commit()
 
     def ensure_available_quota(self, subject_id: str = "") -> None:
         """Ensure that there's avaiable quota left."""
@@ -109,17 +147,39 @@ class RevokableQuotaLimiter(QuotaLimiter):
             output_tokens,
             subject_id,
         )
+
+        if self.sqlite_connection_config is not None:
+            self._consume_tokens(
+                UPDATE_AVAILABLE_QUOTA_SQLITE, input_tokens, output_tokens, subject_id
+            )
+            return
+
+        if self.postgres_connection_config is not None:
+            self._consume_tokens(
+                UPDATE_AVAILABLE_QUOTA_PG, input_tokens, output_tokens, subject_id
+            )
+            return
+
+    def _consume_tokens(
+        self,
+        update_statement: str,
+        input_tokens: int,
+        output_tokens: int,
+        subject_id: str,
+    ) -> None:
+        """Consume tokens from selected database."""
+        # timestamp to be used
+        updated_at = datetime.now()
+
         to_be_consumed = input_tokens + output_tokens
 
-        with self.connection.cursor() as cursor:
-            # timestamp to be used
-            updated_at = datetime.now()
-
-            cursor.execute(
-                UPDATE_AVAILABLE_QUOTA_PG,
-                (-to_be_consumed, updated_at, subject_id, self.subject_type),
-            )
-            self.connection.commit()
+        cursor = self.connection.cursor()
+        cursor.execute(
+            update_statement,
+            (-to_be_consumed, updated_at, subject_id, self.subject_type),
+        )
+        self.connection.commit()
+        cursor.close()
 
     def _initialize_tables(self) -> None:
         """Initialize tables used by quota limiter."""
@@ -134,9 +194,10 @@ class RevokableQuotaLimiter(QuotaLimiter):
         # timestamp to be used
         revoked_at = datetime.now()
 
-        with self.connection.cursor() as cursor:
+        if self.sqlite_connection_config is not None:
+            cursor = self.connection.cursor()
             cursor.execute(
-                INIT_QUOTA_PG,
+                INIT_QUOTA_SQLITE,
                 (
                     subject_id,
                     self.subject_type,
@@ -145,4 +206,18 @@ class RevokableQuotaLimiter(QuotaLimiter):
                     revoked_at,
                 ),
             )
+            cursor.close()
             self.connection.commit()
+        if self.postgres_connection_config is not None:
+            with self.connection.cursor() as cursor:
+                cursor.execute(
+                    INIT_QUOTA_PG,
+                    (
+                        subject_id,
+                        self.subject_type,
+                        self.initial_quota,
+                        self.initial_quota,
+                        revoked_at,
+                    ),
+                )
+                self.connection.commit()
