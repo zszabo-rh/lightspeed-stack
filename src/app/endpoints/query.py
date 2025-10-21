@@ -640,6 +640,20 @@ async def retrieve_response(  # pylint: disable=too-many-locals,too-many-branche
     if query_request.attachments:
         validate_attachments_metadata(query_request.attachments)
 
+    # Prepare MCP headers before agent creation for context preloading
+    if query_request.no_tools:
+        prepared_mcp_headers = {}
+    else:
+        # preserve compatibility when mcp_headers is not provided
+        if mcp_headers is None:
+            mcp_headers = {}
+        prepared_mcp_headers = handle_mcp_headers_with_toolgroups(mcp_headers, configuration)
+        if not prepared_mcp_headers and token:
+            for mcp_server in configuration.mcp_servers:
+                prepared_mcp_headers[mcp_server.url] = {
+                    "Authorization": f"Bearer {token}",
+                }
+
     agent, conversation_id, session_id = await get_agent(
         client,
         model_id,
@@ -648,29 +662,21 @@ async def retrieve_response(  # pylint: disable=too-many-locals,too-many-branche
         available_output_shields,
         query_request.conversation_id,
         query_request.no_tools or False,
+        prepared_mcp_headers,
+        configuration.agent_context_preloading,
     )
 
     logger.debug("Conversation ID: %s, session ID: %s", conversation_id, session_id)
     # bypass tools and MCP servers if no_tools is True
     if query_request.no_tools:
-        mcp_headers = {}
         agent.extra_headers = {}
         toolgroups = None
     else:
-        # preserve compatibility when mcp_headers is not provided
-        if mcp_headers is None:
-            mcp_headers = {}
-        mcp_headers = handle_mcp_headers_with_toolgroups(mcp_headers, configuration)
-        if not mcp_headers and token:
-            for mcp_server in configuration.mcp_servers:
-                mcp_headers[mcp_server.url] = {
-                    "Authorization": f"Bearer {token}",
-                }
 
         agent.extra_headers = {
             "X-LlamaStack-Provider-Data": json.dumps(
                 {
-                    "mcp_headers": mcp_headers,
+                    "mcp_headers": prepared_mcp_headers,
                 }
             ),
         }

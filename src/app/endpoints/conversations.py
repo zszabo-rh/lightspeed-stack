@@ -31,6 +31,7 @@ from utils.endpoints import (
     retrieve_conversation,
 )
 from utils.suid import check_suid
+from utils.context_preloader import is_context_preloading_turn
 
 logger = logging.getLogger("app.endpoints.handlers")
 router = APIRouter(tags=["conversations"])
@@ -119,9 +120,18 @@ def simplify_session_data(session_data: dict) -> list[dict[str, Any]]:
 
     # Extract only essential data from each turn
     for turn in session_data.get("turns", []):
+        # Check if this is a context preloading turn and skip it
+        input_messages = turn.get("input_messages", [])
+        if input_messages and len(input_messages) > 0:
+            first_msg = input_messages[0]
+            content = first_msg.get("content", "")
+            if isinstance(content, str) and is_context_preloading_turn(content):
+                logger.debug("Filtering out context preloading turn from conversation history")
+                continue
+
         # Clean up input messages
         cleaned_messages = []
-        for msg in turn.get("input_messages", []):
+        for msg in input_messages:
             cleaned_msg = {
                 "content": msg.get("content"),
                 "type": msg.get("role"),  # Rename role to type

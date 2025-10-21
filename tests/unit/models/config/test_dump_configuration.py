@@ -182,6 +182,11 @@ def test_dump_configuration(tmp_path) -> None:
                 "scheduler": {"period": 1},
                 "enable_token_history": False,
             },
+            "agent_context_preloading": {
+                "enabled": False,
+                "intro_message": "Here is contextual information for this session:",
+                "tools": [],
+            },
         }
 
 
@@ -494,5 +499,10 @@ def test_dump_configuration_with_quota_limiters(tmp_path) -> None:
                 ],
                 "scheduler": {"period": 10},
                 "enable_token_history": True,
+            },
+            "agent_context_preloading": {
+                "enabled": False,
+                "intro_message": "Here is contextual information for this session:",
+                "tools": [],
             },
         }
