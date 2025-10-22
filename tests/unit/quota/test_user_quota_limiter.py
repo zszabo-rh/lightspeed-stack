@@ -1,4 +1,4 @@
-"""Unit tests for ClusterQuotaLimiter class."""
+"""Unit tests for UserQuotaLimiter class."""
 
 
 import pytest
@@ -8,13 +8,13 @@ from models.config import (
     SQLiteDatabaseConfiguration,
     QuotaHandlersConfiguration,
 )
-from quota.cluster_quota_limiter import ClusterQuotaLimiter
+from quota.user_quota_limiter import UserQuotaLimiter
 from quota.quota_exceed_error import QuotaExceedError
 
 
 def create_quota_limiter(
     name: str, initial_quota: int, quota_limit: int
-) -> ClusterQuotaLimiter:
+) -> UserQuotaLimiter:
     """Create new quota limiter instance."""
     configuration = QuotaHandlersConfiguration()
     configuration.sqlite = SQLiteDatabaseConfiguration(
@@ -22,14 +22,14 @@ def create_quota_limiter(
     )
     configuration.limiters = [
         QuotaLimiterConfiguration(
-            type="cluster_limiter",
+            type="user_limiter",
             name="foo",
             initial_quota=initial_quota,
             quota_increase=1,
             period="5 days",
         ),
     ]
-    quota_limiter = ClusterQuotaLimiter(configuration, initial_quota, 1)
+    quota_limiter = UserQuotaLimiter(configuration, initial_quota, 1)
     assert quota_limiter is not None
     return quota_limiter
 
@@ -50,12 +50,10 @@ def test_init_quota():
 
     quota_limiter = create_quota_limiter("foo", initial_quota, quota_limit)
 
-    # init quota for given cluster
+    # init quota for given user
     quota_limiter._init_quota()
 
-    assert (
-        str(quota_limiter) == "ClusterQuotaLimiter: initial quota: 1000 increase by: 1"
-    )
+    assert str(quota_limiter) == "UserQuotaLimiter: initial quota: 1000 increase by: 1"
 
 
 def test_available_quota():
@@ -146,7 +144,7 @@ def test_ensure_available_quota_no_quota():
     # init quota for given cluster
     quota_limiter._init_quota()
 
-    with pytest.raises(QuotaExceedError, match="Cluster has no available tokens"):
+    with pytest.raises(QuotaExceedError, match="User foo has no available tokens"):
         quota_limiter.ensure_available_quota("foo")
 
 
