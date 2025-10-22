@@ -1,8 +1,8 @@
 """Unit tests for SQLite connection handler."""
 
-import pytest
-
 from sqlite3 import OperationalError
+
+import pytest
 
 from quota.connect_sqlite import connect_sqlite
 from models.config import SQLiteDatabaseConfiguration

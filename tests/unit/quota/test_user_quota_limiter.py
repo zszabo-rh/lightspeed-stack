@@ -1,6 +1,5 @@
 """Unit tests for UserQuotaLimiter class."""
 
-
 import pytest
 
 from models.config import (
@@ -10,6 +9,8 @@ from models.config import (
 )
 from quota.user_quota_limiter import UserQuotaLimiter
 from quota.quota_exceed_error import QuotaExceedError
+
+# pylint: disable=protected-access
 
 
 def create_quota_limiter(
@@ -23,8 +24,8 @@ def create_quota_limiter(
     configuration.limiters = [
         QuotaLimiterConfiguration(
             type="user_limiter",
-            name="foo",
-            initial_quota=initial_quota,
+            name=name,
+            initial_quota=quota_limit,
             quota_increase=1,
             period="5 days",
         ),
