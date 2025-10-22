@@ -3,9 +3,9 @@
 import os
 from pathlib import Path
 from types import ModuleType
-from unittest.mock import patch
-
 from typing import Any
+
+from pytest_mock import MockerFixture
 
 import pytest
 
@@ -84,11 +84,11 @@ def test_file_check_non_existing_file() -> None:
         checks.file_check(Path("does-not-exists"), "description")
 
 
-def test_file_check_not_readable_file(input_file: str) -> None:
+def test_file_check_not_readable_file(mocker: MockerFixture, input_file: str) -> None:
     """Test the function file_check for not readable file."""
-    with patch("os.access", return_value=False):
-        with pytest.raises(checks.InvalidConfigurationError):
-            checks.file_check(input_file, "description")
+    mocker.patch("os.access", return_value=False)
+    with pytest.raises(checks.InvalidConfigurationError):
+        checks.file_check(input_file, "description")
 
 
 def test_directory_check_non_existing_directory() -> None:
@@ -120,13 +120,15 @@ def test_directory_check_non_a_directory(input_file: str) -> None:
         )
 
 
-def test_directory_check_existing_non_writable_directory(input_directory: str) -> None:
+def test_directory_check_existing_non_writable_directory(
+    mocker: MockerFixture, input_directory: str
+) -> None:
     """Test the function directory_check checks directory."""
-    with patch("os.access", return_value=False):
-        with pytest.raises(checks.InvalidConfigurationError):
-            checks.directory_check(
-                input_directory, must_exists=True, must_be_writable=True, desc="foobar"
-            )
+    mocker.patch("os.access", return_value=False)
+    with pytest.raises(checks.InvalidConfigurationError):
+        checks.directory_check(
+            input_directory, must_exists=True, must_be_writable=True, desc="foobar"
+        )
 
 
 def test_import_python_module_success() -> None:

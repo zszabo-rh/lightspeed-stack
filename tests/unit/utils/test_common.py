@@ -1,7 +1,7 @@
 """Test module for utils/common.py."""
 
-from unittest.mock import Mock, AsyncMock
 from logging import Logger
+
 from pytest_mock import MockerFixture
 
 import pytest
@@ -21,8 +21,7 @@ from models.config import (
 @pytest.mark.asyncio
 async def test_register_mcp_servers_empty_list(mocker: MockerFixture) -> None:
     """Test register_mcp_servers with empty MCP servers list."""
-    # Mock the logger
-    mock_logger = Mock(spec=Logger)
+    mock_logger = mocker.Mock(spec=Logger)
 
     # Mock the LlamaStack client (shouldn't be called since no MCP servers)
     mock_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
@@ -55,13 +54,13 @@ async def test_register_mcp_servers_single_server_not_registered(
 ) -> None:
     """Test register_mcp_servers with single MCP server that is not yet registered."""
     # Mock the logger
-    mock_logger = Mock(spec=Logger)
+    mock_logger = mocker.Mock(spec=Logger)
 
     # Mock the LlamaStack client
-    mock_client = AsyncMock()
+    mock_client = mocker.AsyncMock()
     mock_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
     mock_lsc.return_value = mock_client
-    mock_tool = Mock()
+    mock_tool = mocker.Mock()
     mock_tool.provider_resource_id = "existing-server"
     mock_client.toolgroups.list.return_value = [mock_tool]
     mock_client.toolgroups.register.return_value = None
@@ -102,11 +101,11 @@ async def test_register_mcp_servers_single_server_already_registered(
 ) -> None:
     """Test register_mcp_servers with single MCP server that is already registered."""
     # Mock the logger
-    mock_logger = Mock(spec=Logger)
+    mock_logger = mocker.Mock(spec=Logger)
 
     # Mock the LlamaStack client
-    mock_client = AsyncMock()
-    mock_tool = Mock()
+    mock_client = mocker.AsyncMock()
+    mock_tool = mocker.Mock()
     mock_tool.provider_resource_id = "existing-server"
     mock_client.toolgroups.list.return_value = [mock_tool]
     mock_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
@@ -142,15 +141,15 @@ async def test_register_mcp_servers_multiple_servers_mixed_registration(
 ) -> None:
     """Test register_mcp_servers with multiple MCP servers - some registered, some not."""
     # Mock the logger
-    mock_logger = Mock(spec=Logger)
+    mock_logger = mocker.Mock(spec=Logger)
 
     # Mock the LlamaStack client
-    mock_client = AsyncMock()
+    mock_client = mocker.AsyncMock()
     mock_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
     mock_lsc.return_value = mock_client
-    mock_tool1 = Mock()
+    mock_tool1 = mocker.Mock()
     mock_tool1.provider_resource_id = "existing-server"
-    mock_tool2 = Mock()
+    mock_tool2 = mocker.Mock()
     mock_tool2.provider_resource_id = "another-existing"
     mock_client.toolgroups.list.return_value = [mock_tool1, mock_tool2]
     mock_client.toolgroups.register.return_value = None
@@ -204,10 +203,10 @@ async def test_register_mcp_servers_multiple_servers_mixed_registration(
 async def test_register_mcp_servers_with_custom_provider(mocker: MockerFixture) -> None:
     """Test register_mcp_servers with MCP server using custom provider."""
     # Mock the logger
-    mock_logger = Mock(spec=Logger)
+    mock_logger = mocker.Mock(spec=Logger)
 
     # Mock the LlamaStack client
-    mock_client = AsyncMock()
+    mock_client = mocker.AsyncMock()
     mock_client.toolgroups.list.return_value = []
     mock_client.toolgroups.register.return_value = None
     mock_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
@@ -255,19 +254,19 @@ async def test_register_mcp_servers_async_with_library_client(
     library client.
     """
     # Mock the logger
-    mock_logger = Mock(spec=Logger)
+    mock_logger = mocker.Mock(spec=Logger)
 
     # Mock the LlamaStackAsLibraryClient
-    mock_async_client = AsyncMock()
-    mock_async_client.initialize = AsyncMock()
+    mock_async_client = mocker.AsyncMock()
+    mock_async_client.initialize = mocker.AsyncMock()
     mock_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
     mock_lsc.return_value = mock_async_client
 
     # Mock tools.list to return empty list
-    mock_tool = Mock()
+    mock_tool = mocker.Mock()
     mock_tool.provider_resource_id = "existing-tool"
-    mock_async_client.toolgroups.list = AsyncMock(return_value=[mock_tool])
-    mock_async_client.toolgroups.register = AsyncMock()
+    mock_async_client.toolgroups.list = mocker.AsyncMock(return_value=[mock_tool])
+    mock_async_client.toolgroups.register = mocker.AsyncMock()
 
     # Create configuration with library client enabled
     mcp_server = ModelContextProtocolServer(

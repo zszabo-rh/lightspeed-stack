@@ -1,7 +1,5 @@
 """Unit tests for the /providers REST API endpoints."""
 
-from unittest.mock import AsyncMock
-
 import pytest
 from fastapi import HTTPException, Request, status
 from llama_stack_client import APIConnectionError
@@ -27,7 +25,7 @@ async def test_providers_endpoint_configuration_not_loaded(mocker):
 @pytest.mark.asyncio
 async def test_providers_endpoint_connection_error(mocker):
     """Test that /providers endpoint raises HTTP 500 if Llama Stack connection fails."""
-    mock_client = AsyncMock()
+    mock_client = mocker.AsyncMock()
     mock_client.providers.list.side_effect = APIConnectionError(request=None)
     mocker.patch(
         "app.endpoints.providers.AsyncLlamaStackClientHolder"
@@ -62,7 +60,7 @@ async def test_providers_endpoint_success(mocker):
             "provider_type": "remote::huggingface",
         },
     ]
-    mock_client = AsyncMock()
+    mock_client = mocker.AsyncMock()
     mock_client.providers.list.return_value = provider_list
     mocker.patch(
         "app.endpoints.providers.AsyncLlamaStackClientHolder"
@@ -80,7 +78,7 @@ async def test_providers_endpoint_success(mocker):
 @pytest.mark.asyncio
 async def test_get_provider_not_found(mocker):
     """Test that /providers/{provider_id} endpoint raises HTTP 404 if the provider is not found."""
-    mock_client = AsyncMock()
+    mock_client = mocker.AsyncMock()
     mock_client.providers.list.return_value = []
     mocker.patch(
         "app.endpoints.providers.AsyncLlamaStackClientHolder"
@@ -107,7 +105,7 @@ async def test_get_provider_success(mocker):
         "config": {"api_key": "*****"},
         "health": {"status": "OK", "message": "Healthy"},
     }
-    mock_client = AsyncMock()
+    mock_client = mocker.AsyncMock()
     mock_client.providers.list.return_value = [provider]
     mocker.patch(
         "app.endpoints.providers.AsyncLlamaStackClientHolder"
@@ -126,7 +124,7 @@ async def test_get_provider_success(mocker):
 @pytest.mark.asyncio
 async def test_get_provider_connection_error(mocker):
     """Test that /providers/{provider_id} raises HTTP 500 if Llama Stack connection fails."""
-    mock_client = AsyncMock()
+    mock_client = mocker.AsyncMock()
     mock_client.providers.list.side_effect = APIConnectionError(request=None)
     mocker.patch(
         "app.endpoints.providers.AsyncLlamaStackClientHolder"
@@ -146,7 +144,7 @@ async def test_get_provider_connection_error(mocker):
 @pytest.mark.asyncio
 async def test_get_provider_unexpected_exception(mocker):
     """Test that /providers/{provider_id} endpoint raises HTTP 500 for unexpected exceptions."""
-    mock_client = AsyncMock()
+    mock_client = mocker.AsyncMock()
     mock_client.providers.list.side_effect = Exception("boom")
     mocker.patch(
         "app.endpoints.providers.AsyncLlamaStackClientHolder"

@@ -1,7 +1,7 @@
 """Unit tests for QueryRequest model."""
 
 from logging import Logger
-from unittest.mock import Mock
+from pytest_mock import MockerFixture
 
 import pytest
 
@@ -134,11 +134,11 @@ class TestQueryRequest:
         ):
             QueryRequest(query="Tell me about Kubernetes", provider="OpenAI")
 
-    def test_validate_media_type(self, mocker) -> None:
+    def test_validate_media_type(self, mocker: MockerFixture) -> None:
         """Test the validate_media_type method."""
 
         # Mock the logger
-        mock_logger = Mock(spec=Logger)
+        mock_logger = mocker.Mock(spec=Logger)
         mocker.patch("models.requests.logger", mock_logger)
 
         qr = QueryRequest(

@@ -1,6 +1,5 @@
 """Helper functions for mocking authorization in tests."""
 
-from unittest.mock import AsyncMock, Mock
 from pytest_mock import MockerFixture
 
 from models.config import Action
@@ -18,10 +17,10 @@ def mock_authorization_resolvers(mocker: MockerFixture) -> None:
     mock_resolvers = mocker.patch(
         "authorization.middleware.get_authorization_resolvers"
     )
-    mock_role_resolver = AsyncMock()
-    mock_access_resolver = Mock()
+    mock_role_resolver = mocker.AsyncMock()
+    mock_access_resolver = mocker.Mock()
     mock_role_resolver.resolve_roles.return_value = set()
     mock_access_resolver.check_access.return_value = True
     # get_actions should be synchronous, not async
-    mock_access_resolver.get_actions = Mock(return_value=set(Action))
+    mock_access_resolver.get_actions = mocker.Mock(return_value=set(Action))
     mock_resolvers.return_value = (mock_role_resolver, mock_access_resolver)
