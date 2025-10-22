@@ -21,7 +21,7 @@ def test_quota_limiters_no_storage():
     configuration.postgres = None
     configuration.limiters = []
     limiters = QuotaLimiterFactory.quota_limiters(configuration)
-    assert limiters == []
+    assert not limiters
 
 
 def test_quota_limiters_no_limiters_pg_storage():
@@ -32,7 +32,7 @@ def test_quota_limiters_no_limiters_pg_storage():
     )
     configuration.limiters = None
     limiters = QuotaLimiterFactory.quota_limiters(configuration)
-    assert limiters == []
+    assert not limiters
 
 
 def test_quota_limiters_no_limiters_sqlite_storage():
@@ -43,7 +43,7 @@ def test_quota_limiters_no_limiters_sqlite_storage():
     )
     configuration.limiters = None
     limiters = QuotaLimiterFactory.quota_limiters(configuration)
-    assert limiters == []
+    assert not limiters
 
 
 def test_quota_limiters_empty_limiters_pg_storage():
@@ -54,7 +54,7 @@ def test_quota_limiters_empty_limiters_pg_storage():
     )
     configuration.limiters = []
     limiters = QuotaLimiterFactory.quota_limiters(configuration)
-    assert limiters == []
+    assert not limiters
 
 
 def test_quota_limiters_empty_limiters_sqlite_storage():
@@ -65,7 +65,7 @@ def test_quota_limiters_empty_limiters_sqlite_storage():
     )
     configuration.limiters = []
     limiters = QuotaLimiterFactory.quota_limiters(configuration)
-    assert limiters == []
+    assert not limiters
 
 
 def test_quota_limiters_user_quota_limiter_postgres_storage(mocker: MockerFixture):
@@ -90,7 +90,7 @@ def test_quota_limiters_user_quota_limiter_postgres_storage(mocker: MockerFixtur
     assert isinstance(limiters[0], UserQuotaLimiter)
 
 
-def test_quota_limiters_user_quota_limiter_sqlite_storage(mocker: MockerFixture):
+def test_quota_limiters_user_quota_limiter_sqlite_storage():
     """Test the quota limiters creating when one limiter is specified."""
     configuration = QuotaHandlersConfiguration()
     configuration.sqlite = SQLiteDatabaseConfiguration(
@@ -132,7 +132,7 @@ def test_quota_limiters_cluster_quota_limiter_postgres_storage(mocker: MockerFix
     assert isinstance(limiters[0], ClusterQuotaLimiter)
 
 
-def test_quota_limiters_cluster_quota_limiter_sqlite_storage(mocker: MockerFixture):
+def test_quota_limiters_cluster_quota_limiter_sqlite_storage():
     """Test the quota limiters creating when one limiter is specified."""
     configuration = QuotaHandlersConfiguration()
     configuration.sqlite = SQLiteDatabaseConfiguration(
