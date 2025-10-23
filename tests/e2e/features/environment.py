@@ -10,6 +10,7 @@ Currently four events have been registered:
 import requests
 import subprocess
 import time
+import os
 from behave.model import Scenario, Feature
 from behave.runner import Context
 
@@ -21,14 +22,16 @@ from tests.e2e.utils.utils import (
 )
 
 
-def _fetch_models_from_service(hostname: str = "localhost", port: int = 8080) -> dict:
+def _fetch_models_from_service() -> dict:
     """Query /v1/models endpoint and return first LLM model.
 
     Returns:
         Dict with model_id and provider_id, or empty dict if unavailable
     """
     try:
-        url = f"http://{hostname}:{port}/v1/models"
+        host_env = os.getenv("E2E_LSC_HOSTNAME", "localhost")
+        port_env = os.getenv("E2E_LSC_PORT", "8080")
+        url = f"http://{host_env}:{port_env}/v1/models"
         response = requests.get(url, timeout=5)
         response.raise_for_status()
         data = response.json()
@@ -105,7 +108,7 @@ def after_scenario(context: Context, scenario: Scenario) -> None:
                             "llama-stack",
                             "curl",
                             "-f",
-                            "http://localhost:8321/v1/health",
+                            f"http://{context.hostname_llama}:{context.port_llama}/v1/health",
                         ],
                         capture_output=True,
                         timeout=5,
@@ -155,7 +158,7 @@ def after_feature(context: Context, feature: Feature) -> None:
     if "Feedback" in feature.tags:
         print(context.feedback_conversations)
         for conversation_id in context.feedback_conversations:
-            url = f"http://localhost:8080/v1/conversations/{conversation_id}"
+            url = f"http://{context.hostname}:{context.port}/v1/conversations/{conversation_id}"
             headers = context.auth_headers if hasattr(context, "auth_headers") else {}
             response = requests.delete(url, headers=headers)
             assert response.status_code == 200, url
