@@ -12,8 +12,16 @@ from app.endpoints.feedback import (
     store_feedback,
     update_feedback_status,
 )
-from models.requests import FeedbackStatusUpdateRequest
+from models.requests import FeedbackStatusUpdateRequest, FeedbackRequest
 from tests.unit.utils.auth_helpers import mock_authorization_resolvers
+
+
+MOCK_AUTH = ("mock_user_id", "mock_username", False, "mock_token")
+VALID_BASE = {
+    "conversation_id": "12345678-abcd-0000-0123-456789abcdef",
+    "user_question": "What is Kubernetes?",
+    "llm_response": "Kubernetes is an open-source container orchestration system.",
+}
 
 
 def test_is_feedback_enabled():
@@ -230,3 +238,26 @@ async def test_update_feedback_status_no_change(mocker: MockerFixture):
         "updated_by": "test_user_id",
         "timestamp": mocker.ANY,
     }
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"sentiment": -1},
+        {"user_feedback": "Good answer"},
+        {"categories": ["incorrect"]},
+    ],
+    ids=["test_sentiment_only", "test_user_feedback_only", "test_categories_only"],
+)
+@pytest.mark.asyncio
+async def test_feedback_endpoint_valid_requests(mocker: MockerFixture, payload):
+    """Test endpoint with valid feedback payloads."""
+    mock_authorization_resolvers(mocker)
+    mocker.patch("app.endpoints.feedback.store_feedback")
+    request = FeedbackRequest(**{**VALID_BASE, **payload})
+    response = await feedback_endpoint_handler(
+        feedback_request=request,
+        auth=MOCK_AUTH,
+        _ensure_feedback_enabled=None,
+    )
+    assert response.response == "feedback received"

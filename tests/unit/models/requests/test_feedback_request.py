@@ -182,3 +182,17 @@ class TestFeedbackRequest:
                 llm_response="Test response",
                 categories="invalid_type",  # Should be list, not string
             )
+
+    def test_empty_user_feedback_not_sufficient(self) -> None:
+        """Test that an empty string for user_feedback is treated as no feedback."""
+        with pytest.raises(
+            ValueError, match="At least one form of feedback must be provided"
+        ):
+            FeedbackRequest(
+                conversation_id="123e4567-e89b-12d3-a456-426614174000",
+                user_question="What is feedback?",
+                llm_response="Some LLM response.",
+                user_feedback="",  # Empty string should trigger validation error
+                sentiment=None,
+                categories=None,
+            )
