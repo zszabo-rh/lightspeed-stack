@@ -3,8 +3,6 @@ Feature: Info tests
 
   Background:
     Given The service is started locally
-      And REST API service hostname is localhost
-      And REST API service port is 8080
       And REST API service prefix is /v1
 
   Scenario: Check if the OpenAPI endpoint works as expected
