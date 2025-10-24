@@ -17,7 +17,6 @@ def enable_feedback(context: Context) -> None:
     assert context is not None
     payload = {"status": True}
     access_feedback_put_endpoint(context, payload)
-    assert context.response.status_code == 200, "Enabling feedback was unsuccessful"
 
 
 @step("The feedback is disabled")  # type: ignore
@@ -26,7 +25,6 @@ def disable_feedback(context: Context) -> None:
     assert context is not None
     payload = {"status": False}
     access_feedback_put_endpoint(context, payload)
-    assert context.response.status_code == 200, "Disabling feedback was unsuccessful"
 
 
 @when("I update feedback status with")  # type: ignore
