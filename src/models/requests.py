@@ -377,7 +377,7 @@ class FeedbackRequest(BaseModel):
         """Ensure that at least one form of feedback is provided."""
         if (
             self.sentiment is None
-            and self.user_feedback is None
+            and (self.user_feedback is None or self.user_feedback == "")
             and self.categories is None
         ):
             raise ValueError(

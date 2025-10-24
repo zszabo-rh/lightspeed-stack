@@ -307,3 +307,30 @@ Feature: feedback endpoint API tests
                     }
         }
         """
+
+  Scenario: Check if feedback endpoint fails when only empty string user_feedback is provided
+    Given The system is in default state
+    And A new conversation is initialized
+    And The feedback is enabled
+     When I submit the following feedback for the conversation created before
+        """
+        {
+            "user_question": "Sample Question",
+            "llm_response": "Sample Response",
+            "user_feedback": ""
+        }
+        """
+     Then The status code of the response is 422
+     And the body of the response has the following structure
+        """
+        {
+            "detail": [{
+                        "type": "value_error", 
+                        "loc": ["body"], 
+                        "msg": "Value error, At least one form of feedback must be provided: 'sentiment', 'user_feedback', or 'categories'",
+                        "input": {
+                            "user_feedback": ""
+                        }
+                    }]           
+        }
+        """
