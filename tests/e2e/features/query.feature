@@ -114,3 +114,29 @@ Scenario: Check if LLM responds for query request with error for missing query
     """
      Then The status code of the response is 500
       And The body of the response contains Unable to connect to Llama Stack
+
+  Scenario: Check if LLM responds properly when XML and JSON attachments are sent
+    Given The system is in default state
+    And I set the Authorization header to Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ikpva
+    When I use "query" to ask question with authorization header
+    """
+    {
+      "query": "Say hello",
+      "attachments": [
+        {
+          "attachment_type": "configuration",
+          "content": "<note><to>User</to><from>System</from><message>Hello</message></note>",
+          "content_type": "application/xml"
+        },
+        {
+          "attachment_type": "configuration",
+          "content": "{\"foo\": \"bar\"}",
+          "content_type": "application/json"
+        }
+      ],
+      "model": "{MODEL}", 
+      "provider": "{PROVIDER}",
+      "system_prompt": "You are a helpful assistant"
+    }
+    """
+    Then The status code of the response is 200

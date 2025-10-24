@@ -1,4 +1,4 @@
-"""Handler for REST API call to provide answer to streaming query."""  # pylint: disable=too-many-lines
+"""Handler for REST API call to provide answer to streaming query."""  # pylint: disable=too-many-lines,too-many-locals,W0511
 
 import ast
 import json
@@ -21,6 +21,7 @@ from llama_stack_client.types.agents.agent_turn_response_stream_chunk import (
 )
 from llama_stack_client.types.shared import ToolCall
 from llama_stack_client.types.shared.interleaved_content_item import TextContentItem
+from llama_stack_client.types.agents.turn_create_params import Document
 
 from app.database import get_session
 from app.endpoints.query import (
@@ -61,6 +62,7 @@ from utils.mcp_headers import handle_mcp_headers_with_toolgroups, mcp_headers_de
 from utils.token_counter import TokenCounter, extract_token_usage_from_turn
 from utils.transcripts import store_transcript
 from utils.types import TurnSummary
+
 
 logger = logging.getLogger("app.endpoints.handlers")
 router = APIRouter(tags=["streaming_query"])
@@ -1039,10 +1041,20 @@ async def retrieve_response(
         if not toolgroups:
             toolgroups = None
 
+    # TODO: LCORE-881 - Remove if Llama Stack starts to support these mime types
+    documents: list[Document] = [
+        (
+            {"content": doc["content"], "mime_type": "text/plain"}
+            if doc["mime_type"].lower() in ("application/json", "application/xml")
+            else doc
+        )
+        for doc in query_request.get_documents()
+    ]
+
     response = await agent.create_turn(
         messages=[UserMessage(role="user", content=query_request.query)],
         session_id=session_id,
-        documents=query_request.get_documents(),
+        documents=documents,
         stream=True,
         toolgroups=toolgroups,
     )

@@ -18,6 +18,7 @@ from llama_stack_client.types.agents.turn import Turn
 from llama_stack_client.types.agents.turn_create_params import (
     Toolgroup,
     ToolgroupAgentToolGroupWithArgs,
+    Document,
 )
 from llama_stack_client.types.model_list_response import ModelListResponse
 from llama_stack_client.types.shared.interleaved_content_item import TextContentItem
@@ -692,10 +693,20 @@ async def retrieve_response(  # pylint: disable=too-many-locals,too-many-branche
         if not toolgroups:
             toolgroups = None
 
+    # TODO: LCORE-881 - Remove if Llama Stack starts to support these mime types
+    documents: list[Document] = [
+        (
+            {"content": doc["content"], "mime_type": "text/plain"}
+            if doc["mime_type"].lower() in ("application/json", "application/xml")
+            else doc
+        )
+        for doc in query_request.get_documents()
+    ]
+
     response = await agent.create_turn(
         messages=[UserMessage(role="user", content=query_request.query)],
         session_id=session_id,
-        documents=query_request.get_documents(),
+        documents=documents,
         stream=False,
         toolgroups=toolgroups,
     )
