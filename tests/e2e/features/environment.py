@@ -145,6 +145,8 @@ def before_feature(context: Context, feature: Feature) -> None:
         restart_container("lightspeed-stack")
 
     if "Feedback" in feature.tags:
+        context.hostname = os.getenv("E2E_LSC_HOSTNAME", "localhost")
+        context.port = os.getenv("E2E_LSC_PORT", "8080")
         context.feedback_conversations = []
 
 
@@ -156,7 +158,6 @@ def after_feature(context: Context, feature: Feature) -> None:
         remove_config_backup(context.default_config_backup)
 
     if "Feedback" in feature.tags:
-        print(context.feedback_conversations)
         for conversation_id in context.feedback_conversations:
             url = f"http://{context.hostname}:{context.port}/v1/conversations/{conversation_id}"
             headers = context.auth_headers if hasattr(context, "auth_headers") else {}

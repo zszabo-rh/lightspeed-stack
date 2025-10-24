@@ -1140,3 +1140,32 @@ class ForbiddenResponse(UnauthorizedResponse):
             ]
         }
     }
+
+
+class InvalidFeedbackStoragePathResponse(AbstractErrorResponse):
+    """500 Internal Error - Invalid feedback storage path."""
+
+    def __init__(self, storage_path: str):
+        """Initialize an InvalidFeedbackStoragePathResponse for feedback storage failures."""
+        super().__init__(
+            detail=DetailModel(
+                response="Failed to store feedback",
+                cause=f"Invalid feedback storage path: {storage_path}",
+            )
+        )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "detail": {
+                        "response": "Failed to store feedback",
+                        "cause": (
+                            "Invalid feedback storage path: "
+                            "/var/app/data/feedbacks/invalid_path"
+                        ),
+                    }
+                }
+            ]
+        }
+    }

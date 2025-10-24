@@ -260,7 +260,25 @@ Feature: feedback endpoint API tests
      And The body of the response is the following
         """
         {
-            "detail": "No Authorization header found"            
+            "detail": {
+                        "cause": "Missing or invalid credentials provided by client",
+                        "response": "Unauthorized"
+            }
+        }
+        """
+
+  Scenario: Check if update feedback status endpoint is not working when not authorized
+    Given The system is in default state
+    And I remove the auth header
+     When The feedback is enabled
+     Then The status code of the response is 400
+     And The body of the response is the following
+        """
+        {
+            "detail": {
+                        "cause": "Missing or invalid credentials provided by client",
+                        "response": "Unauthorized"
+            }
         }
         """
 
