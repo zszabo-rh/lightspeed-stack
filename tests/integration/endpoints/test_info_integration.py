@@ -1,20 +1,23 @@
 """Integration tests for the /info endpoint."""
 
+from typing import Generator, Any
 import pytest
-from typing import Generator
-from pytest_mock import MockerFixture
+from pytest_mock import MockerFixture, AsyncMockType
 
 from fastapi import HTTPException, Request, status
 from llama_stack_client import APIConnectionError
 from llama_stack_client.types import VersionInfo
 
+from configuration import AppConfig
 from app.endpoints.info import info_endpoint_handler
 from authentication.noop import NoopAuthDependency
 from version import __version__
 
 
 @pytest.fixture(name="mock_llama_stack_client")
-def mock_llama_stack_client_fixture(mocker: MockerFixture) -> Generator:
+def mock_llama_stack_client_fixture(
+    mocker: MockerFixture,
+) -> Generator[Any, None, None]:
     """Mock only the external Llama Stack client.
 
     This is the only external dependency we mock for integration tests,
@@ -58,8 +61,8 @@ async def test_auth_fixture(test_request: Request) -> tuple[str, str, bool, str]
 
 @pytest.mark.asyncio
 async def test_info_endpoint_returns_service_information(
-    test_config: Generator,
-    mock_llama_stack_client: Generator,
+    test_config: AppConfig,
+    mock_llama_stack_client: AsyncMockType,
     test_request: Request,
     test_auth: tuple[str, str, bool, str],
 ) -> None:
@@ -94,8 +97,8 @@ async def test_info_endpoint_returns_service_information(
 
 @pytest.mark.asyncio
 async def test_info_endpoint_handles_connection_error(
-    test_config: Generator,
-    mock_llama_stack_client: Generator,
+    test_config: AppConfig,
+    mock_llama_stack_client: AsyncMockType,
     test_request: Request,
     test_auth: tuple[str, str, bool, str],
     mocker: MockerFixture,
@@ -134,8 +137,8 @@ async def test_info_endpoint_handles_connection_error(
 
 @pytest.mark.asyncio
 async def test_info_endpoint_uses_configuration_values(
-    test_config: Generator,
-    mock_llama_stack_client: Generator,
+    test_config: AppConfig,
+    mock_llama_stack_client: AsyncMockType,
     test_request: Request,
     test_auth: tuple[str, str, bool, str],
 ) -> None:

@@ -5,7 +5,8 @@ from pathlib import Path
 from typing import Generator
 import pytest
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.engine import Engine
 
 from configuration import configuration
 from models.database.base import Base
@@ -69,7 +70,7 @@ def test_db_engine_fixture() -> Generator:
 
 
 @pytest.fixture(name="test_db_session", scope="function")
-def test_db_session_fixture(test_db_engine) -> Generator:
+def test_db_session_fixture(test_db_engine: Engine) -> Generator[Session, None, None]:
     """Create a database session for testing.
 
     Provides a real database session connected to the in-memory test database.
