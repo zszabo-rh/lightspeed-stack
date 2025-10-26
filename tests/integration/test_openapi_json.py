@@ -32,7 +32,7 @@ def open_api_spec() -> dict:
     return _load_openapi_spec()
 
 
-def test_openapi_top_level_info(spec: dict):
+def test_openapi_top_level_info(spec: dict) -> None:
     """Test all top level informations stored in OpenAPI specification."""
     assert spec.get("openapi") == "3.1.0"
 
@@ -48,7 +48,7 @@ def test_openapi_top_level_info(spec: dict):
     assert "apache.org/licenses" in (license_info.get("url") or "")
 
 
-def test_servers_section_present(spec: dict):
+def test_servers_section_present(spec: dict) -> None:
     """Test the servers section stored in OpenAPI specification."""
     servers = spec.get("servers")
     assert isinstance(servers, list) and servers, "servers must be a non-empty list"
@@ -101,7 +101,7 @@ def test_servers_section_present(spec: dict):
 )
 def test_paths_and_responses_exist(
     spec: dict, path: str, method: str, expected_codes: set[str]
-):
+) -> None:
     """Tests all paths defined in OpenAPI specification."""
     paths = spec.get("paths") or {}
     assert path in paths, f"Missing path: {path}"
