@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+from typing import Generator
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -11,7 +12,7 @@ from models.database.base import Base
 
 
 @pytest.fixture(autouse=True)
-def reset_configuration_state():
+def reset_configuration_state() -> Generator:
     """Reset configuration state before each integration test.
 
     This autouse fixture ensures test independence by resetting the
@@ -25,7 +26,7 @@ def reset_configuration_state():
 
 
 @pytest.fixture(name="test_config", scope="function")
-def test_config_fixture():
+def test_config_fixture() -> Generator:
     """Load real configuration for integration tests.
 
     This fixture loads the actual configuration file used in testing,
@@ -44,7 +45,7 @@ def test_config_fixture():
 
 
 @pytest.fixture(name="test_db_engine", scope="function")
-def test_db_engine_fixture():
+def test_db_engine_fixture() -> Generator:
     """Create an in-memory SQLite database engine for testing.
 
     This provides a real database (not mocked) for integration tests.
@@ -68,7 +69,7 @@ def test_db_engine_fixture():
 
 
 @pytest.fixture(name="test_db_session", scope="function")
-def test_db_session_fixture(test_db_engine):
+def test_db_session_fixture(test_db_engine) -> Generator:
     """Create a database session for testing.
 
     Provides a real database session connected to the in-memory test database.
