@@ -1,6 +1,9 @@
 """Integration tests for the /info endpoint."""
 
 import pytest
+from typing import Generator
+from pytest_mock import MockerFixture
+
 from fastapi import HTTPException, Request, status
 from llama_stack_client import APIConnectionError
 from llama_stack_client.types import VersionInfo
@@ -11,7 +14,7 @@ from version import __version__
 
 
 @pytest.fixture(name="mock_llama_stack_client")
-def mock_llama_stack_client_fixture(mocker):
+def mock_llama_stack_client_fixture(mocker: MockerFixture) -> Generator:
     """Mock only the external Llama Stack client.
 
     This is the only external dependency we mock for integration tests,
@@ -31,7 +34,7 @@ def mock_llama_stack_client_fixture(mocker):
 
 
 @pytest.fixture(name="test_request")
-def test_request_fixture():
+def test_request_fixture() -> Request:
     """Create a test FastAPI Request object with proper scope."""
     return Request(
         scope={
@@ -43,7 +46,7 @@ def test_request_fixture():
 
 
 @pytest.fixture(name="test_auth")
-async def test_auth_fixture(test_request):
+async def test_auth_fixture(test_request: Request) -> tuple[str, str, bool, str]:
     """Create authentication using real noop auth module.
 
     This uses the actual NoopAuthDependency instead of mocking,
@@ -55,8 +58,11 @@ async def test_auth_fixture(test_request):
 
 @pytest.mark.asyncio
 async def test_info_endpoint_returns_service_information(
-    test_config, mock_llama_stack_client, test_request, test_auth
-):
+    test_config: Generator,
+    mock_llama_stack_client: Generator,
+    test_request: Request,
+    test_auth: tuple[str, str, bool, str],
+) -> None:
     """Test that info endpoint returns correct service information.
 
     This integration test verifies:
@@ -88,8 +94,12 @@ async def test_info_endpoint_returns_service_information(
 
 @pytest.mark.asyncio
 async def test_info_endpoint_handles_connection_error(
-    test_config, mock_llama_stack_client, test_request, test_auth, mocker
-):
+    test_config: Generator,
+    mock_llama_stack_client: Generator,
+    test_request: Request,
+    test_auth: tuple[str, str, bool, str],
+    mocker: MockerFixture,
+) -> None:
     """Test that info endpoint properly handles Llama Stack connection errors.
 
     This integration test verifies:
@@ -124,8 +134,11 @@ async def test_info_endpoint_handles_connection_error(
 
 @pytest.mark.asyncio
 async def test_info_endpoint_uses_configuration_values(
-    test_config, mock_llama_stack_client, test_request, test_auth
-):
+    test_config: Generator,
+    mock_llama_stack_client: Generator,
+    test_request: Request,
+    test_auth: tuple[str, str, bool, str],
+) -> None:
     """Test that info endpoint correctly uses configuration values.
 
     This integration test verifies:
