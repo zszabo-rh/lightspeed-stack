@@ -20,11 +20,14 @@ from models.config import (
     InferenceConfiguration,
     DatabaseConfiguration,
     ConversationCacheConfiguration,
+    QuotaHandlersConfiguration,
 )
 
 from cache.cache import Cache
 from cache.cache_factory import CacheFactory
 
+from quota.quota_limiter import QuotaLimiter
+from quota.quota_limiter_factory import QuotaLimiterFactory
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +51,7 @@ class AppConfig:
         """Initialize the class instance."""
         self._configuration: Optional[Configuration] = None
         self._conversation_cache: Optional[Cache] = None
+        self._quota_limiters: list[QuotaLimiter] = []
 
     def load_configuration(self, filename: str) -> None:
         """Load configuration from YAML file."""
@@ -59,6 +63,10 @@ class AppConfig:
 
     def init_from_dict(self, config_dict: dict[Any, Any]) -> None:
         """Initialize configuration from a dictionary."""
+        # clear cached values when configuration changes
+        self._conversation_cache = None
+        self._quota_limiters = []
+        # now it is possible to re-read configuration
         self._configuration = Configuration(**config_dict)
 
     @property
@@ -144,6 +152,13 @@ class AppConfig:
         return self._configuration.database
 
     @property
+    def quota_handlers_configuration(self) -> QuotaHandlersConfiguration:
+        """Return quota handlers configuration."""
+        if self._configuration is None:
+            raise LogicError("logic error: configuration is not loaded")
+        return self._configuration.quota_handlers
+
+    @property
     def conversation_cache(self) -> Cache:
         """Return the conversation cache."""
         if self._configuration is None:
@@ -153,6 +168,17 @@ class AppConfig:
                 self._configuration.conversation_cache
             )
         return self._conversation_cache
+
+    @property
+    def quota_limiters(self) -> list[QuotaLimiter]:
+        """Return list of all setup quota limiters."""
+        if self._configuration is None:
+            raise LogicError("logic error: configuration is not loaded")
+        if not self._quota_limiters:
+            self._quota_limiters = QuotaLimiterFactory.quota_limiters(
+                self._configuration.quota_handlers
+            )
+        return self._quota_limiters
 
 
 configuration: AppConfig = AppConfig()
