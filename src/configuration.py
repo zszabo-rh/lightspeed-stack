@@ -63,6 +63,10 @@ class AppConfig:
 
     def init_from_dict(self, config_dict: dict[Any, Any]) -> None:
         """Initialize configuration from a dictionary."""
+        # clear cached values when configuration changes
+        self._conversation_cache = None
+        self._quota_limiters = []
+        # now it is possible to re-read configuration
         self._configuration = Configuration(**config_dict)
 
     @property
@@ -170,7 +174,7 @@ class AppConfig:
         """Return list of all setup quota limiters."""
         if self._configuration is None:
             raise LogicError("logic error: configuration is not loaded")
-        if self._quota_limiters == []:
+        if not self._quota_limiters:
             self._quota_limiters = QuotaLimiterFactory.quota_limiters(
                 self._configuration.quota_handlers
             )

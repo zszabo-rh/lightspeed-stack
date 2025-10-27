@@ -16,12 +16,14 @@ def _reset_app_config_between_tests() -> Generator:
     # ensure clean state before each test
     try:
         AppConfig()._configuration = None  # type: ignore[attr-defined]
+        AppConfig()._quota_limiters = []  # type: ignore[attr-defined]
     except Exception:
         pass
     yield
     # ensure clean state after each test
     try:
         AppConfig()._configuration = None  # type: ignore[attr-defined]
+        AppConfig()._quota_limiters = []  # type: ignore[attr-defined]
     except Exception:
         pass
 
@@ -80,7 +82,15 @@ def test_default_configuration() -> None:
 
     with pytest.raises(Exception, match="logic error: configuration is not loaded"):
         # try to read property
+        _ = cfg.quota_handlers_configuration  # pylint: disable=pointless-statement
+
+    with pytest.raises(Exception, match="logic error: configuration is not loaded"):
+        # try to read property
         _ = cfg.conversation_cache  # pylint: disable=pointless-statement
+
+    with pytest.raises(Exception, match="logic error: configuration is not loaded"):
+        # try to read property
+        _ = cfg.quota_limiters  # pylint: disable=pointless-statement
 
 
 def test_configuration_is_singleton() -> None:
@@ -675,3 +685,124 @@ conversation_cache:
     assert cfg.conversation_cache_configuration.memory is not None
     assert cfg.conversation_cache is not None
     assert isinstance(cfg.conversation_cache, InMemoryCache)
+
+
+def test_configuration_with_quota_handlers_no_storage(tmpdir: Path) -> None:
+    """Test loading configuration from YAML file with quota handlers configuration."""
+    cfg_filename = tmpdir / "config.yaml"
+    with open(cfg_filename, "w", encoding="utf-8") as fout:
+        fout.write(
+            """
+name: test service
+service:
+  host: localhost
+  port: 8080
+  auth_enabled: false
+  workers: 1
+  color_log: true
+  access_log: true
+llama_stack:
+  use_as_library_client: false
+  url: http://localhost:8321
+  api_key: test-key
+user_data_collection:
+  feedback_enabled: false
+quota_handlers:
+  limiters:
+    - name: user_monthly_limits
+      type: user_limiter
+      initial_quota: 10
+      quota_increase: 10
+      period: "2 seconds"
+    - name: cluster_monthly_limits
+      type: cluster_limiter
+      initial_quota: 100
+      quota_increase: 10
+      period: "10 seconds"
+  scheduler:
+    # scheduler ticks in seconds
+    period: 1
+            """
+        )
+
+    cfg = AppConfig()
+    cfg.load_configuration(str(cfg_filename))
+
+    assert cfg.quota_handlers_configuration is not None
+    assert cfg.quota_handlers_configuration.sqlite is None
+    assert cfg.quota_handlers_configuration.postgres is None
+    assert cfg.quota_handlers_configuration.limiters is not None
+    assert cfg.quota_handlers_configuration.scheduler is not None
+
+    # check the quota limiters configuration
+    assert len(cfg.quota_limiters) == 0
+
+    # check the scheduler configuration
+    assert cfg.quota_handlers_configuration.scheduler.period == 1
+
+
+def test_configuration_with_quota_handlers(tmpdir: Path) -> None:
+    """Test loading configuration from YAML file with quota handlers configuration."""
+    cfg_filename = tmpdir / "config.yaml"
+    with open(cfg_filename, "w", encoding="utf-8") as fout:
+        fout.write(
+            """
+name: test service
+service:
+  host: localhost
+  port: 8080
+  auth_enabled: false
+  workers: 1
+  color_log: true
+  access_log: true
+llama_stack:
+  use_as_library_client: false
+  url: http://localhost:8321
+  api_key: test-key
+user_data_collection:
+  feedback_enabled: false
+quota_handlers:
+  sqlite:
+      db_path: ":memory:"
+  limiters:
+    - name: user_monthly_limits
+      type: user_limiter
+      initial_quota: 10
+      quota_increase: 10
+      period: "2 seconds"
+    - name: cluster_monthly_limits
+      type: cluster_limiter
+      initial_quota: 100
+      quota_increase: 10
+      period: "10 seconds"
+  scheduler:
+    # scheduler ticks in seconds
+    period: 1
+            """
+        )
+
+    cfg = AppConfig()
+    cfg.load_configuration(str(cfg_filename))
+
+    assert cfg.quota_handlers_configuration is not None
+    assert cfg.quota_handlers_configuration.sqlite is not None
+    assert cfg.quota_handlers_configuration.postgres is None
+    assert cfg.quota_handlers_configuration.limiters is not None
+    assert cfg.quota_handlers_configuration.scheduler is not None
+
+    # check the storage
+    assert cfg.quota_handlers_configuration.sqlite.db_path == ":memory:"
+
+    # check the quota limiters configuration
+    assert len(cfg.quota_limiters) == 2
+    assert (
+        str(cfg.quota_limiters[0])
+        == "UserQuotaLimiter: initial quota: 10 increase by: 10"
+    )
+    assert (
+        str(cfg.quota_limiters[1])
+        == "ClusterQuotaLimiter: initial quota: 100 increase by: 10"
+    )
+
+    # check the scheduler configuration
+    assert cfg.quota_handlers_configuration.scheduler.period == 1
