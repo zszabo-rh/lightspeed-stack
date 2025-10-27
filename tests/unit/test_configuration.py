@@ -6,6 +6,8 @@ from typing import Any, Generator
 import pytest
 from configuration import AppConfig, LogicError
 from models.config import CustomProfile, ModelContextProtocolServer
+from cache.sqlite_cache import SQLiteCache
+from cache.in_memory_cache import InMemoryCache
 
 
 # pylint: disable=broad-exception-caught,protected-access
@@ -75,6 +77,10 @@ def test_default_configuration() -> None:
     with pytest.raises(Exception, match="logic error: configuration is not loaded"):
         # try to read property
         _ = cfg.conversation_cache_configuration  # pylint: disable=pointless-statement
+
+    with pytest.raises(Exception, match="logic error: configuration is not loaded"):
+        # try to read property
+        _ = cfg.conversation_cache  # pylint: disable=pointless-statement
 
 
 def test_configuration_is_singleton() -> None:
@@ -591,3 +597,81 @@ customization:
     assert fetched_prompts is not None and fetched_prompts.get(
         "default"
     ) == expected_prompts.get("default")
+
+
+def test_configuration_with_sqlite_conversation_cache(tmpdir: Path) -> None:
+    """Test loading configuration from YAML file with conversation cache configuration."""
+    cfg_filename = tmpdir / "config.yaml"
+    with open(cfg_filename, "w", encoding="utf-8") as fout:
+        fout.write(
+            """
+name: test service
+service:
+  host: localhost
+  port: 8080
+  auth_enabled: false
+  workers: 1
+  color_log: true
+  access_log: true
+llama_stack:
+  use_as_library_client: false
+  url: http://localhost:8321
+  api_key: test-key
+user_data_collection:
+  feedback_enabled: false
+conversation_cache:
+  type: "sqlite"
+  sqlite:
+    db_path: ":memory:"
+            """
+        )
+
+    cfg = AppConfig()
+    cfg.load_configuration(str(cfg_filename))
+
+    assert cfg.conversation_cache_configuration is not None
+    assert cfg.conversation_cache_configuration.type == "sqlite"
+    assert cfg.conversation_cache_configuration.sqlite is not None
+    assert cfg.conversation_cache_configuration.postgres is None
+    assert cfg.conversation_cache_configuration.memory is None
+    assert cfg.conversation_cache is not None
+    assert isinstance(cfg.conversation_cache, SQLiteCache)
+
+
+def test_configuration_with_in_memory_conversation_cache(tmpdir: Path) -> None:
+    """Test loading configuration from YAML file with conversation cache configuration."""
+    cfg_filename = tmpdir / "config.yaml"
+    with open(cfg_filename, "w", encoding="utf-8") as fout:
+        fout.write(
+            """
+name: test service
+service:
+  host: localhost
+  port: 8080
+  auth_enabled: false
+  workers: 1
+  color_log: true
+  access_log: true
+llama_stack:
+  use_as_library_client: false
+  url: http://localhost:8321
+  api_key: test-key
+user_data_collection:
+  feedback_enabled: false
+conversation_cache:
+  type: "memory"
+  memory:
+    max_entries: 42
+            """
+        )
+
+    cfg = AppConfig()
+    cfg.load_configuration(str(cfg_filename))
+
+    assert cfg.conversation_cache_configuration is not None
+    assert cfg.conversation_cache_configuration.type == "memory"
+    assert cfg.conversation_cache_configuration.sqlite is None
+    assert cfg.conversation_cache_configuration.postgres is None
+    assert cfg.conversation_cache_configuration.memory is not None
+    assert cfg.conversation_cache is not None
+    assert isinstance(cfg.conversation_cache, InMemoryCache)

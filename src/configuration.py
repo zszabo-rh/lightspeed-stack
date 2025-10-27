@@ -144,9 +144,11 @@ class AppConfig:
         return self._configuration.database
 
     @property
-    def conversation_cache(self) -> Cache | None:
+    def conversation_cache(self) -> Cache:
         """Return the conversation cache."""
-        if self._conversation_cache is None and self._configuration is not None:
+        if self._configuration is None:
+            raise LogicError("logic error: configuration is not loaded")
+        if self._conversation_cache is None:
             self._conversation_cache = CacheFactory.conversation_cache(
                 self._configuration.conversation_cache
             )
