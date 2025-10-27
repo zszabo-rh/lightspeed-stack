@@ -184,6 +184,7 @@ async def _test_query_endpoint_handler(
     mock_config.user_data_collection_configuration.transcripts_enabled = (
         store_transcript_to_file
     )
+    mock_config.quota_limiters = []
     mocker.patch("app.endpoints.query.configuration", mock_config)
 
     mock_store_in_cache = mocker.patch(
@@ -1434,6 +1435,7 @@ async def test_auth_tuple_unpacking_in_query_endpoint_handler(
     # Mock dependencies
     mock_config = mocker.Mock()
     mock_config.llama_stack_configuration = mocker.Mock()
+    mock_config.quota_limiters = []
     mocker.patch("app.endpoints.query.configuration", mock_config)
 
     mock_client = mocker.AsyncMock()
@@ -1499,6 +1501,7 @@ async def test_query_endpoint_handler_no_tools_true(mocker, dummy_request) -> No
 
     mock_config = mocker.Mock()
     mock_config.user_data_collection_configuration.transcripts_disabled = True
+    mock_config.quota_limiters = []
     mocker.patch("app.endpoints.query.configuration", mock_config)
 
     summary = TurnSummary(
@@ -1555,6 +1558,7 @@ async def test_query_endpoint_handler_no_tools_false(mocker, dummy_request) -> N
 
     mock_config = mocker.Mock()
     mock_config.user_data_collection_configuration.transcripts_disabled = True
+    mock_config.quota_limiters = []
     mocker.patch("app.endpoints.query.configuration", mock_config)
 
     summary = TurnSummary(
