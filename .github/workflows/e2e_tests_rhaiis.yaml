@@ -14,8 +14,10 @@ jobs:
       matrix:
         environment: [ "rhaiis" ]
     env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       RHAIIS_URL: ${{ secrets.RHAIIS_URL }}
       RHAIIS_API_KEY: ${{ secrets.RHAIIS_API_KEY }}
+      RHAIIS_MODEL: meta-llama/Llama-3.1-8B
 
     steps:
       - uses: actions/checkout@v4
