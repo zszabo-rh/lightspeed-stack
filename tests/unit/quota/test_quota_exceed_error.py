@@ -5,7 +5,7 @@ import pytest
 from quota.quota_exceed_error import QuotaExceedError
 
 
-def test_quota_exceed_error_constructor():
+def test_quota_exceed_error_constructor() -> None:
     """Test the QuotaExceedError constructor."""
     expected = "User 1234 has 100 tokens, but 1000 tokens are needed"
     with pytest.raises(QuotaExceedError, match=expected):

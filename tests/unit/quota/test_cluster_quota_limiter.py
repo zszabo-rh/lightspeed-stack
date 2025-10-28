@@ -35,7 +35,7 @@ def create_quota_limiter(
     return quota_limiter
 
 
-def test_connected():
+def test_connected() -> None:
     """Test the connected method."""
     initial_quota = 1000
     quota_limit = 100
@@ -44,7 +44,7 @@ def test_connected():
     assert quota_limiter.connected()
 
 
-def test_init_quota():
+def test_init_quota() -> None:
     """Test the init quota operation."""
     initial_quota = 1000
     quota_limit = 100
@@ -59,7 +59,7 @@ def test_init_quota():
     )
 
 
-def test_available_quota():
+def test_available_quota() -> None:
     """Test the available quota operation."""
     initial_quota = 1000
     quota_limit = 100
@@ -73,7 +73,7 @@ def test_available_quota():
     assert available_quota == initial_quota
 
 
-def test_consume_tokens():
+def test_consume_tokens() -> None:
     """Test the consume tokens operation."""
     initial_quota = 1000
     quota_limit = 100
@@ -102,7 +102,7 @@ def test_consume_tokens():
     assert available_quota == initial_quota - 4
 
 
-def test_increase_quota():
+def test_increase_quota() -> None:
     """Test the increase_quota operation."""
     initial_quota = 1000
     quota_limit = 100
@@ -124,7 +124,7 @@ def test_increase_quota():
     assert available_quota == initial_quota - 1
 
 
-def test_ensure_available_quota():
+def test_ensure_available_quota() -> None:
     """Test the ensure_available_quota operation."""
     initial_quota = 1000
     quota_limit = 100
@@ -137,7 +137,7 @@ def test_ensure_available_quota():
     quota_limiter.ensure_available_quota("foo")
 
 
-def test_ensure_available_quota_no_quota():
+def test_ensure_available_quota_no_quota() -> None:
     """Test the ensure_available_quota operation."""
     initial_quota = 0
     quota_limit = 100
@@ -151,7 +151,7 @@ def test_ensure_available_quota_no_quota():
         quota_limiter.ensure_available_quota("foo")
 
 
-def test_revoke_quota():
+def test_revoke_quota() -> None:
     """Test the revoke_quota operation."""
     initial_quota = 1000
     quota_limit = 100
