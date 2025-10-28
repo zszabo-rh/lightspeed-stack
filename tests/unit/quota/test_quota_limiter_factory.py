@@ -14,7 +14,7 @@ from quota.quota_limiter_factory import QuotaLimiterFactory
 from quota.user_quota_limiter import UserQuotaLimiter
 
 
-def test_quota_limiters_no_storage():
+def test_quota_limiters_no_storage() -> None:
     """Test the quota limiters creating when no storage is configured."""
     configuration = QuotaHandlersConfiguration()
     configuration.sqlite = None
@@ -24,7 +24,7 @@ def test_quota_limiters_no_storage():
     assert not limiters
 
 
-def test_quota_limiters_no_limiters_pg_storage():
+def test_quota_limiters_no_limiters_pg_storage() -> None:
     """Test the quota limiters creating when no limiters are specified."""
     configuration = QuotaHandlersConfiguration()
     configuration.postgres = PostgreSQLDatabaseConfiguration(
@@ -35,7 +35,7 @@ def test_quota_limiters_no_limiters_pg_storage():
     assert not limiters
 
 
-def test_quota_limiters_no_limiters_sqlite_storage():
+def test_quota_limiters_no_limiters_sqlite_storage() -> None:
     """Test the quota limiters creating when no limiters are specified."""
     configuration = QuotaHandlersConfiguration()
     configuration.sqlite = SQLiteDatabaseConfiguration(
@@ -46,7 +46,7 @@ def test_quota_limiters_no_limiters_sqlite_storage():
     assert not limiters
 
 
-def test_quota_limiters_empty_limiters_pg_storage():
+def test_quota_limiters_empty_limiters_pg_storage() -> None:
     """Test the quota limiters creating when no limiters are specified."""
     configuration = QuotaHandlersConfiguration()
     configuration.postgres = PostgreSQLDatabaseConfiguration(
@@ -57,7 +57,7 @@ def test_quota_limiters_empty_limiters_pg_storage():
     assert not limiters
 
 
-def test_quota_limiters_empty_limiters_sqlite_storage():
+def test_quota_limiters_empty_limiters_sqlite_storage() -> None:
     """Test the quota limiters creating when no limiters are specified."""
     configuration = QuotaHandlersConfiguration()
     configuration.sqlite = SQLiteDatabaseConfiguration(
@@ -68,7 +68,9 @@ def test_quota_limiters_empty_limiters_sqlite_storage():
     assert not limiters
 
 
-def test_quota_limiters_user_quota_limiter_postgres_storage(mocker: MockerFixture):
+def test_quota_limiters_user_quota_limiter_postgres_storage(
+    mocker: MockerFixture,
+) -> None:
     """Test the quota limiters creating when one limiter is specified."""
     configuration = QuotaHandlersConfiguration()
     configuration.postgres = PostgreSQLDatabaseConfiguration(
@@ -90,7 +92,7 @@ def test_quota_limiters_user_quota_limiter_postgres_storage(mocker: MockerFixtur
     assert isinstance(limiters[0], UserQuotaLimiter)
 
 
-def test_quota_limiters_user_quota_limiter_sqlite_storage():
+def test_quota_limiters_user_quota_limiter_sqlite_storage() -> None:
     """Test the quota limiters creating when one limiter is specified."""
     configuration = QuotaHandlersConfiguration()
     configuration.sqlite = SQLiteDatabaseConfiguration(
@@ -110,7 +112,9 @@ def test_quota_limiters_user_quota_limiter_sqlite_storage():
     assert isinstance(limiters[0], UserQuotaLimiter)
 
 
-def test_quota_limiters_cluster_quota_limiter_postgres_storage(mocker: MockerFixture):
+def test_quota_limiters_cluster_quota_limiter_postgres_storage(
+    mocker: MockerFixture,
+) -> None:
     """Test the quota limiters creating when one limiter is specified."""
     configuration = QuotaHandlersConfiguration()
     configuration.postgres = PostgreSQLDatabaseConfiguration(
@@ -132,7 +136,7 @@ def test_quota_limiters_cluster_quota_limiter_postgres_storage(mocker: MockerFix
     assert isinstance(limiters[0], ClusterQuotaLimiter)
 
 
-def test_quota_limiters_cluster_quota_limiter_sqlite_storage():
+def test_quota_limiters_cluster_quota_limiter_sqlite_storage() -> None:
     """Test the quota limiters creating when one limiter is specified."""
     configuration = QuotaHandlersConfiguration()
     configuration.sqlite = SQLiteDatabaseConfiguration(
@@ -152,7 +156,7 @@ def test_quota_limiters_cluster_quota_limiter_sqlite_storage():
     assert isinstance(limiters[0], ClusterQuotaLimiter)
 
 
-def test_quota_limiters_two_limiters(mocker: MockerFixture):
+def test_quota_limiters_two_limiters(mocker: MockerFixture) -> None:
     """Test the quota limiters creating when two limiters are specified."""
     configuration = QuotaHandlersConfiguration()
     configuration.postgres = PostgreSQLDatabaseConfiguration(
@@ -182,7 +186,7 @@ def test_quota_limiters_two_limiters(mocker: MockerFixture):
     assert isinstance(limiters[1], ClusterQuotaLimiter)
 
 
-def test_quota_limiters_invalid_limiter_type(mocker: MockerFixture):
+def test_quota_limiters_invalid_limiter_type(mocker: MockerFixture) -> None:
     """Test the quota limiters creating when invalid limiter type is specified."""
     configuration = QuotaHandlersConfiguration()
     configuration.postgres = PostgreSQLDatabaseConfiguration(
