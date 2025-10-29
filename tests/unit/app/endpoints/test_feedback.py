@@ -132,7 +132,10 @@ async def test_feedback_endpoint_handler_error(mocker: MockerFixture) -> None:
         )
 
     assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-    assert exc_info.value.detail["response"] == "Error storing user feedback"  # type: ignore
+
+    detail = exc_info.value.detail
+    assert isinstance(detail, dict)
+    assert detail["response"] == "Error storing user feedback"
 
 
 @pytest.mark.parametrize(

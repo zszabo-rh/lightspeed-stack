@@ -40,7 +40,10 @@ async def test_config_endpoint_handler_configuration_not_loaded(
             auth=auth, request=request  # pyright:ignore[reportArgumentType]
         )
     assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-    assert exc_info.value.detail["response"] == "Configuration is not loaded"  # type: ignore
+
+    detail = exc_info.value.detail
+    assert isinstance(detail, dict)
+    assert detail["response"] == "Configuration is not loaded"
 
 
 @pytest.mark.asyncio
