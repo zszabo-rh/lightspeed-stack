@@ -1,23 +1,26 @@
 """Unit tests for the /info REST API endpoint."""
 
+from typing import Any
 import pytest
 from fastapi import Request, HTTPException, status
+from pytest_mock import MockerFixture
 
 from llama_stack_client import APIConnectionError
 from llama_stack_client.types import VersionInfo
 
+from authentication.interface import AuthTuple
 from app.endpoints.info import info_endpoint_handler
 from configuration import AppConfig
 from tests.unit.utils.auth_helpers import mock_authorization_resolvers
 
 
 @pytest.mark.asyncio
-async def test_info_endpoint(mocker):
+async def test_info_endpoint(mocker: MockerFixture) -> None:
     """Test the info endpoint handler."""
     mock_authorization_resolvers(mocker)
 
     # configuration for tests
-    config_dict = {
+    config_dict: dict[Any, Any] = {
         "name": "foo",
         "service": {
             "host": "localhost",
@@ -55,12 +58,16 @@ async def test_info_endpoint(mocker):
 
     mock_authorization_resolvers(mocker)
 
+    # HTTP request mock required by URL endpoint handler
     request = Request(
         scope={
             "type": "http",
         }
     )
-    auth = ("test_user", "token", {})
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
+
     response = await info_endpoint_handler(auth=auth, request=request)
     assert response is not None
     assert response.name is not None
@@ -69,12 +76,12 @@ async def test_info_endpoint(mocker):
 
 
 @pytest.mark.asyncio
-async def test_info_endpoint_connection_error(mocker):
+async def test_info_endpoint_connection_error(mocker: MockerFixture) -> None:
     """Test the info endpoint handler."""
     mock_authorization_resolvers(mocker)
 
     # configuration for tests
-    config_dict = {
+    config_dict: dict[Any, Any] = {
         "name": "foo",
         "service": {
             "host": "localhost",
@@ -101,7 +108,7 @@ async def test_info_endpoint_connection_error(mocker):
 
     # Mock the LlamaStack client
     mock_client = mocker.AsyncMock()
-    mock_client.inspect.version.side_effect = APIConnectionError(request=None)
+    mock_client.inspect.version.side_effect = APIConnectionError(request=None)  # type: ignore
     mock_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
     mock_lsc.return_value = mock_client
     mock_config = mocker.Mock()
@@ -112,12 +119,15 @@ async def test_info_endpoint_connection_error(mocker):
 
     mock_authorization_resolvers(mocker)
 
+    # HTTP request mock required by URL endpoint handler
     request = Request(
         scope={
             "type": "http",
         }
     )
-    auth = ("test_user", "token", {})
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
 
     with pytest.raises(HTTPException) as e:
         await info_endpoint_handler(auth=auth, request=request)
