@@ -1,5 +1,6 @@
 """Unit tests for the /feedback REST API endpoint."""
 
+from typing import Any
 from fastapi import HTTPException, status
 import pytest
 from pytest_mock import MockerFixture
@@ -12,6 +13,7 @@ from app.endpoints.feedback import (
     store_feedback,
     update_feedback_status,
 )
+from authentication.interface import AuthTuple
 from models.requests import FeedbackStatusUpdateRequest, FeedbackRequest
 from tests.unit.utils.auth_helpers import mock_authorization_resolvers
 
@@ -24,19 +26,19 @@ VALID_BASE = {
 }
 
 
-def test_is_feedback_enabled():
+def test_is_feedback_enabled() -> None:
     """Test that is_feedback_enabled returns True when feedback is not disabled."""
     configuration.user_data_collection_configuration.feedback_enabled = True
     assert is_feedback_enabled() is True, "Feedback should be enabled"
 
 
-def test_is_feedback_disabled():
+def test_is_feedback_disabled() -> None:
     """Test that is_feedback_enabled returns False when feedback is disabled."""
     configuration.user_data_collection_configuration.feedback_enabled = False
     assert is_feedback_enabled() is False, "Feedback should be disabled"
 
 
-async def test_assert_feedback_enabled_disabled(mocker: MockerFixture):
+async def test_assert_feedback_enabled_disabled(mocker: MockerFixture) -> None:
     """Test that assert_feedback_enabled raises HTTPException when feedback is disabled."""
 
     # Simulate feedback being disabled
@@ -49,7 +51,7 @@ async def test_assert_feedback_enabled_disabled(mocker: MockerFixture):
     assert exc_info.value.detail == "Forbidden: Feedback is disabled"
 
 
-async def test_assert_feedback_enabled(mocker: MockerFixture):
+async def test_assert_feedback_enabled(mocker: MockerFixture) -> None:
     """Test that assert_feedback_enabled does not raise an exception when feedback is enabled."""
 
     # Simulate feedback being enabled
@@ -74,7 +76,9 @@ async def test_assert_feedback_enabled(mocker: MockerFixture):
     ids=["no_categories", "with_negative_categories"],
 )
 @pytest.mark.asyncio
-async def test_feedback_endpoint_handler(mocker, feedback_request_data):
+async def test_feedback_endpoint_handler(
+    mocker: MockerFixture, feedback_request_data: dict[str, Any]
+) -> None:
     """Test that feedback_endpoint_handler processes feedback for different payloads."""
 
     mock_authorization_resolvers(mocker)
@@ -87,11 +91,14 @@ async def test_feedback_endpoint_handler(mocker, feedback_request_data):
     feedback_request = mocker.Mock()
     feedback_request.model_dump.return_value = feedback_request_data
 
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
+
     # Call the endpoint handler
     result = await feedback_endpoint_handler(
         feedback_request=feedback_request,
         _ensure_feedback_enabled=assert_feedback_enabled,
-        auth=("test_user_id", "test_username", False, "test_token"),
+        auth=auth,
     )
 
     # Assert that the expected response is returned
@@ -99,7 +106,7 @@ async def test_feedback_endpoint_handler(mocker, feedback_request_data):
 
 
 @pytest.mark.asyncio
-async def test_feedback_endpoint_handler_error(mocker: MockerFixture):
+async def test_feedback_endpoint_handler_error(mocker: MockerFixture) -> None:
     """Test that feedback_endpoint_handler raises an HTTPException on error."""
     mock_authorization_resolvers(mocker)
 
@@ -113,16 +120,19 @@ async def test_feedback_endpoint_handler_error(mocker: MockerFixture):
     # Mock the feedback request
     feedback_request = mocker.Mock()
 
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
+
     # Call the endpoint handler and assert it raises an exception
     with pytest.raises(HTTPException) as exc_info:
         await feedback_endpoint_handler(
             feedback_request=feedback_request,
             _ensure_feedback_enabled=assert_feedback_enabled,
-            auth=("test_user_id", "test_username", False, "test_token"),
+            auth=auth,
         )
 
     assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-    assert exc_info.value.detail["response"] == "Error storing user feedback"
+    assert exc_info.value.detail["response"] == "Error storing user feedback"  # type: ignore
 
 
 @pytest.mark.parametrize(
@@ -145,7 +155,9 @@ async def test_feedback_endpoint_handler_error(mocker: MockerFixture):
     ],
     ids=["negative_text_feedback", "negative_feedback_with_categories"],
 )
-def test_store_feedback(mocker, feedback_request_data):
+def test_store_feedback(
+    mocker: MockerFixture, feedback_request_data: dict[str, Any]
+) -> None:
     """Test that store_feedback correctly stores various feedback payloads."""
 
     configuration.user_data_collection_configuration.feedback_storage = "fake-path"
@@ -191,7 +203,9 @@ def test_store_feedback(mocker, feedback_request_data):
     ],
     ids=["negative_text_feedback", "negative_feedback_with_categories"],
 )
-def test_store_feedback_on_io_error(mocker, feedback_request_data):
+def test_store_feedback_on_io_error(
+    mocker: MockerFixture, feedback_request_data: dict[str, Any]
+) -> None:
     """Test the OSError and IOError handlings during feedback storage."""
 
     # non-writable path
@@ -206,14 +220,17 @@ def test_store_feedback_on_io_error(mocker, feedback_request_data):
         store_feedback(user_id, feedback_request_data)
 
 
-async def test_update_feedback_status_different(mocker: MockerFixture):
+async def test_update_feedback_status_different(mocker: MockerFixture) -> None:
     """Test that update_feedback_status returns the correct status with an update."""
     configuration.user_data_collection_configuration.feedback_enabled = True
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
 
     req = FeedbackStatusUpdateRequest(status=False)
     resp = await update_feedback_status(
         req,
-        auth=("test_user_id", "test_username", False, "test_token"),
+        auth=auth,
     )
     assert resp.status == {
         "previous_status": True,
@@ -223,14 +240,17 @@ async def test_update_feedback_status_different(mocker: MockerFixture):
     }
 
 
-async def test_update_feedback_status_no_change(mocker: MockerFixture):
+async def test_update_feedback_status_no_change(mocker: MockerFixture) -> None:
     """Test that update_feedback_status returns the correct status with no update."""
     configuration.user_data_collection_configuration.feedback_enabled = True
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
 
     req = FeedbackStatusUpdateRequest(status=True)
     resp = await update_feedback_status(
         req,
-        auth=("test_user_id", "test_username", False, "test_token"),
+        auth=auth,
     )
     assert resp.status == {
         "previous_status": True,
@@ -250,7 +270,9 @@ async def test_update_feedback_status_no_change(mocker: MockerFixture):
     ids=["test_sentiment_only", "test_user_feedback_only", "test_categories_only"],
 )
 @pytest.mark.asyncio
-async def test_feedback_endpoint_valid_requests(mocker: MockerFixture, payload):
+async def test_feedback_endpoint_valid_requests(
+    mocker: MockerFixture, payload: dict[str, Any]
+) -> None:
     """Test endpoint with valid feedback payloads."""
     mock_authorization_resolvers(mocker)
     mocker.patch("app.endpoints.feedback.store_feedback")
