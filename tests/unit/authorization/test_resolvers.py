@@ -7,6 +7,7 @@ from contextlib import nullcontext as does_not_raise
 
 import pytest
 
+from authentication.interface import AuthTuple
 from authorization.resolvers import JwtRolesResolver, GenericAccessResolver
 from models.config import JwtRoleRule, AccessRule, JsonPathOperator, Action
 import constants
@@ -23,7 +24,7 @@ def claims_to_token(claims: dict) -> str:
     return f"foo_header.{b64_encoded_claims}.foo_signature"
 
 
-def claims_to_auth_tuple(claims: dict) -> tuple:
+def claims_to_auth_tuple(claims: dict) -> AuthTuple:
     """Convert JWT claims dictionary to an auth tuple."""
     return ("user", "token", False, claims_to_token(claims))
 
@@ -32,7 +33,7 @@ class TestJwtRolesResolver:
     """Test cases for JwtRolesResolver."""
 
     @pytest.fixture
-    async def employee_role_rule(self):
+    async def employee_role_rule(self) -> None:
         """Role rule for RedHat employees."""
         return JwtRoleRule(
             jsonpath="$.realm_access.roles[*]",
