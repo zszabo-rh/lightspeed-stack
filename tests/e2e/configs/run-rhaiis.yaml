@@ -79,6 +79,10 @@ providers:
         api_token: ${env.RHAIIS_API_KEY}
         tls_verify: false
         max_tokens: 2048  
+    - provider_id: openai
+      provider_type: remote::openai
+      config:
+        api_key: ${env.OPENAI_API_KEY}
   post_training:
   - config:
       checkpoint_format: huggingface
@@ -126,7 +130,7 @@ server:
 shields: 
   - shield_id: llama-guard-shield
     provider_id: llama-guard
-    provider_shield_id: "meta-llama/Llama-3.1-8B-Instruct"
+    provider_shield_id: gpt-4-turbo
 models:
   - metadata:
       embedding_dimension: 768 # Depends on chosen model
@@ -134,7 +138,11 @@ models:
     provider_id: sentence-transformers
     provider_model_id: sentence-transformers/all-mpnet-base-v2 # Location of embedding model
     model_type: embedding
-  - model_id: meta-llama/Llama-3.1-8B-Instruct
+  - model_id: ${env.RHAIIS_MODEL}
     provider_id: vllm
     model_type: llm
-    provider_model_id: meta-llama/Llama-3.1-8B-Instruct
+    provider_model_id: ${env.RHAIIS_MODEL}
+  - model_id: gpt-4-turbo
+    provider_id: openai
+    model_type: llm
+    provider_model_id: gpt-4-turbo
