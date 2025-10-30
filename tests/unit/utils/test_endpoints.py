@@ -2,6 +2,7 @@
 
 # pylint: disable=too-many-lines
 
+from pathlib import Path
 import os
 import pytest
 from pytest_mock import MockerFixture
@@ -18,12 +19,13 @@ from utils import endpoints
 from utils.endpoints import get_agent, get_temp_agent
 
 from tests.unit import config_dict
+from tests.unit.conftest import AgentFixtures
 
 CONFIGURED_SYSTEM_PROMPT = "This is a configured system prompt"
 
 
 @pytest.fixture(name="input_file")
-def input_file_fixture(tmp_path):
+def input_file_fixture(tmp_path: Path) -> str:
     """Create file manually using the tmp_path fixture."""
     filename = os.path.join(tmp_path, "prompt.txt")
     with open(filename, "wt", encoding="utf-8") as fout:
@@ -32,7 +34,7 @@ def input_file_fixture(tmp_path):
 
 
 @pytest.fixture(name="config_without_system_prompt")
-def config_without_system_prompt_fixture():
+def config_without_system_prompt_fixture() -> AppConfig:
     """Configuration w/o custom system prompt set."""
     test_config = config_dict.copy()
 
@@ -46,7 +48,7 @@ def config_without_system_prompt_fixture():
 
 
 @pytest.fixture(name="config_with_custom_system_prompt")
-def config_with_custom_system_prompt_fixture():
+def config_with_custom_system_prompt_fixture() -> AppConfig:
     """Configuration with custom system prompt set."""
     test_config = config_dict.copy()
 
@@ -61,7 +63,9 @@ def config_with_custom_system_prompt_fixture():
 
 
 @pytest.fixture(name="config_with_custom_system_prompt_and_disable_query_system_prompt")
-def config_with_custom_system_prompt_and_disable_query_system_prompt_fixture():
+def config_with_custom_system_prompt_and_disable_query_system_prompt_fixture() -> (
+    AppConfig
+):
     """Configuration with custom system prompt and disabled query system prompt set."""
     test_config = config_dict.copy()
 
@@ -79,7 +83,9 @@ def config_with_custom_system_prompt_and_disable_query_system_prompt_fixture():
 @pytest.fixture(
     name="config_with_custom_profile_prompt_and_enabled_query_system_prompt"
 )
-def config_with_custom_profile_prompt_and_enabled_query_system_prompt_fixture():
+def config_with_custom_profile_prompt_and_enabled_query_system_prompt_fixture() -> (
+    AppConfig
+):
     """Configuration with custom profile loaded for prompt and disabled query system prompt set."""
     test_config = config_dict.copy()
 
@@ -97,7 +103,9 @@ def config_with_custom_profile_prompt_and_enabled_query_system_prompt_fixture():
 @pytest.fixture(
     name="config_with_custom_profile_prompt_and_disable_query_system_prompt"
 )
-def config_with_custom_profile_prompt_and_disable_query_system_prompt_fixture():
+def config_with_custom_profile_prompt_and_disable_query_system_prompt_fixture() -> (
+    AppConfig
+):
     """Configuration with custom profile loaded for prompt and disabled query system prompt set."""
     test_config = config_dict.copy()
 
@@ -113,7 +121,7 @@ def config_with_custom_profile_prompt_and_disable_query_system_prompt_fixture():
 
 
 @pytest.fixture(name="query_request_without_system_prompt")
-def query_request_without_system_prompt_fixture():
+def query_request_without_system_prompt_fixture() -> QueryRequest:
     """Fixture for query request without system prompt."""
     return QueryRequest(
         query="query", system_prompt=None
@@ -121,7 +129,7 @@ def query_request_without_system_prompt_fixture():
 
 
 @pytest.fixture(name="query_request_with_system_prompt")
-def query_request_with_system_prompt_fixture():
+def query_request_with_system_prompt_fixture() -> QueryRequest:
     """Fixture for query request with system prompt."""
     return QueryRequest(
         query="query", system_prompt="System prompt defined in query"
@@ -129,7 +137,7 @@ def query_request_with_system_prompt_fixture():
 
 
 @pytest.fixture(name="setup_configuration")
-def setup_configuration_fixture():
+def setup_configuration_fixture() -> AppConfig:
     """Set up configuration for tests."""
     test_config_dict = {
         "name": "test",
@@ -157,8 +165,9 @@ def setup_configuration_fixture():
 
 
 def test_get_default_system_prompt(
-    config_without_system_prompt, query_request_without_system_prompt
-):
+    config_without_system_prompt: AppConfig,
+    query_request_without_system_prompt: QueryRequest,
+) -> None:
     """Test that default system prompt is returned when other prompts are not provided."""
     system_prompt = endpoints.get_system_prompt(
         query_request_without_system_prompt, config_without_system_prompt
@@ -167,8 +176,9 @@ def test_get_default_system_prompt(
 
 
 def test_get_customized_system_prompt(
-    config_with_custom_system_prompt, query_request_without_system_prompt
-):
+    config_with_custom_system_prompt: AppConfig,
+    query_request_without_system_prompt: QueryRequest,
+) -> None:
     """Test that customized system prompt is used when system prompt is not provided in query."""
     system_prompt = endpoints.get_system_prompt(
         query_request_without_system_prompt, config_with_custom_system_prompt
@@ -177,8 +187,9 @@ def test_get_customized_system_prompt(
 
 
 def test_get_query_system_prompt(
-    config_without_system_prompt, query_request_with_system_prompt
-):
+    config_without_system_prompt: AppConfig,
+    query_request_with_system_prompt: QueryRequest,
+) -> None:
     """Test that system prompt from query is returned."""
     system_prompt = endpoints.get_system_prompt(
         query_request_with_system_prompt, config_without_system_prompt
@@ -187,8 +198,9 @@ def test_get_query_system_prompt(
 
 
 def test_get_query_system_prompt_not_customized_one(
-    config_with_custom_system_prompt, query_request_with_system_prompt
-):
+    config_with_custom_system_prompt: AppConfig,
+    query_request_with_system_prompt: QueryRequest,
+) -> None:
     """Test that system prompt from query is returned even when customized one is specified."""
     system_prompt = endpoints.get_system_prompt(
         query_request_with_system_prompt, config_with_custom_system_prompt
@@ -197,9 +209,9 @@ def test_get_query_system_prompt_not_customized_one(
 
 
 def test_get_system_prompt_with_disable_query_system_prompt(
-    config_with_custom_system_prompt_and_disable_query_system_prompt,
-    query_request_with_system_prompt,
-):
+    config_with_custom_system_prompt_and_disable_query_system_prompt: AppConfig,
+    query_request_with_system_prompt: QueryRequest,
+) -> None:
     """Test that query system prompt is disallowed when disable_query_system_prompt is True."""
     with pytest.raises(HTTPException) as exc_info:
         endpoints.get_system_prompt(
@@ -210,9 +222,9 @@ def test_get_system_prompt_with_disable_query_system_prompt(
 
 
 def test_get_system_prompt_with_disable_query_system_prompt_and_non_system_prompt_query(
-    config_with_custom_system_prompt_and_disable_query_system_prompt,
-    query_request_without_system_prompt,
-):
+    config_with_custom_system_prompt_and_disable_query_system_prompt: AppConfig,
+    query_request_without_system_prompt: QueryRequest,
+) -> None:
     """Test that query without system prompt is allowed when disable_query_system_prompt is True."""
     system_prompt = endpoints.get_system_prompt(
         query_request_without_system_prompt,
@@ -222,9 +234,9 @@ def test_get_system_prompt_with_disable_query_system_prompt_and_non_system_promp
 
 
 def test_get_profile_prompt_with_disable_query_system_prompt(
-    config_with_custom_profile_prompt_and_disable_query_system_prompt,
-    query_request_without_system_prompt,
-):
+    config_with_custom_profile_prompt_and_disable_query_system_prompt: AppConfig,
+    query_request_without_system_prompt: QueryRequest,
+) -> None:
     """Test that system prompt is set if profile enabled and query system prompt disabled."""
     custom_profile = CustomProfile(path="tests/profiles/test/profile.py")
     prompts = custom_profile.get_prompts()
@@ -236,9 +248,9 @@ def test_get_profile_prompt_with_disable_query_system_prompt(
 
 
 def test_get_profile_prompt_with_enabled_query_system_prompt(
-    config_with_custom_profile_prompt_and_enabled_query_system_prompt,
-    query_request_with_system_prompt,
-):
+    config_with_custom_profile_prompt_and_enabled_query_system_prompt: AppConfig,
+    query_request_with_system_prompt: QueryRequest,
+) -> None:
     """Test that profile system prompt is overridden by query system prompt enabled."""
     system_prompt = endpoints.get_system_prompt(
         query_request_with_system_prompt,
@@ -249,8 +261,8 @@ def test_get_profile_prompt_with_enabled_query_system_prompt(
 
 @pytest.mark.asyncio
 async def test_get_agent_with_conversation_id(
-    prepare_agent_mocks, mocker: MockerFixture
-):
+    prepare_agent_mocks: AgentFixtures, mocker: MockerFixture
+) -> None:
     """Test get_agent function when agent exists in llama stack."""
     mock_client, mock_agent = prepare_agent_mocks
     conversation_id = "test_conversation_id"
@@ -284,8 +296,10 @@ async def test_get_agent_with_conversation_id(
 
 @pytest.mark.asyncio
 async def test_get_agent_with_conversation_id_and_no_agent_in_llama_stack(
-    setup_configuration, prepare_agent_mocks, mocker: MockerFixture
-):
+    setup_configuration: AppConfig,
+    prepare_agent_mocks: AgentFixtures,
+    mocker: MockerFixture,
+) -> None:
     """Test get_agent function when conversation_id is provided."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_client.agents.retrieve.side_effect = ValueError(
@@ -342,8 +356,10 @@ async def test_get_agent_with_conversation_id_and_no_agent_in_llama_stack(
 
 @pytest.mark.asyncio
 async def test_get_agent_no_conversation_id(
-    setup_configuration, prepare_agent_mocks, mocker: MockerFixture
-):
+    setup_configuration: AppConfig,
+    prepare_agent_mocks: AgentFixtures,
+    mocker: MockerFixture,
+) -> None:
     """Test get_agent function when conversation_id is None."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_session.return_value = "new_session_id"
@@ -396,8 +412,10 @@ async def test_get_agent_no_conversation_id(
 
 @pytest.mark.asyncio
 async def test_get_agent_empty_shields(
-    setup_configuration, prepare_agent_mocks, mocker: MockerFixture
-):
+    setup_configuration: AppConfig,
+    prepare_agent_mocks: AgentFixtures,
+    mocker: MockerFixture,
+) -> None:
     """Test get_agent function with empty shields list."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_session.return_value = "new_session_id"
@@ -450,8 +468,10 @@ async def test_get_agent_empty_shields(
 
 @pytest.mark.asyncio
 async def test_get_agent_multiple_mcp_servers(
-    setup_configuration, prepare_agent_mocks, mocker: MockerFixture
-):
+    setup_configuration: AppConfig,
+    prepare_agent_mocks: AgentFixtures,
+    mocker: MockerFixture,
+) -> None:
     """Test get_agent function with multiple MCP servers."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_session.return_value = "new_session_id"
@@ -506,8 +526,10 @@ async def test_get_agent_multiple_mcp_servers(
 
 @pytest.mark.asyncio
 async def test_get_agent_session_persistence_enabled(
-    setup_configuration, prepare_agent_mocks, mocker: MockerFixture
-):
+    setup_configuration: AppConfig,
+    prepare_agent_mocks: AgentFixtures,
+    mocker: MockerFixture,
+) -> None:
     """Test get_agent function ensures session persistence is enabled."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_session.return_value = "new_session_id"
@@ -555,8 +577,10 @@ async def test_get_agent_session_persistence_enabled(
 
 @pytest.mark.asyncio
 async def test_get_agent_no_tools_no_parser(
-    setup_configuration, prepare_agent_mocks, mocker: MockerFixture
-):
+    setup_configuration: AppConfig,
+    prepare_agent_mocks: AgentFixtures,
+    mocker: MockerFixture,
+) -> None:
     """Test get_agent function sets tool_parser=None when no_tools=True."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_session.return_value = "new_session_id"
@@ -610,8 +634,10 @@ async def test_get_agent_no_tools_no_parser(
 
 @pytest.mark.asyncio
 async def test_get_agent_no_tools_false_preserves_parser(
-    setup_configuration, prepare_agent_mocks, mocker: MockerFixture
-):
+    setup_configuration: AppConfig,
+    prepare_agent_mocks: AgentFixtures,
+    mocker: MockerFixture,
+) -> None:
     """Test get_agent function preserves tool_parser when no_tools=False."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_session.return_value = "new_session_id"
@@ -670,8 +696,8 @@ async def test_get_agent_no_tools_false_preserves_parser(
 
 @pytest.mark.asyncio
 async def test_get_temp_agent_basic_functionality(
-    prepare_agent_mocks, mocker: MockerFixture
-):
+    prepare_agent_mocks: AgentFixtures, mocker: MockerFixture
+) -> None:
     """Test get_temp_agent function creates agent with correct parameters."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_session.return_value = "temp_session_id"
@@ -711,8 +737,8 @@ async def test_get_temp_agent_basic_functionality(
 
 @pytest.mark.asyncio
 async def test_get_temp_agent_returns_valid_ids(
-    prepare_agent_mocks, mocker: MockerFixture
-):
+    prepare_agent_mocks: AgentFixtures, mocker: MockerFixture
+) -> None:
     """Test get_temp_agent function returns valid agent_id and session_id."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.agent_id = "generated_agent_id"
@@ -746,8 +772,8 @@ async def test_get_temp_agent_returns_valid_ids(
 
 @pytest.mark.asyncio
 async def test_get_temp_agent_no_persistence(
-    prepare_agent_mocks, mocker: MockerFixture
-):
+    prepare_agent_mocks: AgentFixtures, mocker: MockerFixture
+) -> None:
     """Test get_temp_agent function creates agent without session persistence."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_session.return_value = "temp_session_id"
@@ -776,7 +802,7 @@ async def test_get_temp_agent_no_persistence(
     )
 
 
-def test_validate_model_provider_override_allowed_with_action():
+def test_validate_model_provider_override_allowed_with_action() -> None:
     """Ensure no exception when caller has MODEL_OVERRIDE and request includes model/provider."""
     query_request = QueryRequest(
         query="q", model="m", provider="p"
@@ -785,7 +811,7 @@ def test_validate_model_provider_override_allowed_with_action():
     endpoints.validate_model_provider_override(query_request, authorized_actions)
 
 
-def test_validate_model_provider_override_rejected_without_action():
+def test_validate_model_provider_override_rejected_without_action() -> None:
     """Ensure HTTP 403 when request includes model/provider and caller lacks permission."""
     query_request = QueryRequest(
         query="q", model="m", provider="p"
@@ -796,13 +822,15 @@ def test_validate_model_provider_override_rejected_without_action():
     assert exc_info.value.status_code == 403
 
 
-def test_validate_model_provider_override_no_override_without_action():
+def test_validate_model_provider_override_no_override_without_action() -> None:
     """No exception when request does not include model/provider regardless of permission."""
     query_request = QueryRequest(query="q")  # pyright:ignore[reportCallIssue]
     endpoints.validate_model_provider_override(query_request, set())
 
 
-def test_get_topic_summary_system_prompt_default(setup_configuration):
+def test_get_topic_summary_system_prompt_default(
+    setup_configuration: AppConfig,
+) -> None:
     """Test that default topic summary system prompt is returned when no custom
     profile is configured.
     """
@@ -812,7 +840,7 @@ def test_get_topic_summary_system_prompt_default(setup_configuration):
     assert topic_summary_prompt == constants.DEFAULT_TOPIC_SUMMARY_SYSTEM_PROMPT
 
 
-def test_get_topic_summary_system_prompt_with_custom_profile():
+def test_get_topic_summary_system_prompt_with_custom_profile() -> None:
     """Test that custom profile topic summary prompt is returned when available."""
     test_config = config_dict.copy()
     test_config["customization"] = {
@@ -831,7 +859,7 @@ def test_get_topic_summary_system_prompt_with_custom_profile():
 
 def test_get_topic_summary_system_prompt_with_custom_profile_no_topic_summary(
     mocker: MockerFixture,
-):
+) -> None:
     """Test that default topic summary prompt is returned when custom profile has
     no topic_summary prompt.
     """
@@ -855,7 +883,7 @@ def test_get_topic_summary_system_prompt_with_custom_profile_no_topic_summary(
     assert topic_summary_prompt == constants.DEFAULT_TOPIC_SUMMARY_SYSTEM_PROMPT
 
 
-def test_get_topic_summary_system_prompt_no_customization():
+def test_get_topic_summary_system_prompt_no_customization() -> None:
     """Test that default topic summary prompt is returned when customization is None."""
     test_config = config_dict.copy()
     test_config["customization"] = None
@@ -870,12 +898,14 @@ def test_get_topic_summary_system_prompt_no_customization():
 class TestCreateReferencedDocuments:
     """Test cases for the unified create_referenced_documents function."""
 
-    def test_create_referenced_documents_empty_chunks(self):
+    def test_create_referenced_documents_empty_chunks(self) -> None:
         """Test that empty chunks list returns empty result."""
         result = endpoints.create_referenced_documents([])
         assert not result
 
-    def test_create_referenced_documents_http_urls_referenced_document_format(self):
+    def test_create_referenced_documents_http_urls_referenced_document_format(
+        self,
+    ) -> None:
         """Test HTTP URLs with ReferencedDocument format."""
 
         mock_chunk1 = type("MockChunk", (), {"source": "https://example.com/doc1"})()
@@ -896,7 +926,7 @@ class TestCreateReferencedDocuments:
         assert result[1].doc_url == AnyUrl("https://example.com/doc2")
         assert result[1].doc_title == "doc2"
 
-    def test_create_referenced_documents_document_ids_with_metadata(self):
+    def test_create_referenced_documents_document_ids_with_metadata(self) -> None:
         """Test document IDs with metadata enrichment."""
 
         mock_chunk1 = type("MockChunk", (), {"source": "doc_id_1"})()
@@ -924,7 +954,7 @@ class TestCreateReferencedDocuments:
         assert result[1].doc_url == AnyUrl("https://example.com/doc2")
         assert result[1].doc_title == "Document 2"
 
-    def test_create_referenced_documents_skips_tool_names(self):
+    def test_create_referenced_documents_skips_tool_names(self) -> None:
         """Test that tool names like 'knowledge_search' are skipped."""
 
         mock_chunk1 = type("MockChunk", (), {"source": "knowledge_search"})()
@@ -941,7 +971,7 @@ class TestCreateReferencedDocuments:
         assert result[0].doc_url == AnyUrl("https://example.com/doc1")
         assert result[0].doc_title == "doc1"
 
-    def test_create_referenced_documents_skips_empty_sources(self):
+    def test_create_referenced_documents_skips_empty_sources(self) -> None:
         """Test that chunks with empty or None sources are skipped."""
 
         mock_chunk1 = type("MockChunk", (), {"source": None})()
@@ -961,7 +991,7 @@ class TestCreateReferencedDocuments:
         assert result[0].doc_url == AnyUrl("https://example.com/doc1")
         assert result[0].doc_title == "doc1"
 
-    def test_create_referenced_documents_deduplication(self):
+    def test_create_referenced_documents_deduplication(self) -> None:
         """Test that duplicate sources are deduplicated."""
 
         mock_chunk1 = type("MockChunk", (), {"source": "https://example.com/doc1"})()
@@ -986,7 +1016,7 @@ class TestCreateReferencedDocuments:
         assert result[0].doc_url == AnyUrl("https://example.com/doc1")
         assert result[1].doc_title == "doc_id_1"
 
-    def test_create_referenced_documents_invalid_urls(self):
+    def test_create_referenced_documents_invalid_urls(self) -> None:
         """Test handling of invalid URLs."""
 
         mock_chunk1 = type("MockChunk", (), {"source": "not-a-valid-url"})()
