@@ -3,8 +3,8 @@
 import pytest
 
 from models.cache_entry import CacheEntry
-from cache.noop_cache import NoopCache
 from utils import suid
+from cache.noop_cache import NoopCache
 
 USER_ID = suid.get_suid()
 CONVERSATION_ID = suid.get_suid()
@@ -28,19 +28,19 @@ cache_entry_2 = CacheEntry(
 
 
 @pytest.fixture(name="cache_fixture")
-def cache():
+def cache() -> NoopCache:
     """Fixture with constucted and initialized in memory cache object."""
     c = NoopCache()
     c.initialize_cache()
     return c
 
 
-def test_connect(cache_fixture):
+def test_connect(cache_fixture: NoopCache) -> None:
     """Test the behavior of connect method."""
     cache_fixture.connect()
 
 
-def test_insert_or_append(cache_fixture):
+def test_insert_or_append(cache_fixture: NoopCache) -> None:
     """Test the behavior of insert_or_append method."""
     cache_fixture.insert_or_append(
         USER_ID,
@@ -49,7 +49,7 @@ def test_insert_or_append(cache_fixture):
     )
 
 
-def test_insert_or_append_skip_user_id_check(cache_fixture):
+def test_insert_or_append_skip_user_id_check(cache_fixture: NoopCache) -> None:
     """Test the behavior of insert_or_append method."""
     skip_user_id_check = True
     cache_fixture.insert_or_append(
@@ -57,7 +57,7 @@ def test_insert_or_append_skip_user_id_check(cache_fixture):
     )
 
 
-def test_insert_or_append_existing_key(cache_fixture):
+def test_insert_or_append_existing_key(cache_fixture: NoopCache) -> None:
     """Test the behavior of insert_or_append method for existing item."""
     cache_fixture.insert_or_append(
         USER_ID,
@@ -71,7 +71,7 @@ def test_insert_or_append_existing_key(cache_fixture):
     )
 
 
-def test_get_nonexistent_user(cache_fixture):
+def test_get_nonexistent_user(cache_fixture: NoopCache) -> None:
     """Test how non-existent items are handled by the cache."""
     # this UUID is different from DEFAULT_USER_UID
     assert (
@@ -79,7 +79,7 @@ def test_get_nonexistent_user(cache_fixture):
     )
 
 
-def test_delete_existing_conversation(cache_fixture):
+def test_delete_existing_conversation(cache_fixture: NoopCache) -> None:
     """Test deleting an existing conversation."""
     cache_fixture.insert_or_append(USER_ID, CONVERSATION_ID, cache_entry_1)
 
@@ -88,19 +88,19 @@ def test_delete_existing_conversation(cache_fixture):
     assert result is True
 
 
-def test_delete_nonexistent_conversation(cache_fixture):
+def test_delete_nonexistent_conversation(cache_fixture: NoopCache) -> None:
     """Test deleting a conversation that doesn't exist."""
     result = cache_fixture.delete(USER_ID, CONVERSATION_ID)
     assert result is True
 
 
-def test_delete_improper_conversation_id(cache_fixture):
+def test_delete_improper_conversation_id(cache_fixture: NoopCache) -> None:
     """Test delete with invalid conversation ID."""
     with pytest.raises(ValueError, match="Invalid conversation ID"):
         cache_fixture.delete(USER_ID, "invalid-id")
 
 
-def test_delete_skip_user_id_check(cache_fixture):
+def test_delete_skip_user_id_check(cache_fixture: NoopCache) -> None:
     """Test deleting an existing conversation."""
     skip_user_id_check = True
     cache_fixture.insert_or_append(
@@ -114,7 +114,7 @@ def test_delete_skip_user_id_check(cache_fixture):
     assert result is True
 
 
-def test_list_conversations(cache_fixture):
+def test_list_conversations(cache_fixture: NoopCache) -> None:
     """Test listing conversations for a user."""
     # Create multiple conversations
     conversation_id_1 = suid.get_suid()
@@ -128,7 +128,7 @@ def test_list_conversations(cache_fixture):
     assert len(conversations) == 0
 
 
-def test_list_conversations_skip_user_id_check(cache_fixture):
+def test_list_conversations_skip_user_id_check(cache_fixture: NoopCache) -> None:
     """Test listing conversations for a user."""
     # Create multiple conversations
     conversation_id_1 = suid.get_suid()
@@ -147,13 +147,13 @@ def test_list_conversations_skip_user_id_check(cache_fixture):
     assert len(conversations) == 0
 
 
-def test_list_no_conversations(cache_fixture):
+def test_list_no_conversations(cache_fixture: NoopCache) -> None:
     """Test listing conversations for a user with no conversations."""
     conversations = cache_fixture.list(USER_ID)
     assert len(conversations) == 0
 
 
-def test_ready(cache_fixture):
+def test_ready(cache_fixture: NoopCache) -> None:
     """Test if in memory cache always report ready."""
     assert cache_fixture.ready()
 
@@ -172,27 +172,27 @@ improper_user_uuids = [
 
 
 @pytest.mark.parametrize("uuid", improper_user_uuids)
-def test_list_improper_user_id(cache_fixture, uuid):
+def test_list_improper_user_id(cache_fixture: NoopCache, uuid: str) -> None:
     """Test list with invalid user ID."""
     with pytest.raises(ValueError, match=f"Invalid user ID {uuid}"):
         cache_fixture.list(uuid)
 
 
 @pytest.mark.parametrize("uuid", improper_user_uuids)
-def test_delete_improper_user_id(cache_fixture, uuid):
+def test_delete_improper_user_id(cache_fixture: NoopCache, uuid: str) -> None:
     """Test delete with invalid user ID."""
     with pytest.raises(ValueError, match=f"Invalid user ID {uuid}"):
         cache_fixture.delete(uuid, CONVERSATION_ID)
 
 
 @pytest.mark.parametrize("uuid", improper_user_uuids)
-def test_get_improper_user_id(cache_fixture, uuid):
+def test_get_improper_user_id(cache_fixture: NoopCache, uuid: str) -> None:
     """Test how improper user ID is handled."""
     with pytest.raises(ValueError, match=f"Invalid user ID {uuid}"):
         cache_fixture.get(uuid, CONVERSATION_ID)
 
 
-def test_get_improper_conversation_id(cache_fixture):
+def test_get_improper_conversation_id(cache_fixture: NoopCache) -> None:
     """Test how improper conversation ID is handled."""
     with pytest.raises(ValueError, match="Invalid conversation ID"):
         cache_fixture.get(USER_ID, "this-is-not-valid-uuid")
