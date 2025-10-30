@@ -1,5 +1,7 @@
 """Unit tests for CacheFactory class."""
 
+from pathlib import Path
+
 import pytest
 from pytest_mock import MockerFixture
 
@@ -25,13 +27,13 @@ from cache.postgres_cache import PostgresCache
 
 
 @pytest.fixture(scope="module", name="noop_cache_config_fixture")
-def noop_cache_config():
+def noop_cache_config() -> ConversationCacheConfiguration:
     """Fixture containing initialized instance of ConversationCacheConfiguration."""
     return ConversationCacheConfiguration(type=CACHE_TYPE_NOOP)
 
 
 @pytest.fixture(scope="module", name="memory_cache_config_fixture")
-def memory_cache_config():
+def memory_cache_config() -> ConversationCacheConfiguration:
     """Fixture containing initialized instance of InMemory cache."""
     return ConversationCacheConfiguration(
         type=CACHE_TYPE_MEMORY, memory=InMemoryCacheConfig(max_entries=10)
@@ -39,7 +41,7 @@ def memory_cache_config():
 
 
 @pytest.fixture(scope="module", name="postgres_cache_config_fixture")
-def postgres_cache_config():
+def postgres_cache_config() -> ConversationCacheConfiguration:
     """Fixture containing initialized instance of PostgreSQL cache."""
     return ConversationCacheConfiguration(
         type=CACHE_TYPE_POSTGRES,
@@ -50,7 +52,7 @@ def postgres_cache_config():
 
 
 @pytest.fixture(name="sqlite_cache_config_fixture")
-def sqlite_cache_config(tmpdir):
+def sqlite_cache_config(tmpdir: Path) -> ConversationCacheConfiguration:
     """Fixture containing initialized instance of SQLite cache."""
     db_path = str(tmpdir / "test.sqlite")
     return ConversationCacheConfiguration(
@@ -59,14 +61,16 @@ def sqlite_cache_config(tmpdir):
 
 
 @pytest.fixture(scope="module", name="invalid_cache_type_config_fixture")
-def invalid_cache_type_config():
+def invalid_cache_type_config() -> ConversationCacheConfiguration:
     """Fixture containing instance of ConversationCacheConfiguration with improper settings."""
     c = ConversationCacheConfiguration()
     c.type = "foo bar baz"
     return c
 
 
-def test_conversation_cache_noop(noop_cache_config_fixture):
+def test_conversation_cache_noop(
+    noop_cache_config_fixture: ConversationCacheConfiguration,
+) -> None:
     """Check if NoopCache is returned by factory with proper configuration."""
     cache = CacheFactory.conversation_cache(noop_cache_config_fixture)
     assert cache is not None
@@ -74,7 +78,9 @@ def test_conversation_cache_noop(noop_cache_config_fixture):
     assert isinstance(cache, NoopCache)
 
 
-def test_conversation_cache_in_memory(memory_cache_config_fixture):
+def test_conversation_cache_in_memory(
+    memory_cache_config_fixture: ConversationCacheConfiguration,
+) -> None:
     """Check if InMemoryCache is returned by factory with proper configuration."""
     cache = CacheFactory.conversation_cache(memory_cache_config_fixture)
     assert cache is not None
@@ -82,7 +88,7 @@ def test_conversation_cache_in_memory(memory_cache_config_fixture):
     assert isinstance(cache, InMemoryCache)
 
 
-def test_conversation_cache_in_memory_improper_config():
+def test_conversation_cache_in_memory_improper_config() -> None:
     """Check if memory cache configuration is checked in cache factory."""
     cc = ConversationCacheConfiguration(
         type=CACHE_TYPE_MEMORY, memory=InMemoryCacheConfig(max_entries=10)
@@ -93,7 +99,9 @@ def test_conversation_cache_in_memory_improper_config():
         _ = CacheFactory.conversation_cache(cc)
 
 
-def test_conversation_cache_sqlite(sqlite_cache_config_fixture):
+def test_conversation_cache_sqlite(
+    sqlite_cache_config_fixture: ConversationCacheConfiguration,
+) -> None:
     """Check if SQLiteCache is returned by factory with proper configuration."""
     cache = CacheFactory.conversation_cache(sqlite_cache_config_fixture)
     assert cache is not None
@@ -101,7 +109,7 @@ def test_conversation_cache_sqlite(sqlite_cache_config_fixture):
     assert isinstance(cache, SQLiteCache)
 
 
-def test_conversation_cache_sqlite_improper_config(tmpdir):
+def test_conversation_cache_sqlite_improper_config(tmpdir: Path) -> None:
     """Check if memory cache configuration is checked in cache factory."""
     db_path = str(tmpdir / "test.sqlite")
     cc = ConversationCacheConfiguration(
@@ -114,8 +122,8 @@ def test_conversation_cache_sqlite_improper_config(tmpdir):
 
 
 def test_conversation_cache_postgres(
-    postgres_cache_config_fixture, mocker: MockerFixture
-):
+    postgres_cache_config_fixture: ConversationCacheConfiguration, mocker: MockerFixture
+) -> None:
     """Check if PostgreSQL is returned by factory with proper configuration."""
     mocker.patch("psycopg2.connect")
     cache = CacheFactory.conversation_cache(postgres_cache_config_fixture)
@@ -124,7 +132,7 @@ def test_conversation_cache_postgres(
     assert isinstance(cache, PostgresCache)
 
 
-def test_conversation_cache_postgres_improper_config():
+def test_conversation_cache_postgres_improper_config() -> None:
     """Check if PostgreSQL cache configuration is checked in cache factory."""
     cc = ConversationCacheConfiguration(
         type=CACHE_TYPE_POSTGRES,
@@ -138,7 +146,7 @@ def test_conversation_cache_postgres_improper_config():
         _ = CacheFactory.conversation_cache(cc)
 
 
-def test_conversation_cache_no_type():
+def test_conversation_cache_no_type() -> None:
     """Check if wrong cache configuration is detected properly."""
     cc = ConversationCacheConfiguration(type=CACHE_TYPE_NOOP)
     # simulate improper configuration (can not be done directly as model checks this)
@@ -147,7 +155,9 @@ def test_conversation_cache_no_type():
         CacheFactory.conversation_cache(cc)
 
 
-def test_conversation_cache_wrong_cache(invalid_cache_type_config_fixture):
+def test_conversation_cache_wrong_cache(
+    invalid_cache_type_config_fixture: ConversationCacheConfiguration,
+) -> None:
     """Check if wrong cache configuration is detected properly."""
     with pytest.raises(ValueError, match="Invalid cache type"):
         CacheFactory.conversation_cache(invalid_cache_type_config_fixture)
