@@ -53,7 +53,7 @@ async def test_config_endpoint_returns_current_config(
         test_auth: noop authentication tuple
     """
     response = await config_endpoint_handler(auth=test_auth, request=test_request)
-    
+
     # Verify that response matches the root configuration
     assert response == current_config.configuration
 
@@ -73,7 +73,7 @@ async def test_config_endpoint_fails_without_configuration(
         test_request: FastAPI request
         test_auth: noop authentication tuple
     """
-    
+
     # Verify that LogicError is raised when authorization tries to access config
     with pytest.raises(LogicError) as exc_info:
         await config_endpoint_handler(auth=test_auth, request=test_request)

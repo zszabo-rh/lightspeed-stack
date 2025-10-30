@@ -1,15 +1,16 @@
 """Shared fixtures for integration tests."""
 
 from pathlib import Path
-
-from fastapi import Request
-from authentication.noop import NoopAuthDependency
-
 from typing import Generator
+
 import pytest
+from fastapi import Request
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.engine import Engine
+
+from authentication.noop import NoopAuthDependency
 
 from configuration import configuration
 from models.database.base import Base
@@ -55,9 +56,7 @@ def current_config_fixture() -> Generator:
     This fixture loads the actual configuration file from project root (current configuration),
     demonstrating integration with the configuration system.
     """
-    config_path = (
-        Path(__file__).parent.parent.parent / "lightspeed-stack.yaml"
-    )
+    config_path = Path(__file__).parent.parent.parent / "lightspeed-stack.yaml"
     assert config_path.exists(), f"Config file not found: {config_path}"
 
     # Load configuration
