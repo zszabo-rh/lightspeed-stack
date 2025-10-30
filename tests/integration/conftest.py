@@ -11,6 +11,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.engine import Engine
 
 from authentication.noop import NoopAuthDependency
+from authentication.interface import AuthTuple
 
 from configuration import configuration
 from models.database.base import Base
@@ -117,7 +118,7 @@ def test_request_fixture() -> Request:
 
 
 @pytest.fixture(name="test_auth")
-async def test_auth_fixture(test_request: Request) -> tuple[str, str, bool, str]:
+async def test_auth_fixture(test_request: Request) -> AuthTuple:
     """Create authentication using real noop auth module.
 
     This uses the actual NoopAuthDependency instead of mocking,

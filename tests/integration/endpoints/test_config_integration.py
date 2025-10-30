@@ -4,6 +4,8 @@ import pytest
 
 from fastapi import Request
 
+from authentication.interface import AuthTuple
+
 from configuration import AppConfig, LogicError
 from app.endpoints.config import config_endpoint_handler
 
@@ -12,7 +14,7 @@ from app.endpoints.config import config_endpoint_handler
 async def test_config_endpoint_returns_config(
     test_config: AppConfig,
     test_request: Request,
-    test_auth: tuple[str, str, bool, str],
+    test_auth: AuthTuple,
 ) -> None:
     """Test that config endpoint returns test configuration.
 
@@ -37,7 +39,7 @@ async def test_config_endpoint_returns_config(
 async def test_config_endpoint_returns_current_config(
     current_config: AppConfig,
     test_request: Request,
-    test_auth: tuple[str, str, bool, str],
+    test_auth: AuthTuple,
 ) -> None:
     """Test that config endpoint returns current configuration (from root).
 
@@ -61,7 +63,7 @@ async def test_config_endpoint_returns_current_config(
 @pytest.mark.asyncio
 async def test_config_endpoint_fails_without_configuration(
     test_request: Request,
-    test_auth: tuple[str, str, bool, str],
+    test_auth: AuthTuple,
 ) -> None:
     """Test that authorization fails when configuration is not loaded.
 
