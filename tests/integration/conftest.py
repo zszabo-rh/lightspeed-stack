@@ -1,12 +1,17 @@
 """Shared fixtures for integration tests."""
 
 from pathlib import Path
-
 from typing import Generator
+
 import pytest
+from fastapi import Request
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.engine import Engine
+
+from authentication.noop import NoopAuthDependency
+from authentication.interface import AuthTuple
 
 from configuration import configuration
 from models.database.base import Base
@@ -36,6 +41,23 @@ def test_config_fixture() -> Generator:
     config_path = (
         Path(__file__).parent.parent / "configuration" / "lightspeed-stack.yaml"
     )
+    assert config_path.exists(), f"Config file not found: {config_path}"
+
+    # Load configuration
+    configuration.load_configuration(str(config_path))
+
+    yield configuration
+    # Note: Cleanup is handled by the autouse reset_configuration_state fixture
+
+
+@pytest.fixture(name="current_config", scope="function")
+def current_config_fixture() -> Generator:
+    """Load current configuration for integration tests.
+
+    This fixture loads the actual configuration file from project root (current configuration),
+    demonstrating integration with the configuration system.
+    """
+    config_path = Path(__file__).parent.parent.parent / "lightspeed-stack.yaml"
     assert config_path.exists(), f"Config file not found: {config_path}"
 
     # Load configuration
@@ -81,3 +103,26 @@ def test_db_session_fixture(test_db_engine: Engine) -> Generator[Session, None, 
     yield session
 
     session.close()
+
+
+@pytest.fixture(name="test_request")
+def test_request_fixture() -> Request:
+    """Create a test FastAPI Request object with proper scope."""
+    return Request(
+        scope={
+            "type": "http",
+            "query_string": b"",
+            "headers": [],
+        }
+    )
+
+
+@pytest.fixture(name="test_auth")
+async def test_auth_fixture(test_request: Request) -> AuthTuple:
+    """Create authentication using real noop auth module.
+
+    This uses the actual NoopAuthDependency instead of mocking,
+    making this a true integration test.
+    """
+    noop_auth = NoopAuthDependency()
+    return await noop_auth(test_request)

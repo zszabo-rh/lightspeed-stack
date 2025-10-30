@@ -7,10 +7,10 @@ from pytest_mock import MockerFixture, AsyncMockType
 from fastapi import HTTPException, Request, status
 from llama_stack_client import APIConnectionError
 from llama_stack_client.types import VersionInfo
+from authentication.interface import AuthTuple
 
 from configuration import AppConfig
 from app.endpoints.info import info_endpoint_handler
-from authentication.noop import NoopAuthDependency
 from version import __version__
 
 
@@ -36,35 +36,12 @@ def mock_llama_stack_client_fixture(
     yield mock_client
 
 
-@pytest.fixture(name="test_request")
-def test_request_fixture() -> Request:
-    """Create a test FastAPI Request object with proper scope."""
-    return Request(
-        scope={
-            "type": "http",
-            "query_string": b"",
-            "headers": [],
-        }
-    )
-
-
-@pytest.fixture(name="test_auth")
-async def test_auth_fixture(test_request: Request) -> tuple[str, str, bool, str]:
-    """Create authentication using real noop auth module.
-
-    This uses the actual NoopAuthDependency instead of mocking,
-    making this a true integration test.
-    """
-    noop_auth = NoopAuthDependency()
-    return await noop_auth(test_request)
-
-
 @pytest.mark.asyncio
 async def test_info_endpoint_returns_service_information(
     test_config: AppConfig,
     mock_llama_stack_client: AsyncMockType,
     test_request: Request,
-    test_auth: tuple[str, str, bool, str],
+    test_auth: AuthTuple,
 ) -> None:
     """Test that info endpoint returns correct service information.
 
@@ -100,7 +77,7 @@ async def test_info_endpoint_handles_connection_error(
     test_config: AppConfig,
     mock_llama_stack_client: AsyncMockType,
     test_request: Request,
-    test_auth: tuple[str, str, bool, str],
+    test_auth: AuthTuple,
     mocker: MockerFixture,
 ) -> None:
     """Test that info endpoint properly handles Llama Stack connection errors.
@@ -140,7 +117,7 @@ async def test_info_endpoint_uses_configuration_values(
     test_config: AppConfig,
     mock_llama_stack_client: AsyncMockType,
     test_request: Request,
-    test_auth: tuple[str, str, bool, str],
+    test_auth: AuthTuple,
 ) -> None:
     """Test that info endpoint correctly uses configuration values.
 
