@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+from typing import Any
+
 import sqlite3
 
 import pytest
@@ -40,10 +42,10 @@ cache_entry_2 = CacheEntry(
 class CursorMock:
     """Mock class for simulating DB cursor exceptions."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Construct the mock cursor class."""
 
-    def execute(self, command):
+    def execute(self, command: Any) -> None:
         """Execute any SQL command."""
         raise sqlite3.Error("can not SELECT")
 
@@ -52,42 +54,42 @@ class CursorMock:
 class ConnectionMock:
     """Mock class for connection."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Construct the connection mock class."""
 
-    def cursor(self):
+    def cursor(self) -> Any:
         """Getter for mock cursor."""
         return CursorMock()
 
 
-def create_cache(path):
+def create_cache(path: Path) -> SQLiteCache:
     """Create the cache instance."""
     db_path = str(path / "test.sqlite")
     cc = SQLiteDatabaseConfiguration(db_path=db_path)
     return SQLiteCache(cc)
 
 
-def test_cache_initialization(tmpdir):
+def test_cache_initialization(tmpdir: Path) -> None:
     """Test the get operation when DB is not connected."""
     cache = create_cache(tmpdir)
     assert cache is not None
     assert cache.connection is not None
 
 
-def test_cache_initialization_wrong_connection():
+def test_cache_initialization_wrong_connection() -> None:
     """Test the get operation when DB can not be connected."""
     with pytest.raises(Exception, match="unable to open database file"):
         _ = create_cache(Path("/foo/bar/baz"))
 
 
-def test_connected_when_connected(tmpdir):
+def test_connected_when_connected(tmpdir: Path) -> None:
     """Test the connected() method."""
     # cache should be connected by default
     cache = create_cache(tmpdir)
     assert cache.connected() is True
 
 
-def test_connected_when_disconnected(tmpdir):
+def test_connected_when_disconnected(tmpdir: Path) -> None:
     """Test the connected() method."""
     # simulate disconnected cache
     cache = create_cache(tmpdir)
@@ -95,7 +97,7 @@ def test_connected_when_disconnected(tmpdir):
     assert cache.connected() is False
 
 
-def test_connected_when_connection_error(tmpdir):
+def test_connected_when_connection_error(tmpdir: Path) -> None:
     """Test the connected() method."""
     # simulate connection error
     cache = create_cache(tmpdir)
@@ -104,14 +106,14 @@ def test_connected_when_connection_error(tmpdir):
     assert cache.connected() is False
 
 
-def test_initialize_cache_when_connected(tmpdir):
+def test_initialize_cache_when_connected(tmpdir: Path) -> None:
     """Test the initialize_cache()."""
     cache = create_cache(tmpdir)
     # should not fail
     cache.initialize_cache()
 
 
-def test_initialize_cache_when_disconnected(tmpdir):
+def test_initialize_cache_when_disconnected(tmpdir: Path) -> None:
     """Test the initialize_cache()."""
     cache = create_cache(tmpdir)
     cache.connection = None
@@ -120,7 +122,7 @@ def test_initialize_cache_when_disconnected(tmpdir):
         cache.initialize_cache()
 
 
-def test_get_operation_when_disconnected(tmpdir):
+def test_get_operation_when_disconnected(tmpdir: Path) -> None:
     """Test the get() method."""
     cache = create_cache(tmpdir)
     cache.connection = None
@@ -131,7 +133,7 @@ def test_get_operation_when_disconnected(tmpdir):
         cache.get(USER_ID_1, CONVERSATION_ID_1, False)
 
 
-def test_get_operation_when_connected(tmpdir):
+def test_get_operation_when_connected(tmpdir: Path) -> None:
     """Test the get() method."""
     cache = create_cache(tmpdir)
 
@@ -140,7 +142,7 @@ def test_get_operation_when_connected(tmpdir):
     assert not lst
 
 
-def test_insert_or_append_when_disconnected(tmpdir):
+def test_insert_or_append_when_disconnected(tmpdir: Path) -> None:
     """Test the insert_or_append() method."""
     cache = create_cache(tmpdir)
     cache.connection = None
@@ -151,7 +153,7 @@ def test_insert_or_append_when_disconnected(tmpdir):
         cache.insert_or_append(USER_ID_1, CONVERSATION_ID_1, cache_entry_1, False)
 
 
-def test_insert_or_append_operation_when_connected(tmpdir):
+def test_insert_or_append_operation_when_connected(tmpdir: Path) -> None:
     """Test the insert_or_append() method."""
     cache = create_cache(tmpdir)
 
@@ -159,7 +161,7 @@ def test_insert_or_append_operation_when_connected(tmpdir):
     cache.insert_or_append(USER_ID_1, CONVERSATION_ID_1, cache_entry_1, False)
 
 
-def test_delete_operation_when_disconnected(tmpdir):
+def test_delete_operation_when_disconnected(tmpdir: Path) -> None:
     """Test the delete() method."""
     cache = create_cache(tmpdir)
     cache.connection = None
@@ -170,7 +172,7 @@ def test_delete_operation_when_disconnected(tmpdir):
         cache.delete(USER_ID_1, CONVERSATION_ID_1, False)
 
 
-def test_delete_operation_when_connected(tmpdir):
+def test_delete_operation_when_connected(tmpdir: Path) -> None:
     """Test the delete() method."""
     cache = create_cache(tmpdir)
 
@@ -181,7 +183,7 @@ def test_delete_operation_when_connected(tmpdir):
     assert deleted is False
 
 
-def test_list_operation_when_disconnected(tmpdir):
+def test_list_operation_when_disconnected(tmpdir: Path) -> None:
     """Test the list() method."""
     cache = create_cache(tmpdir)
     cache.connection = None
@@ -192,7 +194,7 @@ def test_list_operation_when_disconnected(tmpdir):
         cache.list(USER_ID_1, False)
 
 
-def test_list_operation_when_connected(tmpdir):
+def test_list_operation_when_connected(tmpdir: Path) -> None:
     """Test the list() method."""
     cache = create_cache(tmpdir)
 
@@ -202,7 +204,7 @@ def test_list_operation_when_connected(tmpdir):
     assert isinstance(lst, list)
 
 
-def test_ready_method(tmpdir):
+def test_ready_method(tmpdir: Path) -> None:
     """Test the ready() method."""
     cache = create_cache(tmpdir)
 
@@ -211,7 +213,7 @@ def test_ready_method(tmpdir):
     assert ready is True
 
 
-def test_get_operation_after_insert_or_append(tmpdir):
+def test_get_operation_after_insert_or_append(tmpdir: Path) -> None:
     """Test the get() method called after insert_or_append() one."""
     cache = create_cache(tmpdir)
 
@@ -223,7 +225,7 @@ def test_get_operation_after_insert_or_append(tmpdir):
     assert lst[1] == cache_entry_2
 
 
-def test_get_operation_after_delete(tmpdir):
+def test_get_operation_after_delete(tmpdir: Path) -> None:
     """Test the get() method called after delete() one."""
     cache = create_cache(tmpdir)
 
@@ -237,7 +239,7 @@ def test_get_operation_after_delete(tmpdir):
     assert not lst
 
 
-def test_multiple_ids(tmpdir):
+def test_multiple_ids(tmpdir: Path) -> None:
     """Test the get() method called after delete() one."""
     cache = create_cache(tmpdir)
 
@@ -269,7 +271,7 @@ def test_multiple_ids(tmpdir):
     assert lst[1] == cache_entry_2
 
 
-def test_list_with_conversations(tmpdir):
+def test_list_with_conversations(tmpdir: Path) -> None:
     """Test the list() method with actual conversations."""
     cache = create_cache(tmpdir)
 
@@ -298,7 +300,7 @@ def test_list_with_conversations(tmpdir):
     assert CONVERSATION_ID_2 in conv_ids
 
 
-def test_topic_summary_operations(tmpdir):
+def test_topic_summary_operations(tmpdir: Path) -> None:
     """Test topic summary set operations and retrieval via list."""
     cache = create_cache(tmpdir)
 
@@ -324,7 +326,7 @@ def test_topic_summary_operations(tmpdir):
     assert conversations[0].topic_summary == updated_summary
 
 
-def test_topic_summary_after_conversation_delete(tmpdir):
+def test_topic_summary_after_conversation_delete(tmpdir: Path) -> None:
     """Test that topic summary is deleted when conversation is deleted."""
     cache = create_cache(tmpdir)
 
@@ -350,7 +352,7 @@ def test_topic_summary_after_conversation_delete(tmpdir):
     assert len(conversations) == 0
 
 
-def test_topic_summary_when_disconnected(tmpdir):
+def test_topic_summary_when_disconnected(tmpdir: Path) -> None:
     """Test topic summary operations when cache is disconnected."""
     cache = create_cache(tmpdir)
     cache.connection = None
@@ -360,7 +362,7 @@ def test_topic_summary_when_disconnected(tmpdir):
         cache.set_topic_summary(USER_ID_1, CONVERSATION_ID_1, "Test", False)
 
 
-def test_insert_and_get_with_referenced_documents(tmpdir):
+def test_insert_and_get_with_referenced_documents(tmpdir: Path) -> None:
     """
     Test that a CacheEntry with referenced_documents is correctly
     serialized, stored, and retrieved.
@@ -390,7 +392,7 @@ def test_insert_and_get_with_referenced_documents(tmpdir):
     assert retrieved_entries[0].referenced_documents[0].doc_title == "Test Doc"
 
 
-def test_insert_and_get_without_referenced_documents(tmpdir):
+def test_insert_and_get_without_referenced_documents(tmpdir: Path) -> None:
     """
     Test that a CacheEntry without referenced_documents is correctly
     stored and retrieved with its referenced_documents attribute as None.
