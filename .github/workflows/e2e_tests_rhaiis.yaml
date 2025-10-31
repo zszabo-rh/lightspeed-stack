@@ -17,7 +17,7 @@ jobs:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       RHAIIS_URL: ${{ secrets.RHAIIS_URL }}
       RHAIIS_API_KEY: ${{ secrets.RHAIIS_API_KEY }}
-      RHAIIS_MODEL: meta-llama/Llama-3.1-8B
+      RHAIIS_MODEL: ${{ vars.RHAIIS_MODEL }}
 
     steps:
       - uses: actions/checkout@v4
@@ -119,16 +119,10 @@ jobs:
           echo "Using configuration: $(basename "$CONFIG_FILE")"
 
       - name: Test RHAIIS connectivity
-        env: 
-            RHAIIS_URL: ${{ secrets.RHAIIS_URL }}
-            RHAIIS_API_KEY: ${{ secrets.RHAIIS_API_KEY }}
         run: |  
           curl ${RHAIIS_URL}:8000/v1/models   -H "Authorization: Bearer ${RHAIIS_API_KEY}"  
 
       - name: Run service manually
-        env: 
-            RHAIIS_URL: ${{ secrets.RHAIIS_URL }}
-            RHAIIS_API_KEY: ${{ secrets.RHAIIS_API_KEY }}
         run: |         
           docker compose version
           docker compose up -d
