@@ -193,6 +193,9 @@ jobs:
           }
 
       - name: Run e2e tests
+        env:
+          TERM: xterm-256color
+          FORCE_COLOR: 1
         run: |
           echo "Installing test dependencies..."
           pip install uv

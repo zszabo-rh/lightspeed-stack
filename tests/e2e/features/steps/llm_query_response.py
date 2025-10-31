@@ -155,8 +155,10 @@ def compare_streamed_responses(context: Context) -> None:
     response = context.response_data["response"]
     complete_response = context.response_data["response_complete"]
 
-    assert response != ""
-    assert response == complete_response
+    assert response != "", "response is empty"
+    assert (
+        response == complete_response
+    ), f"{response} and {complete_response} do not match"
 
 
 def _parse_streaming_response(response_text: str) -> dict:
@@ -166,6 +168,7 @@ def _parse_streaming_response(response_text: str) -> dict:
     full_response = ""
     full_response_split = []
     finished = False
+    first_token = True
 
     for line in lines:
         if line.startswith("data: "):
@@ -176,6 +179,10 @@ def _parse_streaming_response(response_text: str) -> dict:
                 if event == "start":
                     conversation_id = data["data"]["conversation_id"]
                 elif event == "token":
+                    # Skip the first token (shield status message)
+                    if first_token:
+                        first_token = False
+                        continue
                     full_response_split.append(data["data"]["token"])
                 elif event == "turn_complete":
                     full_response = data["data"]["token"]
