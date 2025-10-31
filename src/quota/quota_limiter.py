@@ -1,4 +1,4 @@
-"""Abstract class that is parent for all quota limiter implementations."""
+"""Abstract class that is the parent for all quota limiter implementations."""
 
 from abc import ABC, abstractmethod
 

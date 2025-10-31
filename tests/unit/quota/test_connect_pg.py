@@ -9,7 +9,7 @@ from quota.connect_pg import connect_pg
 from models.config import PostgreSQLDatabaseConfiguration
 
 
-def test_connect_pg_when_connection_established(mocker: MockerFixture):
+def test_connect_pg_when_connection_established(mocker: MockerFixture) -> None:
     """Test the connection to PostgreSQL database."""
     # any correct PostgreSQL configuration can be used
     configuration = PostgreSQLDatabaseConfiguration(
@@ -24,7 +24,7 @@ def test_connect_pg_when_connection_established(mocker: MockerFixture):
     assert connection is not None
 
 
-def test_connect_pg_when_connection_error(mocker: MockerFixture):
+def test_connect_pg_when_connection_error(mocker: MockerFixture) -> None:
     """Test the connection to PostgreSQL database."""
     # any correct PostgreSQL configuration can be used
     configuration = PostgreSQLDatabaseConfiguration(

@@ -1,4 +1,4 @@
-"""Simple user quota limiter where each user have fixed quota."""
+"""Simple user quota limiter where each user has a fixed quota."""
 
 from models.config import QuotaHandlersConfiguration
 from log import get_logger

@@ -30,7 +30,7 @@ router = APIRouter(prefix="/feedback", tags=["feedback"])
 feedback_status_lock = threading.Lock()
 
 # Response for the feedback endpoint
-feedback_response: dict[int | str, dict[str, Any]] = {
+feedback_post_response: dict[int | str, dict[str, Any]] = {
     200: {
         "description": "Feedback received and stored",
         "model": FeedbackResponse,
@@ -47,6 +47,32 @@ feedback_response: dict[int | str, dict[str, Any]] = {
         "description": "User feedback can not be stored",
         "model": ErrorResponse,
     },
+}
+
+feedback_put_response: dict[int | str, dict[str, Any]] = {
+    200: {
+        "description": "Feedback status successfully updated",
+        "model": FeedbackStatusUpdateResponse,
+    },
+    400: {
+        "description": "Missing or invalid credentials provided by client",
+        "model": UnauthorizedResponse,
+    },
+    401: {
+        "description": "Missing or invalid credentials provided by client",
+        "model": UnauthorizedResponse,
+    },
+    403: {
+        "description": "Client does not have permission to access resource",
+        "model": ForbiddenResponse,
+    },
+}
+
+feedback_get_response: dict[int | str, dict[str, Any]] = {
+    200: {
+        "description": "Feedback status successfully retrieved",
+        "model": StatusResponse,
+    }
 }
 
 
@@ -83,7 +109,7 @@ async def assert_feedback_enabled(_request: Request) -> None:
         )
 
 
-@router.post("", responses=feedback_response)
+@router.post("", responses=feedback_post_response)
 @authorize(Action.FEEDBACK)
 async def feedback_endpoint_handler(
     feedback_request: FeedbackRequest,
@@ -161,7 +187,7 @@ def store_feedback(user_id: str, feedback: dict) -> None:
     logger.info("Feedback stored successfully at %s", feedback_file_path)
 
 
-@router.get("/status")
+@router.get("/status", responses=feedback_get_response)
 def feedback_status() -> StatusResponse:
     """
     Handle feedback status requests.
@@ -179,7 +205,7 @@ def feedback_status() -> StatusResponse:
     )
 
 
-@router.put("/status")
+@router.put("/status", responses=feedback_put_response)
 @authorize(Action.ADMIN)
 async def update_feedback_status(
     feedback_update_request: FeedbackStatusUpdateRequest,

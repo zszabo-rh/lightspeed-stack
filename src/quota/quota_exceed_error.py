@@ -1,10 +1,10 @@
-"""Any exception that can occur when user does not have enough tokens available."""
+"""Any exception that can occur when a user does not have enough tokens available."""
 
-# pylint: disable=line-too-long)
+# pylint: disable=line-too-long
 
 
 class QuotaExceedError(Exception):
-    """Any exception that can occur when user does not have enough tokens available."""
+    """Any exception that can occur when a user does not have enough tokens available."""
 
     def __init__(
         self, subject_id: str, subject_type: str, available: int, needed: int = 0

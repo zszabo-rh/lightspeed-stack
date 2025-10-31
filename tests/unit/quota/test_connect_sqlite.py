@@ -8,7 +8,7 @@ from quota.connect_sqlite import connect_sqlite
 from models.config import SQLiteDatabaseConfiguration
 
 
-def test_connect_sqlite_when_connection_established():
+def test_connect_sqlite_when_connection_established() -> None:
     """Test the connection to SQLite database residing in memory."""
     configuration = SQLiteDatabaseConfiguration(db_path=":memory:")
 
@@ -17,7 +17,7 @@ def test_connect_sqlite_when_connection_established():
     assert connection is not None
 
 
-def test_connect_sqlite_when_connection_error():
+def test_connect_sqlite_when_connection_error() -> None:
     """Test the connection to SQLite database."""
     configuration = SQLiteDatabaseConfiguration(db_path="/")
 

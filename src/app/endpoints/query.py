@@ -18,6 +18,7 @@ from llama_stack_client.types.agents.turn import Turn
 from llama_stack_client.types.agents.turn_create_params import (
     Toolgroup,
     ToolgroupAgentToolGroupWithArgs,
+    Document,
 )
 from llama_stack_client.types.model_list_response import ModelListResponse
 from llama_stack_client.types.shared.interleaved_content_item import TextContentItem
@@ -51,6 +52,11 @@ from utils.endpoints import (
     store_conversation_into_cache,
     validate_conversation_ownership,
     validate_model_provider_override,
+)
+from utils.quota import (
+    get_available_quotas,
+    check_tokens_available,
+    consume_tokens,
 )
 from utils.mcp_headers import handle_mcp_headers_with_toolgroups, mcp_headers_dependency
 from utils.transcripts import store_transcript
@@ -272,6 +278,7 @@ async def query_endpoint_handler(  # pylint: disable=R0914
         logger.debug("Query does not contain conversation ID")
 
     try:
+        check_tokens_available(configuration.quota_limiters, user_id)
         # try to get Llama Stack client
         client = AsyncLlamaStackClientHolder().get_client()
         llama_stack_model_id, model_id, provider_id = select_model_and_provider_id(
@@ -343,6 +350,13 @@ async def query_endpoint_handler(  # pylint: disable=R0914
             referenced_documents=referenced_documents if referenced_documents else None,
         )
 
+        consume_tokens(
+            configuration.quota_limiters,
+            user_id,
+            input_tokens=token_usage.input_tokens,
+            output_tokens=token_usage.output_tokens,
+        )
+
         store_conversation_into_cache(
             configuration,
             user_id,
@@ -371,6 +385,8 @@ async def query_endpoint_handler(  # pylint: disable=R0914
 
         logger.info("Using referenced documents from response...")
 
+        available_quotas = get_available_quotas(configuration.quota_limiters, user_id)
+
         logger.info("Building final response...")
         response = QueryResponse(
             conversation_id=conversation_id,
@@ -381,7 +397,7 @@ async def query_endpoint_handler(  # pylint: disable=R0914
             truncated=False,  # TODO: implement truncation detection
             input_tokens=token_usage.input_tokens,
             output_tokens=token_usage.output_tokens,
-            available_quotas={},  # TODO: implement quota tracking
+            available_quotas=available_quotas,
         )
         logger.info("Query processing completed successfully!")
         return response
@@ -692,10 +708,20 @@ async def retrieve_response(  # pylint: disable=too-many-locals,too-many-branche
         if not toolgroups:
             toolgroups = None
 
+    # TODO: LCORE-881 - Remove if Llama Stack starts to support these mime types
+    documents: list[Document] = [
+        (
+            {"content": doc["content"], "mime_type": "text/plain"}
+            if doc["mime_type"].lower() in ("application/json", "application/xml")
+            else doc
+        )
+        for doc in query_request.get_documents()
+    ]
+
     response = await agent.create_turn(
         messages=[UserMessage(role="user", content=query_request.query)],
         session_id=session_id,
-        documents=query_request.get_documents(),
+        documents=documents,
         stream=False,
         toolgroups=toolgroups,
     )

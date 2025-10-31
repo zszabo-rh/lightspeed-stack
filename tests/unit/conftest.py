@@ -2,17 +2,30 @@
 
 from __future__ import annotations
 
+from typing import Generator
 import pytest
+from pytest_mock import MockerFixture, AsyncMockType
+
+type AgentFixtures = Generator[
+    tuple[
+        AsyncMockType,
+        AsyncMockType,
+    ],
+    None,
+    None,
+]
 
 
 @pytest.fixture(name="prepare_agent_mocks", scope="function")
-def prepare_agent_mocks_fixture(mocker):
+def prepare_agent_mocks_fixture(
+    mocker: MockerFixture,
+) -> AgentFixtures:
     """Prepare for mock for the LLM agent.
 
     Provides common mocks for AsyncLlamaStackClient and AsyncAgent
     with proper agent_id setup to avoid initialization errors.
 
-    Returns:
+    Yields:
         tuple: (mock_client, mock_agent)
     """
     mock_client = mocker.AsyncMock()

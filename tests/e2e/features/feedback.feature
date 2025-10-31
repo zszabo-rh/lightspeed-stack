@@ -260,7 +260,25 @@ Feature: feedback endpoint API tests
      And The body of the response is the following
         """
         {
-            "detail": "No Authorization header found"            
+            "detail": {
+                        "cause": "Missing or invalid credentials provided by client",
+                        "response": "Unauthorized"
+            }
+        }
+        """
+
+  Scenario: Check if update feedback status endpoint is not working when not authorized
+    Given The system is in default state
+    And I remove the auth header
+     When The feedback is enabled
+     Then The status code of the response is 400
+     And The body of the response is the following
+        """
+        {
+            "detail": {
+                        "cause": "Missing or invalid credentials provided by client",
+                        "response": "Unauthorized"
+            }
         }
         """
 
@@ -287,5 +305,32 @@ Feature: feedback endpoint API tests
                         "response": "Error storing user feedback", 
                         "cause": "[Errno 13] Permission denied: '/invalid'"
                     }
+        }
+        """
+
+  Scenario: Check if feedback endpoint fails when only empty string user_feedback is provided
+    Given The system is in default state
+    And A new conversation is initialized
+    And The feedback is enabled
+     When I submit the following feedback for the conversation created before
+        """
+        {
+            "user_question": "Sample Question",
+            "llm_response": "Sample Response",
+            "user_feedback": ""
+        }
+        """
+     Then The status code of the response is 422
+     And the body of the response has the following structure
+        """
+        {
+            "detail": [{
+                        "type": "value_error", 
+                        "loc": ["body"], 
+                        "msg": "Value error, At least one form of feedback must be provided: 'sentiment', 'user_feedback', or 'categories'",
+                        "input": {
+                            "user_feedback": ""
+                        }
+                    }]           
         }
         """

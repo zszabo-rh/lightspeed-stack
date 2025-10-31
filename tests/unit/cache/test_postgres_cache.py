@@ -2,17 +2,19 @@
 
 import json
 
+from typing import Any
+
 import pytest
 from pytest_mock import MockerFixture
 
 import psycopg2
 
-from cache.cache_error import CacheError
-from cache.postgres_cache import PostgresCache
 from models.config import PostgreSQLDatabaseConfiguration
 from models.cache_entry import CacheEntry
 from models.responses import ConversationData, ReferencedDocument
 from utils import suid
+from cache.cache_error import CacheError
+from cache.postgres_cache import PostgresCache
 
 
 USER_ID_1 = suid.get_suid()
@@ -43,10 +45,10 @@ cache_entry_2 = CacheEntry(
 class CursorMock:
     """Mock class for simulating DB cursor exceptions."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Construct the mock cursor class."""
 
-    def execute(self, command):
+    def execute(self, command: Any) -> None:
         """Execute any SQL command."""
         raise psycopg2.DatabaseError("can not INSERT")
 
@@ -55,16 +57,16 @@ class CursorMock:
 class ConnectionMock:
     """Mock class for connection."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Construct the connection mock class."""
 
-    def cursor(self):
+    def cursor(self) -> None:
         """Getter for mock cursor."""
         raise psycopg2.OperationalError("can not SELECT")
 
 
 @pytest.fixture(scope="module", name="postgres_cache_config_fixture")
-def postgres_cache_config():
+def postgres_cache_config() -> PostgreSQLDatabaseConfiguration:
     """Fixture containing initialized instance of PostgreSQL cache."""
     # can be any configuration, becuase tests won't really try to
     # connect to database
@@ -73,7 +75,10 @@ def postgres_cache_config():
     )
 
 
-def test_cache_initialization(postgres_cache_config_fixture, mocker: MockerFixture):
+def test_cache_initialization(
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test the get operation when DB is connected."""
     # prevent real connection to PG instance
     mocker.patch("psycopg2.connect")
@@ -85,8 +90,9 @@ def test_cache_initialization(postgres_cache_config_fixture, mocker: MockerFixtu
 
 
 def test_cache_initialization_on_error(
-    postgres_cache_config_fixture, mocker: MockerFixture
-):
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test the get operation when DB is not connected."""
     # prevent real connection to PG instance
     mocker.patch("psycopg2.connect", side_effect=Exception("foo"))
@@ -97,8 +103,9 @@ def test_cache_initialization_on_error(
 
 
 def test_cache_initialization_connect_finalizer(
-    postgres_cache_config_fixture, mocker: MockerFixture
-):
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test the get operation when DB is not connected."""
     # prevent real connection to PG instance
     mocker.patch("psycopg2.connect")
@@ -114,7 +121,10 @@ def test_cache_initialization_connect_finalizer(
         _ = PostgresCache(postgres_cache_config_fixture)
 
 
-def test_connected_when_connected(postgres_cache_config_fixture, mocker: MockerFixture):
+def test_connected_when_connected(
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test the connected() method."""
     # prevent real connection to PG instance
     mocker.patch("psycopg2.connect")
@@ -125,8 +135,9 @@ def test_connected_when_connected(postgres_cache_config_fixture, mocker: MockerF
 
 
 def test_connected_when_disconnected(
-    postgres_cache_config_fixture, mocker: MockerFixture
-):
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test the connected() method."""
     # prevent real connection to PG instance
     mocker.patch("psycopg2.connect")
@@ -139,8 +150,9 @@ def test_connected_when_disconnected(
 
 
 def test_connected_when_connection_error(
-    postgres_cache_config_fixture, mocker: MockerFixture
-):
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test the connected() method."""
     # prevent real connection to PG instance
     mocker.patch("psycopg2.connect")
@@ -152,8 +164,9 @@ def test_connected_when_connection_error(
 
 
 def test_initialize_cache_when_connected(
-    postgres_cache_config_fixture, mocker: MockerFixture
-):
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test the initialize_cache()."""
     # prevent real connection to PG instance
     mocker.patch("psycopg2.connect")
@@ -163,8 +176,9 @@ def test_initialize_cache_when_connected(
 
 
 def test_initialize_cache_when_disconnected(
-    postgres_cache_config_fixture, mocker: MockerFixture
-):
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test the initialize_cache()."""
     # prevent real connection to PG instance
     mocker.patch("psycopg2.connect")
@@ -175,7 +189,10 @@ def test_initialize_cache_when_disconnected(
         cache.initialize_cache()
 
 
-def test_ready_method(postgres_cache_config_fixture, mocker: MockerFixture):
+def test_ready_method(
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test the ready() method."""
     # prevent real connection to PG instance
     mocker.patch("psycopg2.connect")
@@ -187,8 +204,9 @@ def test_ready_method(postgres_cache_config_fixture, mocker: MockerFixture):
 
 
 def test_get_operation_when_disconnected(
-    postgres_cache_config_fixture, mocker: MockerFixture
-):
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test the get() method."""
     # prevent real connection to PG instance
     mocker.patch("psycopg2.connect")
@@ -203,8 +221,9 @@ def test_get_operation_when_disconnected(
 
 
 def test_get_operation_when_connected(
-    postgres_cache_config_fixture, mocker: MockerFixture
-):
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test the get() method."""
     # prevent real connection to PG instance
     mocker.patch("psycopg2.connect")
@@ -215,7 +234,7 @@ def test_get_operation_when_connected(
     assert not lst
 
 
-def test_get_operation_returned_values():
+def test_get_operation_returned_values() -> None:
     """Test the get() method."""
     # TODO: LCORE-721
     # TODO: Implement proper unit test for testing PostgreSQL cache 'get' operation
@@ -224,8 +243,9 @@ def test_get_operation_returned_values():
 
 
 def test_insert_or_append_when_disconnected(
-    postgres_cache_config_fixture, mocker: MockerFixture
-):
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test the insert_or_append() method."""
     # prevent real connection to PG instance
     mocker.patch("psycopg2.connect")
@@ -239,8 +259,9 @@ def test_insert_or_append_when_disconnected(
 
 
 def test_insert_or_append_operation_when_connected(
-    postgres_cache_config_fixture, mocker: MockerFixture
-):
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test the insert_or_append() method."""
     # prevent real connection to PG instance
     mocker.patch("psycopg2.connect")
@@ -251,8 +272,9 @@ def test_insert_or_append_operation_when_connected(
 
 
 def test_insert_or_append_operation_operation_error(
-    postgres_cache_config_fixture, mocker: MockerFixture
-):
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test the insert_or_append() method."""
     # prevent real connection to PG instance
     mocker.patch("psycopg2.connect")
@@ -266,7 +288,10 @@ def test_insert_or_append_operation_operation_error(
         cache.insert_or_append(USER_ID_1, CONVERSATION_ID_1, cache_entry_1, False)
 
 
-def test_delete_when_disconnected(postgres_cache_config_fixture, mocker: MockerFixture):
+def test_delete_when_disconnected(
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test the delete() method."""
     # prevent real connection to PG instance
     mocker.patch("psycopg2.connect")
@@ -281,8 +306,9 @@ def test_delete_when_disconnected(postgres_cache_config_fixture, mocker: MockerF
 
 
 def test_delete_operation_when_connected(
-    postgres_cache_config_fixture, mocker: MockerFixture
-):
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test the delete() method."""
     # prevent real connection to PG instance
     mock_connect = mocker.patch("psycopg2.connect")
@@ -299,8 +325,9 @@ def test_delete_operation_when_connected(
 
 
 def test_delete_operation_operation_error(
-    postgres_cache_config_fixture, mocker: MockerFixture
-):
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test the delete() method."""
     # prevent real connection to PG instance
     mocker.patch("psycopg2.connect")
@@ -315,8 +342,9 @@ def test_delete_operation_operation_error(
 
 
 def test_list_operation_when_disconnected(
-    postgres_cache_config_fixture, mocker: MockerFixture
-):
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test the list() method."""
     # prevent real connection to PG instance
     mocker.patch("psycopg2.connect")
@@ -331,8 +359,9 @@ def test_list_operation_when_disconnected(
 
 
 def test_list_operation_when_connected(
-    postgres_cache_config_fixture, mocker: MockerFixture
-):
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test the list() method."""
     # prevent real connection to PG instance
     mocker.patch("psycopg2.connect")
@@ -344,7 +373,10 @@ def test_list_operation_when_connected(
     assert isinstance(lst, list)
 
 
-def test_topic_summary_operations(postgres_cache_config_fixture, mocker: MockerFixture):
+def test_topic_summary_operations(
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test topic summary set operations and retrieval via list."""
     # prevent real connection to PG instance
     mock_connect = mocker.patch("psycopg2.connect")
@@ -374,8 +406,9 @@ def test_topic_summary_operations(postgres_cache_config_fixture, mocker: MockerF
 
 
 def test_topic_summary_after_conversation_delete(
-    postgres_cache_config_fixture, mocker: MockerFixture
-):
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test that topic summary is deleted when conversation is deleted."""
     # prevent real connection to PG instance
     mock_connect = mocker.patch("psycopg2.connect")
@@ -397,8 +430,9 @@ def test_topic_summary_after_conversation_delete(
 
 
 def test_topic_summary_when_disconnected(
-    postgres_cache_config_fixture, mocker: MockerFixture
-):
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test topic summary operations when cache is disconnected."""
     # prevent real connection to PG instance
     mocker.patch("psycopg2.connect")
@@ -412,8 +446,9 @@ def test_topic_summary_when_disconnected(
 
 
 def test_insert_and_get_with_referenced_documents(
-    postgres_cache_config_fixture, mocker
-):
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test that a CacheEntry with referenced_documents is stored and retrieved correctly."""
     # prevent real connection to PG instance
     mock_connect = mocker.patch("psycopg2.connect")
@@ -473,8 +508,9 @@ def test_insert_and_get_with_referenced_documents(
 
 
 def test_insert_and_get_without_referenced_documents(
-    postgres_cache_config_fixture, mocker
-):
+    postgres_cache_config_fixture: PostgreSQLDatabaseConfiguration,
+    mocker: MockerFixture,
+) -> None:
     """Test that a CacheEntry with no referenced_documents is handled correctly."""
     mock_connect = mocker.patch("psycopg2.connect")
     cache = PostgresCache(postgres_cache_config_fixture)
