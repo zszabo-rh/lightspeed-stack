@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import pytest
+from pytest_subtests import SubTests
 
 from pydantic import ValidationError
 
@@ -30,7 +31,7 @@ def test_conversation_cache_unknown_type() -> None:
         _ = ConversationCacheConfiguration(type="foo")
 
 
-def test_conversation_cache_correct_type_but_not_configured(subtests) -> None:
+def test_conversation_cache_correct_type_but_not_configured(subtests: SubTests) -> None:
     """Check the test for cache type."""
     with subtests.test(msg="Memory cache"):
         with pytest.raises(
@@ -51,7 +52,7 @@ def test_conversation_cache_correct_type_but_not_configured(subtests) -> None:
             _ = ConversationCacheConfiguration(type=constants.CACHE_TYPE_POSTGRES)
 
 
-def test_conversation_cache_no_type_but_configured(subtests) -> None:
+def test_conversation_cache_no_type_but_configured(subtests: SubTests) -> None:
     """Check the test for cache type."""
     m = "Conversation cache type must be set when backend configuration is provided"
 
@@ -79,7 +80,7 @@ def test_conversation_cache_no_type_but_configured(subtests) -> None:
             _ = ConversationCacheConfiguration(postgres=d)
 
 
-def test_conversation_cache_multiple_configurations(subtests) -> None:
+def test_conversation_cache_multiple_configurations(subtests: SubTests) -> None:
     """Test how multiple configurations are handled."""
     d = PostgreSQLDatabaseConfiguration(
         db="db",
