@@ -102,7 +102,7 @@ class TestQueryRequest:
 
     def test_get_documents_no_attachments(self) -> None:
         """Test the get_documents method."""
-        attachments = []
+        attachments: list[Attachment] = []
         qr = QueryRequest(
             query="Tell me about Kubernetes",
             attachments=attachments,

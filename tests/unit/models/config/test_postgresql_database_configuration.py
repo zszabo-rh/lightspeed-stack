@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import pytest
+from pytest_subtests import SubTests
 
 from pydantic import ValidationError
 
@@ -29,7 +30,7 @@ def test_postgresql_database_configuration() -> None:
     assert c.ca_cert_path is None
 
 
-def test_postgresql_database_configuration_port_setting(subtests) -> None:
+def test_postgresql_database_configuration_port_setting(subtests: SubTests) -> None:
     """Test the PostgreSQLDatabaseConfiguration model."""
     with subtests.test(msg="Correct port value"):
         c = PostgreSQLDatabaseConfiguration(
@@ -51,7 +52,7 @@ def test_postgresql_database_configuration_port_setting(subtests) -> None:
             )
 
 
-def test_postgresql_database_configuration_ca_cert_path(subtests) -> None:
+def test_postgresql_database_configuration_ca_cert_path(subtests: SubTests) -> None:
     """Test the PostgreSQLDatabaseConfiguration model."""
     with subtests.test(msg="Path exists"):
         c = PostgreSQLDatabaseConfiguration(

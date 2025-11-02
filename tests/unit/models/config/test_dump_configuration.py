@@ -23,7 +23,7 @@ from models.config import (
 )
 
 
-def test_dump_configuration(tmp_path) -> None:
+def test_dump_configuration(tmp_path: Path) -> None:
     """
     Test that the Configuration object can be serialized to a JSON file and
     that the resulting file contains all expected sections and values.
@@ -186,7 +186,7 @@ def test_dump_configuration(tmp_path) -> None:
         }
 
 
-def test_dump_configuration_with_one_mcp_server(tmp_path) -> None:
+def test_dump_configuration_with_one_mcp_server(tmp_path: Path) -> None:
     """
     Verify that a configuration with a single MCP server can be
     serialized to JSON and that all expected fields and values are
@@ -234,7 +234,7 @@ def test_dump_configuration_with_one_mcp_server(tmp_path) -> None:
         ]
 
 
-def test_dump_configuration_with_more_mcp_servers(tmp_path) -> None:
+def test_dump_configuration_with_more_mcp_servers(tmp_path: Path) -> None:
     """
     Test that a configuration with multiple MCP servers can be
     serialized to JSON and that all server entries are correctly
@@ -301,7 +301,7 @@ def test_dump_configuration_with_more_mcp_servers(tmp_path) -> None:
         ]
 
 
-def test_dump_configuration_with_quota_limiters(tmp_path) -> None:
+def test_dump_configuration_with_quota_limiters(tmp_path: Path) -> None:
     """
     Test that the Configuration object can be serialized to a JSON file and
     that the resulting file contains all expected sections and values.

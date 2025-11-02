@@ -1,13 +1,14 @@
 """Unit tests for Customization model."""
 
 import pytest
+from pytest_subtests import SubTests
 
 from pydantic import ValidationError
 
 from models.config import Customization
 
 
-def test_service_customization(subtests) -> None:
+def test_service_customization(subtests: SubTests) -> None:
     """Check the service customization class."""
     with subtests.test(msg="System prompt is enabled"):
         c = Customization()
@@ -43,7 +44,7 @@ def test_service_customization_wrong_system_prompt_path() -> None:
         _ = Customization(system_prompt_path="/path/does/not/exists")
 
 
-def test_service_customization_correct_system_prompt_path(subtests) -> None:
+def test_service_customization_correct_system_prompt_path(subtests: SubTests) -> None:
     """Check the service customization class."""
     with subtests.test(msg="One line system prompt"):
         # pass a file containing system prompt
