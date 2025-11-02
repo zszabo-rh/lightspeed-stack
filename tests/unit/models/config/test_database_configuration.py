@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import pytest
+from pytest_subtests import SubTests
 
 from pydantic import ValidationError
 
@@ -13,7 +14,7 @@ from models.config import (
 )
 
 
-def test_database_configuration(subtests) -> None:
+def test_database_configuration(subtests: SubTests) -> None:
     """Test the database configuration handling."""
     with subtests.test(msg="PostgreSQL"):
         d1 = PostgreSQLDatabaseConfiguration(
