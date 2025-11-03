@@ -1,14 +1,16 @@
 """Unit tests for the /metrics REST API endpoint."""
 
 import pytest
+from pytest_mock import MockerFixture
 from fastapi import Request
 
+from authentication.interface import AuthTuple
 from app.endpoints.metrics import metrics_endpoint_handler
 from tests.unit.utils.auth_helpers import mock_authorization_resolvers
 
 
 @pytest.mark.asyncio
-async def test_metrics_endpoint(mocker):
+async def test_metrics_endpoint(mocker: MockerFixture) -> None:
     """Test the metrics endpoint handler."""
     mock_authorization_resolvers(mocker)
 
@@ -20,7 +22,7 @@ async def test_metrics_endpoint(mocker):
             "type": "http",
         }
     )
-    auth = ("test_user", "token", {})
+    auth: AuthTuple = ("test_user", "token", {})
     response = await metrics_endpoint_handler(auth=auth, request=request)
     assert response is not None
     assert response.status_code == 200
