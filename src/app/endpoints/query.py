@@ -214,25 +214,32 @@ async def get_topic_summary(
     )
 
 
-@router.post("/query", responses=query_response)
-@authorize(Action.QUERY)
-async def query_endpoint_handler(  # pylint: disable=R0914
+async def query_endpoint_handler_base(  # pylint: disable=R0914
     request: Request,
     query_request: QueryRequest,
     auth: Annotated[AuthTuple, Depends(get_auth_dependency())],
-    mcp_headers: dict[str, dict[str, str]] = Depends(mcp_headers_dependency),
+    mcp_headers: dict[str, dict[str, str]],
+    retrieve_response_func: Any,
+    get_topic_summary_func: Any,
 ) -> QueryResponse:
     """
-    Handle request to the /query endpoint.
+    Base handler for query endpoints (shared by Agent API and Responses API).
 
-    Processes a POST request to the /query endpoint, forwarding the
-    user's query to a selected Llama Stack LLM or agent and
-    returning the generated response.
+    Processes a POST request to a query endpoint, forwarding the
+    user's query to a selected Llama Stack LLM and returning the generated response.
 
     Validates configuration and authentication, selects the appropriate model
     and provider, retrieves the LLM response, updates metrics, and optionally
     stores a transcript of the interaction. Handles connection errors to the
     Llama Stack service by returning an HTTP 500 error.
+
+    Args:
+        request: The FastAPI request object
+        query_request: The query request containing the user's question
+        auth: Authentication tuple from dependency
+        mcp_headers: MCP headers from dependency
+        retrieve_response_func: The retrieve_response function to use (Agent or Responses API)
+        get_topic_summary_func: The get_topic_summary function to use (Agent or Responses API)
 
     Returns:
         QueryResponse: Contains the conversation ID and the LLM-generated response.
@@ -288,7 +295,7 @@ async def query_endpoint_handler(  # pylint: disable=R0914
             ),
         )
         summary, conversation_id, referenced_documents, token_usage = (
-            await retrieve_response(
+            await retrieve_response_func(
                 client,
                 llama_stack_model_id,
                 query_request,
@@ -305,8 +312,8 @@ async def query_endpoint_handler(  # pylint: disable=R0914
                 session.query(UserConversation).filter_by(id=conversation_id).first()
             )
             if not existing_conversation:
-                topic_summary = await get_topic_summary(
-                    query_request.query, client, model_id
+                topic_summary = await get_topic_summary_func(
+                    query_request.query, client, llama_stack_model_id
                 )
         # Convert RAG chunks to dictionary format once for reuse
         logger.info("Processing RAG chunks...")
@@ -414,6 +421,33 @@ async def query_endpoint_handler(  # pylint: disable=R0914
                 "cause": str(e),
             },
         ) from e
+
+
+@router.post("/query", responses=query_response)
+@authorize(Action.QUERY)
+async def query_endpoint_handler(
+    request: Request,
+    query_request: QueryRequest,
+    auth: Annotated[AuthTuple, Depends(get_auth_dependency())],
+    mcp_headers: dict[str, dict[str, str]] = Depends(mcp_headers_dependency),
+) -> QueryResponse:
+    """
+    Handle request to the /query endpoint using Agent API.
+
+    This is a wrapper around query_endpoint_handler_base that provides
+    the Agent API specific retrieve_response and get_topic_summary functions.
+
+    Returns:
+        QueryResponse: Contains the conversation ID and the LLM-generated response.
+    """
+    return await query_endpoint_handler_base(
+        request=request,
+        query_request=query_request,
+        auth=auth,
+        mcp_headers=mcp_headers,
+        retrieve_response_func=retrieve_response,
+        get_topic_summary_func=get_topic_summary,
+    )
 
 
 def select_model_and_provider_id(
