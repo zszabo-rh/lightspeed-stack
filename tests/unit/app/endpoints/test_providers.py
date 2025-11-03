@@ -1,8 +1,11 @@
 """Unit tests for the /providers REST API endpoints."""
 
 import pytest
+from pytest_mock import MockerFixture
 from fastapi import HTTPException, Request, status
 from llama_stack_client import APIConnectionError
+
+from authentication.interface import AuthTuple
 
 from app.endpoints.providers import (
     get_provider_endpoint_handler,
@@ -11,11 +14,15 @@ from app.endpoints.providers import (
 
 
 @pytest.mark.asyncio
-async def test_providers_endpoint_configuration_not_loaded(mocker):
+async def test_providers_endpoint_configuration_not_loaded(
+    mocker: MockerFixture,
+) -> None:
     """Test that /providers endpoint raises HTTP 500 if configuration is not loaded."""
     mocker.patch("app.endpoints.providers.configuration", None)
     request = Request(scope={"type": "http"})
-    auth = ("user", "token", {})
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
 
     with pytest.raises(HTTPException) as e:
         await providers_endpoint_handler(request=request, auth=auth)
@@ -23,25 +30,29 @@ async def test_providers_endpoint_configuration_not_loaded(mocker):
 
 
 @pytest.mark.asyncio
-async def test_providers_endpoint_connection_error(mocker):
+async def test_providers_endpoint_connection_error(mocker: MockerFixture) -> None:
     """Test that /providers endpoint raises HTTP 500 if Llama Stack connection fails."""
     mock_client = mocker.AsyncMock()
-    mock_client.providers.list.side_effect = APIConnectionError(request=None)
+    mock_client.providers.list.side_effect = APIConnectionError(request=None)  # type: ignore
     mocker.patch(
         "app.endpoints.providers.AsyncLlamaStackClientHolder"
     ).return_value.get_client.return_value = mock_client
 
     request = Request(scope={"type": "http"})
-    auth = ("user", "token", {})
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
 
     with pytest.raises(HTTPException) as e:
         await providers_endpoint_handler(request=request, auth=auth)
     assert e.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-    assert "Unable to connect to Llama Stack" in e.value.detail["response"]
+    detail = e.value.detail
+    assert isinstance(detail, dict)
+    assert "Unable to connect to Llama Stack" in detail["response"]
 
 
 @pytest.mark.asyncio
-async def test_providers_endpoint_success(mocker):
+async def test_providers_endpoint_success(mocker: MockerFixture) -> None:
     """Test that /providers endpoint returns a grouped list of providers on success."""
     provider_list = [
         {
@@ -67,7 +78,9 @@ async def test_providers_endpoint_success(mocker):
     ).return_value.get_client.return_value = mock_client
 
     request = Request(scope={"type": "http"})
-    auth = ("user", "token", {})
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
 
     response = await providers_endpoint_handler(request=request, auth=auth)
     assert "inference" in response.providers
@@ -76,7 +89,7 @@ async def test_providers_endpoint_success(mocker):
 
 
 @pytest.mark.asyncio
-async def test_get_provider_not_found(mocker):
+async def test_get_provider_not_found(mocker: MockerFixture) -> None:
     """Test that /providers/{provider_id} endpoint raises HTTP 404 if the provider is not found."""
     mock_client = mocker.AsyncMock()
     mock_client.providers.list.return_value = []
@@ -85,18 +98,22 @@ async def test_get_provider_not_found(mocker):
     ).return_value.get_client.return_value = mock_client
 
     request = Request(scope={"type": "http"})
-    auth = ("user", "token", {})
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
 
     with pytest.raises(HTTPException) as e:
         await get_provider_endpoint_handler(
             request=request, provider_id="openai", auth=auth
         )
     assert e.value.status_code == status.HTTP_404_NOT_FOUND
-    assert "not found" in e.value.detail["response"]
+    detail = e.value.detail
+    assert isinstance(detail, dict)
+    assert "not found" in detail["response"]
 
 
 @pytest.mark.asyncio
-async def test_get_provider_success(mocker):
+async def test_get_provider_success(mocker: MockerFixture) -> None:
     """Test that /providers/{provider_id} endpoint returns provider details on success."""
     provider = {
         "api": "inference",
@@ -112,7 +129,9 @@ async def test_get_provider_success(mocker):
     ).return_value.get_client.return_value = mock_client
 
     request = Request(scope={"type": "http"})
-    auth = ("user", "token", {})
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
 
     response = await get_provider_endpoint_handler(
         request=request, provider_id="openai", auth=auth
@@ -122,27 +141,31 @@ async def test_get_provider_success(mocker):
 
 
 @pytest.mark.asyncio
-async def test_get_provider_connection_error(mocker):
+async def test_get_provider_connection_error(mocker: MockerFixture) -> None:
     """Test that /providers/{provider_id} raises HTTP 500 if Llama Stack connection fails."""
     mock_client = mocker.AsyncMock()
-    mock_client.providers.list.side_effect = APIConnectionError(request=None)
+    mock_client.providers.list.side_effect = APIConnectionError(request=None)  # type: ignore
     mocker.patch(
         "app.endpoints.providers.AsyncLlamaStackClientHolder"
     ).return_value.get_client.return_value = mock_client
 
     request = Request(scope={"type": "http"})
-    auth = ("user", "token", {})
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
 
     with pytest.raises(HTTPException) as e:
         await get_provider_endpoint_handler(
             request=request, provider_id="openai", auth=auth
         )
     assert e.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-    assert "Unable to connect to Llama Stack" in e.value.detail["response"]
+    detail = e.value.detail
+    assert isinstance(detail, dict)
+    assert "Unable to connect to Llama Stack" in detail["response"]
 
 
 @pytest.mark.asyncio
-async def test_get_provider_unexpected_exception(mocker):
+async def test_get_provider_unexpected_exception(mocker: MockerFixture) -> None:
     """Test that /providers/{provider_id} endpoint raises HTTP 500 for unexpected exceptions."""
     mock_client = mocker.AsyncMock()
     mock_client.providers.list.side_effect = Exception("boom")
@@ -151,11 +174,15 @@ async def test_get_provider_unexpected_exception(mocker):
     ).return_value.get_client.return_value = mock_client
 
     request = Request(scope={"type": "http"})
-    auth = ("user", "token", {})
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
 
     with pytest.raises(HTTPException) as e:
         await get_provider_endpoint_handler(
             request=request, provider_id="openai", auth=auth
         )
     assert e.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-    assert "Unable to retrieve list of providers" in e.value.detail["response"]
+    detail = e.value.detail
+    assert isinstance(detail, dict)
+    assert "Unable to retrieve list of providers" in detail["response"]
