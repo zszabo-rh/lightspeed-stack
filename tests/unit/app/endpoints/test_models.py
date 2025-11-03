@@ -1,18 +1,23 @@
 """Unit tests for the /models REST API endpoint."""
 
+from typing import Any
 import pytest
 
 from fastapi import HTTPException, Request, status
+from pytest_mock import MockerFixture
 
 from llama_stack_client import APIConnectionError
 
+from authentication.interface import AuthTuple
 from app.endpoints.models import models_endpoint_handler
 from configuration import AppConfig
 from tests.unit.utils.auth_helpers import mock_authorization_resolvers
 
 
 @pytest.mark.asyncio
-async def test_models_endpoint_handler_configuration_not_loaded(mocker):
+async def test_models_endpoint_handler_configuration_not_loaded(
+    mocker: MockerFixture,
+) -> None:
     """Test the models endpoint handler if configuration is not loaded."""
     mock_authorization_resolvers(mocker)
 
@@ -29,7 +34,7 @@ async def test_models_endpoint_handler_configuration_not_loaded(mocker):
             "headers": [(b"authorization", b"Bearer invalid-token")],
         }
     )
-    auth = ("user_id", "user_name", "token")
+    auth: AuthTuple = ("user_id", "user_name", "token")
 
     with pytest.raises(HTTPException) as e:
         await models_endpoint_handler(request=request, auth=auth)
@@ -38,12 +43,14 @@ async def test_models_endpoint_handler_configuration_not_loaded(mocker):
 
 
 @pytest.mark.asyncio
-async def test_models_endpoint_handler_improper_llama_stack_configuration(mocker):
+async def test_models_endpoint_handler_improper_llama_stack_configuration(
+    mocker: MockerFixture,
+) -> None:
     """Test the models endpoint handler if Llama Stack configuration is not proper."""
     mock_authorization_resolvers(mocker)
 
     # configuration for tests
-    config_dict = {
+    config_dict: dict[str, Any] = {
         "name": "test",
         "service": {
             "host": "localhost",
@@ -80,7 +87,7 @@ async def test_models_endpoint_handler_improper_llama_stack_configuration(mocker
             "headers": [(b"authorization", b"Bearer invalid-token")],
         }
     )
-    auth = ("test_user", "token", {})
+    auth: AuthTuple = ("test_user", "token", {})
     with pytest.raises(HTTPException) as e:
         await models_endpoint_handler(request=request, auth=auth)
         assert e.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -88,12 +95,14 @@ async def test_models_endpoint_handler_improper_llama_stack_configuration(mocker
 
 
 @pytest.mark.asyncio
-async def test_models_endpoint_handler_configuration_loaded(mocker):
+async def test_models_endpoint_handler_configuration_loaded(
+    mocker: MockerFixture,
+) -> None:
     """Test the models endpoint handler if configuration is loaded."""
     mock_authorization_resolvers(mocker)
 
     # configuration for tests
-    config_dict = {
+    config_dict: dict[str, Any] = {
         "name": "foo",
         "service": {
             "host": "localhost",
@@ -124,7 +133,7 @@ async def test_models_endpoint_handler_configuration_loaded(mocker):
             "headers": [(b"authorization", b"Bearer invalid-token")],
         }
     )
-    auth = ("test_user", "token", {})
+    auth: AuthTuple = ("test_user", "token", {})
 
     with pytest.raises(HTTPException) as e:
         await models_endpoint_handler(request=request, auth=auth)
@@ -133,12 +142,14 @@ async def test_models_endpoint_handler_configuration_loaded(mocker):
 
 
 @pytest.mark.asyncio
-async def test_models_endpoint_handler_unable_to_retrieve_models_list(mocker):
+async def test_models_endpoint_handler_unable_to_retrieve_models_list(
+    mocker: MockerFixture,
+) -> None:
     """Test the models endpoint handler if configuration is loaded."""
     mock_authorization_resolvers(mocker)
 
     # configuration for tests
-    config_dict = {
+    config_dict: dict[str, Any] = {
         "name": "foo",
         "service": {
             "host": "localhost",
@@ -177,18 +188,20 @@ async def test_models_endpoint_handler_unable_to_retrieve_models_list(mocker):
             "headers": [(b"authorization", b"Bearer invalid-token")],
         }
     )
-    auth = ("test_user", "token", {})
+    auth: AuthTuple = ("test_user", "token", {})
     response = await models_endpoint_handler(request=request, auth=auth)
     assert response is not None
 
 
 @pytest.mark.asyncio
-async def test_models_endpoint_llama_stack_connection_error(mocker):
+async def test_models_endpoint_llama_stack_connection_error(
+    mocker: MockerFixture,
+) -> None:
     """Test the model endpoint when LlamaStack connection fails."""
     mock_authorization_resolvers(mocker)
 
     # configuration for tests
-    config_dict = {
+    config_dict: dict[str, Any] = {
         "name": "foo",
         "service": {
             "host": "localhost",
@@ -214,7 +227,7 @@ async def test_models_endpoint_llama_stack_connection_error(mocker):
     # mock AsyncLlamaStackClientHolder to raise APIConnectionError
     # when models.list() method is called
     mock_client = mocker.AsyncMock()
-    mock_client.models.list.side_effect = APIConnectionError(request=None)
+    mock_client.models.list.side_effect = APIConnectionError(request=None)  # type: ignore
     mock_client_holder = mocker.patch(
         "app.endpoints.models.AsyncLlamaStackClientHolder"
     )
@@ -229,7 +242,7 @@ async def test_models_endpoint_llama_stack_connection_error(mocker):
             "headers": [(b"authorization", b"Bearer invalid-token")],
         }
     )
-    auth = ("test_user", "token", {})
+    auth: AuthTuple = ("test_user", "token", {})
 
     with pytest.raises(HTTPException) as e:
         await models_endpoint_handler(request=request, auth=auth)
