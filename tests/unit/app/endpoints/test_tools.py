@@ -1,9 +1,12 @@
 """Unit tests for tools endpoint."""
 
 import pytest
+from pytest_mock import MockerFixture, MockType
 from fastapi import HTTPException
 
 from llama_stack_client import APIConnectionError
+
+from authentication.interface import AuthTuple
 
 # Import the function directly to bypass decorators
 from app.endpoints import tools
@@ -17,11 +20,11 @@ from models.config import (
 )
 
 # Shared mock auth tuple with 4 fields as expected by the application
-MOCK_AUTH = ("mock_user_id", "mock_username", False, "mock_token")
+MOCK_AUTH: AuthTuple = ("mock_user_id", "mock_username", False, "mock_token")
 
 
 @pytest.fixture
-def mock_configuration():
+def mock_configuration() -> Configuration:
     """Create a mock configuration with MCP servers."""
     return Configuration(
         name="test",
@@ -44,7 +47,7 @@ def mock_configuration():
 
 
 @pytest.fixture
-def mock_tools_response(mocker):
+def mock_tools_response(mocker: MockerFixture) -> list[MockType]:
     """Create mock tools response from LlamaStack client."""
     # Create mock tools that behave like dict when converted
     tool1 = mocker.Mock()
@@ -102,8 +105,10 @@ def mock_tools_response(mocker):
 
 @pytest.mark.asyncio
 async def test_tools_endpoint_success(
-    mocker, mock_configuration, mock_tools_response
-):  # pylint: disable=redefined-outer-name
+    mocker: MockerFixture,
+    mock_configuration: Configuration,  # pylint: disable=redefined-outer-name
+    mock_tools_response: list[MockType],  # pylint: disable=redefined-outer-name
+) -> None:
     """Test successful tools endpoint response."""
     # Mock configuration
     mocker.patch("app.endpoints.tools.configuration", mock_configuration)
@@ -161,7 +166,7 @@ async def test_tools_endpoint_success(
 
 
 @pytest.mark.asyncio
-async def test_tools_endpoint_no_mcp_servers(mocker):
+async def test_tools_endpoint_no_mcp_servers(mocker: MockerFixture) -> None:
     """Test tools endpoint with no MCP servers configured."""
     # Mock configuration with no MCP servers
     mock_config = Configuration(
@@ -198,8 +203,9 @@ async def test_tools_endpoint_no_mcp_servers(mocker):
 
 @pytest.mark.asyncio
 async def test_tools_endpoint_api_connection_error(
-    mocker, mock_configuration
-):  # pylint: disable=redefined-outer-name
+    mocker: MockerFixture,  # pylint: disable=redefined-outer-name
+    mock_configuration: Configuration,  # pylint: disable=redefined-outer-name
+) -> None:
     """Test tools endpoint with API connection error from individual servers."""
     # Mock configuration
     mocker.patch("app.endpoints.tools.configuration", mock_configuration)
@@ -237,8 +243,10 @@ async def test_tools_endpoint_api_connection_error(
 
 @pytest.mark.asyncio
 async def test_tools_endpoint_partial_failure(  # pylint: disable=redefined-outer-name
-    mocker, mock_configuration, mock_tools_response
-):
+    mocker: MockerFixture,
+    mock_configuration: Configuration,
+    mock_tools_response: list[MockType],
+) -> None:
     """Test tools endpoint with one MCP server failing."""
     # Mock configuration
     mocker.patch("app.endpoints.tools.configuration", mock_configuration)
@@ -283,8 +291,9 @@ async def test_tools_endpoint_partial_failure(  # pylint: disable=redefined-oute
 
 @pytest.mark.asyncio
 async def test_tools_endpoint_builtin_toolgroup(
-    mocker, mock_configuration
-):  # pylint: disable=redefined-outer-name
+    mocker: MockerFixture,
+    mock_configuration: Configuration,  # pylint: disable=redefined-outer-name
+) -> None:
     """Test tools endpoint with built-in toolgroups."""
     # Mock configuration
     mocker.patch("app.endpoints.tools.configuration", mock_configuration)
@@ -336,7 +345,7 @@ async def test_tools_endpoint_builtin_toolgroup(
 
 
 @pytest.mark.asyncio
-async def test_tools_endpoint_mixed_toolgroups(mocker):
+async def test_tools_endpoint_mixed_toolgroups(mocker: MockerFixture) -> None:
     """Test tools endpoint with both MCP and built-in toolgroups."""
     # Mock configuration with MCP servers
     mock_config = Configuration(
@@ -425,8 +434,9 @@ async def test_tools_endpoint_mixed_toolgroups(mocker):
 
 @pytest.mark.asyncio
 async def test_tools_endpoint_value_attribute_error(
-    mocker, mock_configuration
-):  # pylint: disable=redefined-outer-name
+    mocker: MockerFixture,
+    mock_configuration: Configuration,  # pylint: disable=redefined-outer-name
+) -> None:
     """Test tools endpoint with ValueError/AttributeError in toolgroups.list."""
     # Mock configuration
     mocker.patch("app.endpoints.tools.configuration", mock_configuration)
@@ -456,8 +466,8 @@ async def test_tools_endpoint_value_attribute_error(
 
 @pytest.mark.asyncio
 async def test_tools_endpoint_apiconnection_error_toolgroups(  # pylint: disable=redefined-outer-name
-    mocker, mock_configuration
-):
+    mocker: MockerFixture, mock_configuration: Configuration
+) -> None:
     """Test tools endpoint with APIConnectionError in toolgroups.list."""
     # Mock configuration
     mocker.patch("app.endpoints.tools.configuration", mock_configuration)
@@ -483,13 +493,16 @@ async def test_tools_endpoint_apiconnection_error_toolgroups(  # pylint: disable
         await tools.tools_endpoint_handler.__wrapped__(mock_request, mock_auth)
 
     assert exc_info.value.status_code == 500
-    assert "Unable to connect to Llama Stack" in exc_info.value.detail["response"]
+
+    detail = exc_info.value.detail
+    assert isinstance(detail, dict)
+    assert "Unable to connect to Llama Stack" in detail["response"]
 
 
 @pytest.mark.asyncio
 async def test_tools_endpoint_client_holder_apiconnection_error(  # pylint: disable=redefined-outer-name
-    mocker, mock_configuration
-):
+    mocker: MockerFixture, mock_configuration: Configuration
+) -> None:
     """Test tools endpoint with APIConnectionError in client holder."""
     # Mock configuration
     mocker.patch("app.endpoints.tools.configuration", mock_configuration)
@@ -511,13 +524,17 @@ async def test_tools_endpoint_client_holder_apiconnection_error(  # pylint: disa
         await tools.tools_endpoint_handler.__wrapped__(mock_request, mock_auth)
 
     assert exc_info.value.status_code == 500
-    assert "Unable to connect to Llama Stack" in exc_info.value.detail["response"]
+
+    detail = exc_info.value.detail
+    assert isinstance(detail, dict)
+    assert "Unable to connect to Llama Stack" in detail["response"]
 
 
 @pytest.mark.asyncio
 async def test_tools_endpoint_general_exception(
-    mocker, mock_configuration
-):  # pylint: disable=redefined-outer-name
+    mocker: MockerFixture,
+    mock_configuration: Configuration,  # pylint: disable=redefined-outer-name
+) -> None:
     """Test tools endpoint with general exception."""
     # Mock configuration
     mocker.patch("app.endpoints.tools.configuration", mock_configuration)
@@ -540,4 +557,7 @@ async def test_tools_endpoint_general_exception(
         await tools.tools_endpoint_handler.__wrapped__(mock_request, mock_auth)
 
     assert exc_info.value.status_code == 500
-    assert "Unable to retrieve list of tools" in exc_info.value.detail["response"]
+
+    detail = exc_info.value.detail
+    assert isinstance(detail, dict)
+    assert "Unable to retrieve list of tools" in detail["response"]
