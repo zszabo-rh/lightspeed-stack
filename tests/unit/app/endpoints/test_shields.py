@@ -1,10 +1,13 @@
 """Unit tests for the /shields REST API endpoint."""
 
+from typing import Any
 import pytest
-
+from pytest_mock import MockerFixture
 from fastapi import HTTPException, Request, status
 
 from llama_stack_client import APIConnectionError
+
+from authentication.interface import AuthTuple
 
 from app.endpoints.shields import shields_endpoint_handler
 from configuration import AppConfig
@@ -12,7 +15,9 @@ from tests.unit.utils.auth_helpers import mock_authorization_resolvers
 
 
 @pytest.mark.asyncio
-async def test_shields_endpoint_handler_configuration_not_loaded(mocker):
+async def test_shields_endpoint_handler_configuration_not_loaded(
+    mocker: MockerFixture,
+) -> None:
     """Test the shields endpoint handler if configuration is not loaded."""
     mock_authorization_resolvers(mocker)
 
@@ -29,7 +34,9 @@ async def test_shields_endpoint_handler_configuration_not_loaded(mocker):
             "headers": [(b"authorization", b"Bearer invalid-token")],
         }
     )
-    auth = ("user_id", "user_name", "token")
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
 
     with pytest.raises(HTTPException) as e:
         await shields_endpoint_handler(request=request, auth=auth)
@@ -38,12 +45,14 @@ async def test_shields_endpoint_handler_configuration_not_loaded(mocker):
 
 
 @pytest.mark.asyncio
-async def test_shields_endpoint_handler_improper_llama_stack_configuration(mocker):
+async def test_shields_endpoint_handler_improper_llama_stack_configuration(
+    mocker: MockerFixture,
+) -> None:
     """Test the shields endpoint handler if Llama Stack configuration is not proper."""
     mock_authorization_resolvers(mocker)
 
     # configuration for tests
-    config_dict = {
+    config_dict: dict[str, Any] = {
         "name": "test",
         "service": {
             "host": "localhost",
@@ -80,7 +89,10 @@ async def test_shields_endpoint_handler_improper_llama_stack_configuration(mocke
             "headers": [(b"authorization", b"Bearer invalid-token")],
         }
     )
-    auth = ("test_user", "token", {})
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
+
     with pytest.raises(HTTPException) as e:
         await shields_endpoint_handler(request=request, auth=auth)
         assert e.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -88,12 +100,14 @@ async def test_shields_endpoint_handler_improper_llama_stack_configuration(mocke
 
 
 @pytest.mark.asyncio
-async def test_shields_endpoint_handler_configuration_loaded(mocker):
+async def test_shields_endpoint_handler_configuration_loaded(
+    mocker: MockerFixture,
+) -> None:
     """Test the shields endpoint handler if configuration is loaded."""
     mock_authorization_resolvers(mocker)
 
     # configuration for tests
-    config_dict = {
+    config_dict: dict[str, Any] = {
         "name": "foo",
         "service": {
             "host": "localhost",
@@ -124,7 +138,9 @@ async def test_shields_endpoint_handler_configuration_loaded(mocker):
             "headers": [(b"authorization", b"Bearer invalid-token")],
         }
     )
-    auth = ("test_user", "token", {})
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
 
     with pytest.raises(HTTPException) as e:
         await shields_endpoint_handler(request=request, auth=auth)
@@ -133,12 +149,14 @@ async def test_shields_endpoint_handler_configuration_loaded(mocker):
 
 
 @pytest.mark.asyncio
-async def test_shields_endpoint_handler_unable_to_retrieve_shields_list(mocker):
+async def test_shields_endpoint_handler_unable_to_retrieve_shields_list(
+    mocker: MockerFixture,
+) -> None:
     """Test the shields endpoint handler if configuration is loaded."""
     mock_authorization_resolvers(mocker)
 
     # configuration for tests
-    config_dict = {
+    config_dict: dict[str, Any] = {
         "name": "foo",
         "service": {
             "host": "localhost",
@@ -177,18 +195,23 @@ async def test_shields_endpoint_handler_unable_to_retrieve_shields_list(mocker):
             "headers": [(b"authorization", b"Bearer invalid-token")],
         }
     )
-    auth = ("test_user", "token", {})
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
+
     response = await shields_endpoint_handler(request=request, auth=auth)
     assert response is not None
 
 
 @pytest.mark.asyncio
-async def test_shields_endpoint_llama_stack_connection_error(mocker):
+async def test_shields_endpoint_llama_stack_connection_error(
+    mocker: MockerFixture,
+) -> None:
     """Test the shields endpoint when LlamaStack connection fails."""
     mock_authorization_resolvers(mocker)
 
     # configuration for tests
-    config_dict = {
+    config_dict: dict[str, Any] = {
         "name": "foo",
         "service": {
             "host": "localhost",
@@ -214,7 +237,7 @@ async def test_shields_endpoint_llama_stack_connection_error(mocker):
     # mock AsyncLlamaStackClientHolder to raise APIConnectionError
     # when shields.list() method is called
     mock_client = mocker.AsyncMock()
-    mock_client.shields.list.side_effect = APIConnectionError(request=None)
+    mock_client.shields.list.side_effect = APIConnectionError(request=None)  # type: ignore
     mock_client_holder = mocker.patch(
         "app.endpoints.shields.AsyncLlamaStackClientHolder"
     )
@@ -229,7 +252,9 @@ async def test_shields_endpoint_llama_stack_connection_error(mocker):
             "headers": [(b"authorization", b"Bearer invalid-token")],
         }
     )
-    auth = ("test_user", "token", {})
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
 
     with pytest.raises(HTTPException) as e:
         await shields_endpoint_handler(request=request, auth=auth)
@@ -238,12 +263,14 @@ async def test_shields_endpoint_llama_stack_connection_error(mocker):
 
 
 @pytest.mark.asyncio
-async def test_shields_endpoint_handler_success_with_shields_data(mocker):
+async def test_shields_endpoint_handler_success_with_shields_data(
+    mocker: MockerFixture,
+) -> None:
     """Test the shields endpoint handler with successful response and shields data."""
     mock_authorization_resolvers(mocker)
 
     # configuration for tests
-    config_dict = {
+    config_dict: dict[str, Any] = {
         "name": "foo",
         "service": {
             "host": "localhost",
@@ -299,7 +326,10 @@ async def test_shields_endpoint_handler_success_with_shields_data(mocker):
             "headers": [(b"authorization", b"Bearer invalid-token")],
         }
     )
-    auth = ("test_user", "token", {})
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
+
     response = await shields_endpoint_handler(request=request, auth=auth)
 
     assert response is not None
@@ -310,12 +340,14 @@ async def test_shields_endpoint_handler_success_with_shields_data(mocker):
 
 
 @pytest.mark.asyncio
-async def test_shields_endpoint_handler_general_exception(mocker):
+async def test_shields_endpoint_handler_general_exception(
+    mocker: MockerFixture,
+) -> None:
     """Test the shields endpoint handler when a general exception occurs."""
     mock_authorization_resolvers(mocker)
 
     # configuration for tests
-    config_dict = {
+    config_dict: dict[str, Any] = {
         "name": "foo",
         "service": {
             "host": "localhost",
@@ -356,7 +388,9 @@ async def test_shields_endpoint_handler_general_exception(mocker):
             "headers": [(b"authorization", b"Bearer invalid-token")],
         }
     )
-    auth = ("test_user", "token", {})
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
 
     with pytest.raises(HTTPException) as e:
         await shields_endpoint_handler(request=request, auth=auth)
