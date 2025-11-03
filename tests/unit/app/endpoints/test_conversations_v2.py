@@ -2,7 +2,7 @@
 
 """Unit tests for the /conversations REST API endpoints."""
 
-from pytest_mock import MockerFixture
+from pytest_mock import MockerFixture, MockType
 import pytest
 from fastapi import HTTPException, status
 
@@ -122,7 +122,7 @@ class TestTransformChatMessage:
 
 
 @pytest.fixture
-def mock_configuration(mocker: MockerFixture):
+def mock_configuration(mocker: MockerFixture) -> MockType:
     """Mock configuration with conversation cache."""
     mock_config = mocker.Mock()
     mock_cache = mocker.Mock()
@@ -133,13 +133,13 @@ def mock_configuration(mocker: MockerFixture):
 class TestCheckValidConversationId:
     """Test cases for the check_valid_conversation_id function."""
 
-    def test_valid_conversation_id(self, mocker: MockerFixture):
+    def test_valid_conversation_id(self, mocker: MockerFixture) -> None:
         """Test with a valid conversation ID."""
         mocker.patch("app.endpoints.conversations_v2.check_suid", return_value=True)
         # Should not raise an exception
         check_valid_conversation_id(VALID_CONVERSATION_ID)
 
-    def test_invalid_conversation_id(self, mocker: MockerFixture):
+    def test_invalid_conversation_id(self, mocker: MockerFixture) -> None:
         """Test with an invalid conversation ID."""
         mocker.patch("app.endpoints.conversations_v2.check_suid", return_value=False)
 
@@ -147,13 +147,17 @@ class TestCheckValidConversationId:
             check_valid_conversation_id(INVALID_CONVERSATION_ID)
 
         assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
-        assert "Invalid conversation ID format" in exc_info.value.detail["response"]
+        detail = exc_info.value.detail
+        assert isinstance(detail, dict)
+        assert "Invalid conversation ID format" in detail["response"]
 
 
 class TestCheckConversationExistence:
     """Test cases for the check_conversation_existence function."""
 
-    def test_conversation_exists(self, mocker, mock_configuration):
+    def test_conversation_exists(
+        self, mocker: MockerFixture, mock_configuration: MockType
+    ) -> None:
         """Test when conversation exists."""
         mock_configuration.conversation_cache.list.return_value = [
             mocker.Mock(conversation_id=VALID_CONVERSATION_ID)
@@ -163,7 +167,9 @@ class TestCheckConversationExistence:
         # Should not raise an exception
         check_conversation_existence("user_id", VALID_CONVERSATION_ID)
 
-    def test_conversation_not_exists(self, mocker, mock_configuration):
+    def test_conversation_not_exists(
+        self, mocker: MockerFixture, mock_configuration: MockType
+    ) -> None:
         """Test when conversation does not exist."""
         mock_configuration.conversation_cache.list.return_value = []
         mocker.patch("app.endpoints.conversations_v2.configuration", mock_configuration)
@@ -172,14 +178,16 @@ class TestCheckConversationExistence:
             check_conversation_existence("user_id", VALID_CONVERSATION_ID)
 
         assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
-        assert "Conversation not found" in exc_info.value.detail["response"]
+        detail = exc_info.value.detail
+        assert isinstance(detail, dict)
+        assert "Conversation not found" in detail["response"]
 
 
 class TestUpdateConversationEndpoint:
     """Test cases for the PUT /conversations/{conversation_id} endpoint."""
 
     @pytest.mark.asyncio
-    async def test_configuration_not_loaded(self, mocker: MockerFixture):
+    async def test_configuration_not_loaded(self, mocker: MockerFixture) -> None:
         """Test the endpoint when configuration is not loaded."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations_v2.configuration", None)
@@ -197,8 +205,8 @@ class TestUpdateConversationEndpoint:
 
     @pytest.mark.asyncio
     async def test_invalid_conversation_id_format(
-        self, mocker: MockerFixture, mock_configuration
-    ):
+        self, mocker: MockerFixture, mock_configuration: MockType
+    ) -> None:
         """Test the endpoint with an invalid conversation ID format."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations_v2.configuration", mock_configuration)
@@ -214,10 +222,14 @@ class TestUpdateConversationEndpoint:
             )
 
         assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
-        assert "Invalid conversation ID format" in exc_info.value.detail["response"]
+        detail = exc_info.value.detail
+        assert isinstance(detail, dict)
+        assert "Invalid conversation ID format" in detail["response"]
 
     @pytest.mark.asyncio
-    async def test_conversation_cache_not_configured(self, mocker: MockerFixture):
+    async def test_conversation_cache_not_configured(
+        self, mocker: MockerFixture
+    ) -> None:
         """Test the endpoint when conversation cache is not configured."""
         mock_authorization_resolvers(mocker)
         mock_config = mocker.Mock()
@@ -235,14 +247,14 @@ class TestUpdateConversationEndpoint:
             )
 
         assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
-        assert (
-            "Conversation cache is not configured" in exc_info.value.detail["response"]
-        )
+        detail = exc_info.value.detail
+        assert isinstance(detail, dict)
+        assert "Conversation cache is not configured" in detail["response"]
 
     @pytest.mark.asyncio
     async def test_conversation_not_found(
-        self, mocker: MockerFixture, mock_configuration
-    ):
+        self, mocker: MockerFixture, mock_configuration: MockType
+    ) -> None:
         """Test the endpoint when conversation does not exist."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations_v2.configuration", mock_configuration)
@@ -259,10 +271,14 @@ class TestUpdateConversationEndpoint:
             )
 
         assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
-        assert "Conversation not found" in exc_info.value.detail["response"]
+        detail = exc_info.value.detail
+        assert isinstance(detail, dict)
+        assert "Conversation not found" in detail["response"]
 
     @pytest.mark.asyncio
-    async def test_successful_update(self, mocker: MockerFixture, mock_configuration):
+    async def test_successful_update(
+        self, mocker: MockerFixture, mock_configuration: MockType
+    ) -> None:
         """Test successful topic summary update."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations_v2.configuration", mock_configuration)
