@@ -1,10 +1,12 @@
 # pylint: disable=redefined-outer-name, too-many-lines
+# pylint: disable=too-many-arguments,too-many-positional-arguments
 
 """Unit tests for the /conversations REST API endpoints."""
 
+from typing import Any, Optional
 from fastapi import HTTPException, status, Request
 import pytest
-from pytest_mock import MockerFixture
+from pytest_mock import MockerFixture, MockType
 from llama_stack_client import APIConnectionError, NotFoundError
 
 from app.endpoints.conversations import (
@@ -44,14 +46,14 @@ def dummy_request() -> Request:
 
 def create_mock_conversation(
     mocker: MockerFixture,
-    conversation_id,
-    created_at,
-    last_message_at,
-    message_count,
-    last_used_model,
-    last_used_provider,
-    topic_summary=None,
-):  # pylint: disable=too-many-arguments,too-many-positional-arguments
+    conversation_id: str,
+    created_at: str,
+    last_message_at: str,
+    message_count: int,
+    last_used_model: str,
+    last_used_provider: str,
+    topic_summary: Optional[str] = None,
+) -> MockType:
     """Helper function to create a mock conversation object with all required attributes."""
     mock_conversation = mocker.Mock()
     mock_conversation.id = conversation_id
@@ -66,7 +68,9 @@ def create_mock_conversation(
     return mock_conversation
 
 
-def mock_database_session(mocker: MockerFixture, query_result=None):
+def mock_database_session(
+    mocker: MockerFixture, query_result: Optional[list[MockType]] = None
+) -> MockType:
     """Helper function to mock get_session with proper context manager support."""
     mock_session = mocker.Mock()
     if query_result is not None:
@@ -87,9 +91,9 @@ def mock_database_session(mocker: MockerFixture, query_result=None):
 
 
 @pytest.fixture(name="setup_configuration")
-def setup_configuration_fixture():
+def setup_configuration_fixture() -> AppConfig:
     """Set up configuration for tests."""
-    config_dict = {
+    config_dict: dict[str, Any] = {
         "name": "test",
         "service": {
             "host": "localhost",
@@ -116,7 +120,7 @@ def setup_configuration_fixture():
 
 
 @pytest.fixture(name="mock_session_data")
-def mock_session_data_fixture():
+def mock_session_data_fixture() -> dict[str, Any]:
     """Create mock session data for testing."""
     return {
         "session_id": VALID_CONVERSATION_ID,
@@ -158,7 +162,7 @@ def mock_session_data_fixture():
 
 
 @pytest.fixture(name="expected_chat_history")
-def expected_chat_history_fixture():
+def expected_chat_history_fixture() -> list[dict[str, Any]]:
     """Create expected simplified chat history for testing."""
     return [
         {
@@ -181,7 +185,7 @@ def expected_chat_history_fixture():
 
 
 @pytest.fixture(name="mock_conversation")
-def mock_conversation_fixture():
+def mock_conversation_fixture() -> UserConversation:
     """Create a mock UserConversation object for testing."""
     mock_conv = UserConversation()
     mock_conv.id = VALID_CONVERSATION_ID
@@ -198,15 +202,17 @@ class TestSimplifySessionData:
 
     @pytest.mark.asyncio
     async def test_simplify_session_data_with_model_dump(
-        self, mock_session_data, expected_chat_history
-    ):
+        self,
+        mock_session_data: dict[str, Any],
+        expected_chat_history: list[dict[str, Any]],
+    ) -> None:
         """Test simplify_session_data with session data."""
         result = simplify_session_data(mock_session_data)
 
         assert result == expected_chat_history
 
     @pytest.mark.asyncio
-    async def test_simplify_session_data_empty_turns(self):
+    async def test_simplify_session_data_empty_turns(self) -> None:
         """Test simplify_session_data with empty turns."""
         session_data = {
             "session_id": VALID_CONVERSATION_ID,
@@ -219,7 +225,7 @@ class TestSimplifySessionData:
         assert not result
 
     @pytest.mark.asyncio
-    async def test_simplify_session_data_filters_unwanted_fields(self):
+    async def test_simplify_session_data_filters_unwanted_fields(self) -> None:
         """Test that simplify_session_data properly filters out unwanted fields."""
         session_data = {
             "session_id": VALID_CONVERSATION_ID,
@@ -267,7 +273,9 @@ class TestGetConversationEndpoint:
     """Test cases for the GET /conversations/{conversation_id} endpoint."""
 
     @pytest.mark.asyncio
-    async def test_configuration_not_loaded(self, mocker: MockerFixture, dummy_request):
+    async def test_configuration_not_loaded(
+        self, mocker: MockerFixture, dummy_request: Request
+    ) -> None:
         """Test the endpoint when configuration is not loaded."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", None)
@@ -280,12 +288,18 @@ class TestGetConversationEndpoint:
             )
 
         assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-        assert "Configuration is not loaded" in exc_info.value.detail["response"]
+
+        detail = exc_info.value.detail
+        assert isinstance(detail, dict)
+        assert "Configuration is not loaded" in detail["response"]
 
     @pytest.mark.asyncio
     async def test_invalid_conversation_id_format(
-        self, mocker: MockerFixture, setup_configuration, dummy_request
-    ):
+        self,
+        mocker: MockerFixture,
+        setup_configuration: AppConfig,
+        dummy_request: Request,
+    ) -> None:
         """Test the endpoint with an invalid conversation ID format."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
@@ -297,15 +311,20 @@ class TestGetConversationEndpoint:
                 auth=MOCK_AUTH,
                 request=dummy_request,
             )
-
         assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
-        assert "Invalid conversation ID format" in exc_info.value.detail["response"]
-        assert INVALID_CONVERSATION_ID in exc_info.value.detail["cause"]
+
+        detail = exc_info.value.detail
+        assert isinstance(detail, dict)
+        assert "Invalid conversation ID format" in detail["response"]
+        assert INVALID_CONVERSATION_ID in detail["cause"]
 
     @pytest.mark.asyncio
     async def test_llama_stack_connection_error(
-        self, mocker: MockerFixture, setup_configuration, dummy_request
-    ):
+        self,
+        mocker: MockerFixture,
+        setup_configuration: AppConfig,
+        dummy_request: Request,
+    ) -> None:
         """Test the endpoint when LlamaStack connection fails."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
@@ -315,7 +334,9 @@ class TestGetConversationEndpoint:
 
         # Mock AsyncLlamaStackClientHolder to raise APIConnectionError
         mock_client = mocker.AsyncMock()
-        mock_client.agents.session.list.side_effect = APIConnectionError(request=None)
+        mock_client.agents.session.list.side_effect = APIConnectionError(
+            request=None  # type: ignore
+        )
         mock_client_holder = mocker.patch(
             "app.endpoints.conversations.AsyncLlamaStackClientHolder"
         )
@@ -330,12 +351,18 @@ class TestGetConversationEndpoint:
             )
 
         assert exc_info.value.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
-        assert "Unable to connect to Llama Stack" in exc_info.value.detail["response"]
+
+        detail = exc_info.value.detail
+        assert isinstance(detail, dict)
+        assert "Unable to connect to Llama Stack" in detail["response"]
 
     @pytest.mark.asyncio
     async def test_llama_stack_not_found_error(
-        self, mocker: MockerFixture, setup_configuration, dummy_request
-    ):
+        self,
+        mocker: MockerFixture,
+        setup_configuration: AppConfig,
+        dummy_request: Request,
+    ) -> None:
         """Test the endpoint when LlamaStack returns NotFoundError."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
@@ -361,14 +388,20 @@ class TestGetConversationEndpoint:
             )
 
         assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
-        assert "Conversation not found" in exc_info.value.detail["response"]
-        assert "does not exist" in exc_info.value.detail["cause"]
-        assert VALID_CONVERSATION_ID in exc_info.value.detail["cause"]
+
+        detail = exc_info.value.detail
+        assert isinstance(detail, dict)
+        assert "Conversation not found" in detail["response"]
+        assert "does not exist" in detail["cause"]
+        assert VALID_CONVERSATION_ID in detail["cause"]
 
     @pytest.mark.asyncio
     async def test_session_retrieve_exception(
-        self, mocker: MockerFixture, setup_configuration, dummy_request
-    ):
+        self,
+        mocker: MockerFixture,
+        setup_configuration: AppConfig,
+        dummy_request: Request,
+    ) -> None:
         """Test the endpoint when session retrieval raises an exception."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
@@ -392,19 +425,20 @@ class TestGetConversationEndpoint:
             )
 
         assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-        assert "Unknown error" in exc_info.value.detail["response"]
-        assert (
-            "Unknown error while getting conversation" in exc_info.value.detail["cause"]
-        )
+
+        detail = exc_info.value.detail
+        assert isinstance(detail, dict)
+        assert "Unknown error" in detail["response"]
+        assert "Unknown error while getting conversation" in detail["cause"]
 
     @pytest.mark.asyncio
     async def test_get_conversation_forbidden(
         self,
         mocker: MockerFixture,
-        setup_configuration,
-        dummy_request,
-        mock_conversation,
-    ):
+        setup_configuration: AppConfig,
+        dummy_request: Request,
+        mock_conversation: MockType,
+    ) -> None:
         """Test forbidden access when user lacks permission to read conversation."""
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
         mocker.patch("app.endpoints.conversations.check_suid", return_value=True)
@@ -443,17 +477,19 @@ class TestGetConversationEndpoint:
             f"User {MOCK_AUTH[0]} does not have permission "
             f"to read conversation with ID {VALID_CONVERSATION_ID}."
         )
-        assert expected in exc_info.value.detail["cause"]
+        detail = exc_info.value.detail
+        assert isinstance(detail, dict)
+        assert expected in detail["cause"]
 
     @pytest.mark.asyncio
     async def test_get_others_conversations_allowed_for_authorized_user(
         self,
         mocker: MockerFixture,
-        setup_configuration,
-        mock_conversation,
-        dummy_request,
-        mock_session_data,
-    ):  # pylint: disable=too-many-arguments, too-many-positional-arguments
+        setup_configuration: AppConfig,
+        mock_conversation: MockType,
+        dummy_request: Request,
+        mock_session_data: dict[str, Any],
+    ) -> None:  # pylint: disable=too-many-arguments, too-many-positional-arguments
         """Test allowed access to another user's conversation for authorized user."""
         mocker.patch(
             "authorization.resolvers.NoopAccessResolver.get_actions",
@@ -492,11 +528,11 @@ class TestGetConversationEndpoint:
     async def test_successful_conversation_retrieval(
         self,
         mocker: MockerFixture,
-        setup_configuration,
-        mock_session_data,
-        expected_chat_history,
-        dummy_request,
-    ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
+        setup_configuration: AppConfig,
+        mock_session_data: dict[str, Any],
+        expected_chat_history: list[dict[str, Any]],
+        dummy_request: Request,
+    ) -> None:  # pylint: disable=too-many-arguments,too-many-positional-arguments
         """Test successful conversation retrieval with simplified response structure."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
@@ -536,7 +572,9 @@ class TestDeleteConversationEndpoint:
     """Test cases for the DELETE /conversations/{conversation_id} endpoint."""
 
     @pytest.mark.asyncio
-    async def test_configuration_not_loaded(self, mocker: MockerFixture, dummy_request):
+    async def test_configuration_not_loaded(
+        self, mocker: MockerFixture, dummy_request: Request
+    ) -> None:
         """Test the endpoint when configuration is not loaded."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", None)
@@ -549,12 +587,18 @@ class TestDeleteConversationEndpoint:
             )
 
         assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-        assert "Configuration is not loaded" in exc_info.value.detail["response"]
+
+        detail = exc_info.value.detail
+        assert isinstance(detail, dict)
+        assert "Configuration is not loaded" in detail["response"]
 
     @pytest.mark.asyncio
     async def test_invalid_conversation_id_format(
-        self, mocker: MockerFixture, setup_configuration, dummy_request
-    ):
+        self,
+        mocker: MockerFixture,
+        setup_configuration: AppConfig,
+        dummy_request: Request,
+    ) -> None:
         """Test the endpoint with an invalid conversation ID format."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
@@ -568,13 +612,19 @@ class TestDeleteConversationEndpoint:
             )
 
         assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
-        assert "Invalid conversation ID format" in exc_info.value.detail["response"]
-        assert INVALID_CONVERSATION_ID in exc_info.value.detail["cause"]
+
+        detail = exc_info.value.detail
+        assert isinstance(detail, dict)
+        assert "Invalid conversation ID format" in detail["response"]
+        assert INVALID_CONVERSATION_ID in detail["cause"]
 
     @pytest.mark.asyncio
     async def test_llama_stack_connection_error(
-        self, mocker: MockerFixture, setup_configuration, dummy_request
-    ):
+        self,
+        mocker: MockerFixture,
+        setup_configuration: AppConfig,
+        dummy_request: Request,
+    ) -> None:
         """Test the endpoint when LlamaStack connection fails."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
@@ -584,7 +634,9 @@ class TestDeleteConversationEndpoint:
 
         # Mock AsyncLlamaStackClientHolder to raise APIConnectionError
         mock_client = mocker.AsyncMock()
-        mock_client.agents.session.delete.side_effect = APIConnectionError(request=None)
+        mock_client.agents.session.delete.side_effect = APIConnectionError(
+            request=None  # type: ignore
+        )
         mock_client_holder = mocker.patch(
             "app.endpoints.conversations.AsyncLlamaStackClientHolder"
         )
@@ -598,12 +650,17 @@ class TestDeleteConversationEndpoint:
             )
 
         assert exc_info.value.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
-        assert "Unable to connect to Llama Stack" in exc_info.value.detail["response"]
+        detail = exc_info.value.detail
+        assert isinstance(detail, dict)
+        assert "Unable to connect to Llama Stack" in detail["response"]
 
     @pytest.mark.asyncio
     async def test_llama_stack_not_found_error(
-        self, mocker: MockerFixture, setup_configuration, dummy_request
-    ):
+        self,
+        mocker: MockerFixture,
+        setup_configuration: AppConfig,
+        dummy_request: Request,
+    ) -> None:
         """Test the endpoint when LlamaStack returns NotFoundError."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
@@ -629,14 +686,19 @@ class TestDeleteConversationEndpoint:
             )
 
         assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
-        assert "Conversation not found" in exc_info.value.detail["response"]
-        assert "does not exist" in exc_info.value.detail["cause"]
-        assert VALID_CONVERSATION_ID in exc_info.value.detail["cause"]
+        detail = exc_info.value.detail
+        assert isinstance(detail, dict)
+        assert "Conversation not found" in detail["response"]
+        assert "does not exist" in detail["cause"]
+        assert VALID_CONVERSATION_ID in detail["cause"]
 
     @pytest.mark.asyncio
     async def test_session_deletion_exception(
-        self, mocker: MockerFixture, setup_configuration, dummy_request
-    ):
+        self,
+        mocker: MockerFixture,
+        setup_configuration: AppConfig,
+        dummy_request: Request,
+    ) -> None:
         """Test the endpoint when session deletion raises an exception."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
@@ -662,20 +724,19 @@ class TestDeleteConversationEndpoint:
             )
 
         assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-        assert "Unknown error" in exc_info.value.detail["response"]
-        assert (
-            "Unknown error while deleting conversation"
-            in exc_info.value.detail["cause"]
-        )
+        detail = exc_info.value.detail
+        assert isinstance(detail, dict)
+        assert "Unknown error" in detail["response"]
+        assert "Unknown error while deleting conversation" in detail["cause"]
 
     @pytest.mark.asyncio
     async def test_delete_conversation_forbidden(
         self,
         mocker: MockerFixture,
-        setup_configuration,
-        dummy_request,
-        mock_conversation,
-    ):
+        setup_configuration: AppConfig,
+        dummy_request: Request,
+        mock_conversation: MockType,
+    ) -> None:
         """Test forbidden deletion when user lacks permission to delete conversation."""
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
         mocker.patch("app.endpoints.conversations.check_suid", return_value=True)
@@ -714,16 +775,18 @@ class TestDeleteConversationEndpoint:
             f"User {MOCK_AUTH[0]} does not have permission "
             f"to delete conversation with ID {VALID_CONVERSATION_ID}."
         )
-        assert expected in exc_info.value.detail["cause"]
+        detail = exc_info.value.detail
+        assert isinstance(detail, dict)
+        assert expected in detail["cause"]
 
     @pytest.mark.asyncio
     async def test_delete_others_conversations_allowed_for_authorized_user(
         self,
         mocker: MockerFixture,
-        setup_configuration,
-        mock_conversation,
-        dummy_request,
-    ):
+        setup_configuration: AppConfig,
+        mock_conversation: MockType,
+        dummy_request: Request,
+    ) -> None:
         """Test allowed deletion of another user's conversation for authorized user."""
         mocker.patch(
             "authorization.resolvers.NoopAccessResolver.get_actions",
@@ -765,8 +828,11 @@ class TestDeleteConversationEndpoint:
 
     @pytest.mark.asyncio
     async def test_successful_conversation_deletion(
-        self, mocker: MockerFixture, setup_configuration, dummy_request
-    ):
+        self,
+        mocker: MockerFixture,
+        setup_configuration: AppConfig,
+        dummy_request: Request,
+    ) -> None:
         """Test successful conversation deletion."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
@@ -807,7 +873,9 @@ class TestGetConversationsListEndpoint:
     """Test cases for the GET /conversations endpoint."""
 
     @pytest.mark.asyncio
-    async def test_configuration_not_loaded(self, mocker: MockerFixture, dummy_request):
+    async def test_configuration_not_loaded(
+        self, mocker: MockerFixture, dummy_request: Request
+    ) -> None:
         """Test the endpoint when configuration is not loaded."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", None)
@@ -818,12 +886,17 @@ class TestGetConversationsListEndpoint:
             )
 
         assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-        assert "Configuration is not loaded" in exc_info.value.detail["response"]
+        detail = exc_info.value.detail
+        assert isinstance(detail, dict)
+        assert "Configuration is not loaded" in detail["response"]
 
     @pytest.mark.asyncio
     async def test_successful_conversations_list_retrieval(
-        self, mocker: MockerFixture, setup_configuration, dummy_request
-    ):
+        self,
+        mocker: MockerFixture,
+        setup_configuration: AppConfig,
+        dummy_request: Request,
+    ) -> None:
         """Test successful retrieval of conversations list."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
@@ -882,8 +955,11 @@ class TestGetConversationsListEndpoint:
 
     @pytest.mark.asyncio
     async def test_empty_conversations_list(
-        self, mocker: MockerFixture, setup_configuration, dummy_request
-    ):
+        self,
+        mocker: MockerFixture,
+        setup_configuration: AppConfig,
+        dummy_request: Request,
+    ) -> None:
         """Test when user has no conversations."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
@@ -901,8 +977,11 @@ class TestGetConversationsListEndpoint:
 
     @pytest.mark.asyncio
     async def test_database_exception(
-        self, mocker: MockerFixture, setup_configuration, dummy_request
-    ):
+        self,
+        mocker: MockerFixture,
+        setup_configuration: AppConfig,
+        dummy_request: Request,
+    ) -> None:
         """Test when database query raises an exception."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
@@ -917,12 +996,17 @@ class TestGetConversationsListEndpoint:
             )
 
         assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-        assert "Unknown error" in exc_info.value.detail["response"]
+        detail = exc_info.value.detail
+        assert isinstance(detail, dict)
+        assert "Unknown error" in detail["response"]
 
     @pytest.mark.asyncio
     async def test_conversations_list_with_none_topic_summary(
-        self, mocker: MockerFixture, setup_configuration, dummy_request
-    ):
+        self,
+        mocker: MockerFixture,
+        setup_configuration: AppConfig,
+        dummy_request: Request,
+    ) -> None:
         """Test conversations list when topic_summary is None."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
@@ -955,8 +1039,11 @@ class TestGetConversationsListEndpoint:
 
     @pytest.mark.asyncio
     async def test_conversations_list_with_mixed_topic_summaries(
-        self, mocker: MockerFixture, setup_configuration, dummy_request
-    ):
+        self,
+        mocker: MockerFixture,
+        setup_configuration: AppConfig,
+        dummy_request: Request,
+    ) -> None:
         """Test conversations list with mixed topic_summary values (some None, some not)."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
@@ -1020,8 +1107,11 @@ class TestGetConversationsListEndpoint:
 
     @pytest.mark.asyncio
     async def test_conversations_list_with_empty_topic_summary(
-        self, mocker: MockerFixture, setup_configuration, dummy_request
-    ):
+        self,
+        mocker: MockerFixture,
+        setup_configuration: AppConfig,
+        dummy_request: Request,
+    ) -> None:
         """Test conversations list when topic_summary is an empty string."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)
@@ -1054,8 +1144,11 @@ class TestGetConversationsListEndpoint:
 
     @pytest.mark.asyncio
     async def test_conversations_list_topic_summary_field_presence(
-        self, mocker: MockerFixture, setup_configuration, dummy_request
-    ):
+        self,
+        mocker: MockerFixture,
+        setup_configuration: AppConfig,
+        dummy_request: Request,
+    ) -> None:
         """Test that topic_summary field is always present in ConversationDetails objects."""
         mock_authorization_resolvers(mocker)
         mocker.patch("app.endpoints.conversations.configuration", setup_configuration)

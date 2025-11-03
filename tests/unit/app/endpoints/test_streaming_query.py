@@ -7,6 +7,7 @@ from datetime import datetime
 import json
 
 import pytest
+from pytest_mock import MockerFixture
 
 from fastapi import HTTPException, Request, status
 from fastapi.responses import StreamingResponse
@@ -58,6 +59,8 @@ from models.responses import RAGChunk
 from utils.token_counter import TokenCounter
 from utils.types import ToolCallSummary, TurnSummary
 
+from tests.unit.conftest import AgentFixtures
+
 MOCK_AUTH = (
     "017adfa4-7cc6-46e4-b663-3653e1ae69df",
     "mock_username",
@@ -66,7 +69,7 @@ MOCK_AUTH = (
 )
 
 
-def mock_database_operations(mocker):
+def mock_database_operations(mocker: MockerFixture) -> None:
     """Helper function to mock database operations for streaming query endpoints."""
     mocker.patch(
         "app.endpoints.streaming_query.validate_conversation_ownership",
@@ -82,7 +85,7 @@ def mock_database_operations(mocker):
     mocker.patch("app.endpoints.streaming_query.get_session", return_value=mock_session)
 
 
-def mock_metrics(mocker):
+def mock_metrics(mocker: MockerFixture) -> None:
     """Helper function to mock metrics operations for streaming query endpoints."""
     # Mock the metrics that are used in the streaming query endpoints
     mocker.patch("metrics.llm_token_sent_total")
@@ -120,7 +123,7 @@ Use them as supporting information only in answering this query.
 
 
 @pytest.fixture(autouse=True, name="setup_configuration")
-def setup_configuration_fixture():
+def setup_configuration_fixture() -> AppConfig:
     """Set up configuration for tests."""
     config_dict = {
         "name": "test",
@@ -151,7 +154,9 @@ def setup_configuration_fixture():
 
 
 @pytest.mark.asyncio
-async def test_streaming_query_endpoint_handler_configuration_not_loaded(mocker):
+async def test_streaming_query_endpoint_handler_configuration_not_loaded(
+    mocker: MockerFixture,
+) -> None:
     """Test the streaming query endpoint handler if configuration is not loaded."""
     # simulate state when no configuration is loaded
     mocker.patch(
@@ -176,7 +181,9 @@ async def test_streaming_query_endpoint_handler_configuration_not_loaded(mocker)
 
 
 @pytest.mark.asyncio
-async def test_streaming_query_endpoint_on_connection_error(mocker):
+async def test_streaming_query_endpoint_on_connection_error(
+    mocker: MockerFixture,
+) -> None:
     """Test the streaming query endpoint handler if connection can not be established."""
     # simulate state when no configuration is loaded
     mocker.patch(
@@ -210,7 +217,9 @@ async def test_streaming_query_endpoint_on_connection_error(mocker):
 
 
 # pylint: disable=too-many-locals
-async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False):
+async def _test_streaming_query_endpoint_handler(
+    mocker: MockerFixture, store_transcript: bool = False
+) -> None:
     """Test the streaming query endpoint handler."""
     mock_client = mocker.AsyncMock()
     mock_async_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
@@ -346,7 +355,7 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
         streaming_content.append(chunk)
 
     # Convert to string for assertions
-    full_content = "".join(streaming_content)
+    full_content = "".join(streaming_content)  # type: ignore
 
     # Assert the streaming content contains expected SSE format
     assert "data: " in full_content
@@ -422,20 +431,24 @@ async def _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
 
 
 @pytest.mark.asyncio
-async def test_streaming_query_endpoint_handler(mocker):
+async def test_streaming_query_endpoint_handler(mocker: MockerFixture) -> None:
     """Test the streaming query endpoint handler with transcript storage disabled."""
     mock_metrics(mocker)
     await _test_streaming_query_endpoint_handler(mocker, store_transcript=False)
 
 
 @pytest.mark.asyncio
-async def test_streaming_query_endpoint_handler_store_transcript(mocker):
+async def test_streaming_query_endpoint_handler_store_transcript(
+    mocker: MockerFixture,
+) -> None:
     """Test the streaming query endpoint handler with transcript storage enabled."""
     mock_metrics(mocker)
     await _test_streaming_query_endpoint_handler(mocker, store_transcript=True)
 
 
-async def test_retrieve_response_vector_db_available(prepare_agent_mocks, mocker):
+async def test_retrieve_response_vector_db_available(
+    prepare_agent_mocks: AgentFixtures, mocker: MockerFixture
+) -> None:
     """Test the retrieve_response function."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -478,7 +491,9 @@ async def test_retrieve_response_vector_db_available(prepare_agent_mocks, mocker
     )
 
 
-async def test_retrieve_response_no_available_shields(prepare_agent_mocks, mocker):
+async def test_retrieve_response_no_available_shields(
+    prepare_agent_mocks: AgentFixtures, mocker: MockerFixture
+) -> None:
     """Test the retrieve_response function."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -519,19 +534,21 @@ async def test_retrieve_response_no_available_shields(prepare_agent_mocks, mocke
     )
 
 
-async def test_retrieve_response_one_available_shield(prepare_agent_mocks, mocker):
+async def test_retrieve_response_one_available_shield(
+    prepare_agent_mocks: AgentFixtures, mocker: MockerFixture
+) -> None:
     """Test the retrieve_response function."""
 
     class MockShield:
         """Mock for Llama Stack shield to be used."""
 
-        def __init__(self, identifier):
+        def __init__(self, identifier: str) -> None:
             self.identifier = identifier
 
-        def __str__(self):
+        def __str__(self) -> str:
             return "MockShield"
 
-        def __repr__(self):
+        def __repr__(self) -> str:
             return "MockShield"
 
     mock_client, mock_agent = prepare_agent_mocks
@@ -571,19 +588,21 @@ async def test_retrieve_response_one_available_shield(prepare_agent_mocks, mocke
     )
 
 
-async def test_retrieve_response_two_available_shields(prepare_agent_mocks, mocker):
+async def test_retrieve_response_two_available_shields(
+    prepare_agent_mocks: AgentFixtures, mocker: MockerFixture
+) -> None:
     """Test the retrieve_response function."""
 
     class MockShield:
         """Mock for Llama Stack shield to be used."""
 
-        def __init__(self, identifier):
+        def __init__(self, identifier: str) -> None:
             self.identifier = identifier
 
-        def __str__(self):
+        def __str__(self) -> str:
             return "MockShield"
 
-        def __repr__(self):
+        def __repr__(self) -> str:
             return "MockShield"
 
     mock_client, mock_agent = prepare_agent_mocks
@@ -626,19 +645,21 @@ async def test_retrieve_response_two_available_shields(prepare_agent_mocks, mock
     )
 
 
-async def test_retrieve_response_four_available_shields(prepare_agent_mocks, mocker):
+async def test_retrieve_response_four_available_shields(
+    prepare_agent_mocks: AgentFixtures, mocker: MockerFixture
+) -> None:
     """Test the retrieve_response function."""
 
     class MockShield:
         """Mock for Llama Stack shield to be used."""
 
-        def __init__(self, identifier):
+        def __init__(self, identifier: str) -> None:
             self.identifier = identifier
 
-        def __str__(self):
+        def __str__(self) -> str:
             return "MockShield"
 
-        def __repr__(self):
+        def __repr__(self) -> str:
             return "MockShield"
 
     mock_client, mock_agent = prepare_agent_mocks
@@ -695,7 +716,9 @@ async def test_retrieve_response_four_available_shields(prepare_agent_mocks, moc
     )
 
 
-async def test_retrieve_response_with_one_attachment(prepare_agent_mocks, mocker):
+async def test_retrieve_response_with_one_attachment(
+    prepare_agent_mocks: AgentFixtures, mocker: MockerFixture
+) -> None:
     """Test the retrieve_response function."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -747,7 +770,9 @@ async def test_retrieve_response_with_one_attachment(prepare_agent_mocks, mocker
     )
 
 
-async def test_retrieve_response_with_two_attachments(prepare_agent_mocks, mocker):
+async def test_retrieve_response_with_two_attachments(
+    prepare_agent_mocks: AgentFixtures, mocker: MockerFixture
+) -> None:
     """Test the retrieve_response function."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -808,7 +833,7 @@ async def test_retrieve_response_with_two_attachments(prepare_agent_mocks, mocke
     )
 
 
-def test_stream_build_event_turn_start():
+def test_stream_build_event_turn_start() -> None:
     """Test stream_build_event function with turn_start event type."""
     # Create a properly nested chunk structure
     # We cannot use 'mock' as 'hasattr(mock, "xxx")' adds the missing
@@ -830,7 +855,7 @@ def test_stream_build_event_turn_start():
     assert '"conversation_id"' in result
 
 
-def test_stream_build_event_turn_awaiting_input():
+def test_stream_build_event_turn_awaiting_input() -> None:
     """Test stream_build_event function with turn_awaiting_input event type."""
     # Create a properly nested chunk structure
     # We cannot use 'mock' as 'hasattr(mock, "xxx")' adds the missing
@@ -863,7 +888,7 @@ def test_stream_build_event_turn_awaiting_input():
     assert '"conversation_id"' in result
 
 
-def test_stream_build_event_turn_complete():
+def test_stream_build_event_turn_complete() -> None:
     """Test stream_build_event function with turn_complete event type."""
     # Create a properly nested chunk structure
     # We cannot use 'mock' as 'hasattr(mock, "xxx")' adds the missing
@@ -896,7 +921,9 @@ def test_stream_build_event_turn_complete():
     assert '"token": "content"' in result
 
 
-def test_stream_build_event_shield_call_step_complete_no_violation(mocker):
+def test_stream_build_event_shield_call_step_complete_no_violation(
+    mocker: MockerFixture,
+) -> None:
     """Test stream_build_event function with shield_call_step_complete event type."""
     # Mock the metric for validation errors
     mock_metric = mocker.patch("metrics.llm_calls_validation_errors_total")
@@ -931,7 +958,9 @@ def test_stream_build_event_shield_call_step_complete_no_violation(mocker):
     mock_metric.inc.assert_not_called()
 
 
-def test_stream_build_event_shield_call_step_complete_with_violation(mocker):
+def test_stream_build_event_shield_call_step_complete_with_violation(
+    mocker: MockerFixture,
+) -> None:
     """Test stream_build_event function with shield_call_step_complete event type with violation."""
     # Mock the metric for validation errors
     mock_metric = mocker.patch("metrics.llm_calls_validation_errors_total")
@@ -974,7 +1003,7 @@ def test_stream_build_event_shield_call_step_complete_with_violation(mocker):
     mock_metric.inc.assert_called_once()
 
 
-def test_stream_build_event_step_progress():
+def test_stream_build_event_step_progress() -> None:
     """Test stream_build_event function with step_progress event type."""
     # Create a properly nested chunk structure
     # We cannot use 'mock' as 'hasattr(mock, "xxx")' adds the missing
@@ -1000,7 +1029,7 @@ def test_stream_build_event_step_progress():
     assert '"id": 0' in result
 
 
-def test_stream_build_event_step_progress_tool_call_str():
+def test_stream_build_event_step_progress_tool_call_str() -> None:
     """Test stream_build_event function with step_progress_tool_call event type with a string."""
     # Create a properly nested chunk structure
     # We cannot use 'mock' as 'hasattr(mock, "xxx")' adds the missing
@@ -1028,7 +1057,7 @@ def test_stream_build_event_step_progress_tool_call_str():
     assert '"id": 0' in result
 
 
-def test_stream_build_event_step_progress_tool_call_tool_call():
+def test_stream_build_event_step_progress_tool_call_tool_call() -> None:
     """Test stream_build_event function with step_progress_tool_call event type with a ToolCall."""
     # Create a properly nested chunk structure
     # We cannot use 'mock' as 'hasattr(mock, "xxx")' adds the missing
@@ -1060,7 +1089,7 @@ def test_stream_build_event_step_progress_tool_call_tool_call():
     assert '"id": 0' in result
 
 
-def test_stream_build_event_step_complete():
+def test_stream_build_event_step_complete() -> None:
     """Test stream_build_event function with step_complete event type."""
     # Create a properly nested chunk structure
     # We cannot use 'mock' as 'hasattr(mock, "xxx")' adds the missing
@@ -1112,7 +1141,7 @@ def test_stream_build_event_step_complete():
     assert '"id": 0' in result
 
 
-def test_stream_build_event_error():
+def test_stream_build_event_error() -> None:
     """Test stream_build_event function returns a 'error' when chunk contains error information."""
     # Create a mock chunk without an expected payload structure
 
@@ -1130,7 +1159,7 @@ def test_stream_build_event_error():
     assert '"token": "Something went wrong"' in result
 
 
-def test_stream_build_event_returns_heartbeat():
+def test_stream_build_event_returns_heartbeat() -> None:
     """Test stream_build_event function returns a 'heartbeat' when chunk is unrecognised."""
     # Create a mock chunk without an expected payload structure
     chunk = AgentTurnResponseStreamChunk(
@@ -1152,7 +1181,9 @@ def test_stream_build_event_returns_heartbeat():
     assert '"token": "heartbeat"' in result
 
 
-async def test_retrieve_response_with_mcp_servers(prepare_agent_mocks, mocker):
+async def test_retrieve_response_with_mcp_servers(
+    prepare_agent_mocks: AgentFixtures, mocker: MockerFixture
+) -> None:
     """Test the retrieve_response function with MCP servers configured."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -1230,8 +1261,8 @@ async def test_retrieve_response_with_mcp_servers(prepare_agent_mocks, mocker):
 
 
 async def test_retrieve_response_with_mcp_servers_empty_token(
-    prepare_agent_mocks, mocker
-):
+    prepare_agent_mocks: AgentFixtures, mocker: MockerFixture
+) -> None:
     """Test the retrieve_response function with MCP servers and empty access token."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -1292,7 +1323,9 @@ async def test_retrieve_response_with_mcp_servers_empty_token(
     )
 
 
-async def test_retrieve_response_with_mcp_servers_and_mcp_headers(mocker):
+async def test_retrieve_response_with_mcp_servers_and_mcp_headers(
+    mocker: MockerFixture,
+) -> None:
     """Test the retrieve_response function with MCP servers configured."""
     mock_agent = mocker.AsyncMock()
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -1384,7 +1417,9 @@ async def test_retrieve_response_with_mcp_servers_and_mcp_headers(mocker):
 
 
 @pytest.mark.asyncio
-async def test_auth_tuple_unpacking_in_streaming_query_endpoint_handler(mocker):
+async def test_auth_tuple_unpacking_in_streaming_query_endpoint_handler(
+    mocker: MockerFixture,
+) -> None:
     """Test that auth tuple is correctly unpacked in streaming query endpoint handler."""
     # Mock dependencies
     mock_config = mocker.Mock()
@@ -1437,7 +1472,9 @@ async def test_auth_tuple_unpacking_in_streaming_query_endpoint_handler(mocker):
 
 
 @pytest.mark.asyncio
-async def test_streaming_query_endpoint_handler_no_tools_true(mocker):
+async def test_streaming_query_endpoint_handler_no_tools_true(
+    mocker: MockerFixture,
+) -> None:
     """Test the streaming query endpoint handler with no_tools=True."""
     mock_client = mocker.AsyncMock()
     mock_async_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
@@ -1489,7 +1526,9 @@ async def test_streaming_query_endpoint_handler_no_tools_true(mocker):
 
 
 @pytest.mark.asyncio
-async def test_streaming_query_endpoint_handler_no_tools_false(mocker):
+async def test_streaming_query_endpoint_handler_no_tools_false(
+    mocker: MockerFixture,
+) -> None:
     """Test the streaming query endpoint handler with no_tools=False (default behavior)."""
     mock_client = mocker.AsyncMock()
     mock_async_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
@@ -1542,8 +1581,8 @@ async def test_streaming_query_endpoint_handler_no_tools_false(mocker):
 
 @pytest.mark.asyncio
 async def test_retrieve_response_no_tools_bypasses_mcp_and_rag(
-    prepare_agent_mocks, mocker
-):
+    prepare_agent_mocks: AgentFixtures, mocker: MockerFixture
+) -> None:
     """Test that retrieve_response bypasses MCP servers and RAG when no_tools=True."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -1592,8 +1631,8 @@ async def test_retrieve_response_no_tools_bypasses_mcp_and_rag(
 
 @pytest.mark.asyncio
 async def test_retrieve_response_no_tools_false_preserves_functionality(
-    prepare_agent_mocks, mocker
-):
+    prepare_agent_mocks: AgentFixtures, mocker: MockerFixture
+) -> None:
     """Test that retrieve_response preserves normal functionality when no_tools=False."""
     mock_client, mock_agent = prepare_agent_mocks
     mock_agent.create_turn.return_value.output_message.content = "LLM answer"
@@ -1651,8 +1690,8 @@ async def test_retrieve_response_no_tools_false_preserves_functionality(
 
 @pytest.mark.asyncio
 async def test_streaming_query_endpoint_rejects_model_provider_override_without_permission(
-    mocker,
-):
+    mocker: MockerFixture,
+) -> None:
     """Assert 403 when request includes model/provider without MODEL_OVERRIDE."""
     cfg = AppConfig()
     cfg.init_from_dict(
@@ -1704,11 +1743,13 @@ async def test_streaming_query_endpoint_rejects_model_provider_override_without_
         "fields from your request."
     )
     assert exc_info.value.status_code == status.HTTP_403_FORBIDDEN
-    assert exc_info.value.detail["response"] == expected_msg
+    detail = exc_info.value.detail
+    assert isinstance(detail, dict)
+    assert detail["response"] == expected_msg
 
 
 @pytest.mark.asyncio
-async def test_streaming_query_handles_none_event(mocker):
+async def test_streaming_query_handles_none_event(mocker: MockerFixture) -> None:
     """Test that streaming query handles chunks with None events gracefully."""
     mock_metrics(mocker)
     # Mock the client
@@ -1756,7 +1797,7 @@ async def test_streaming_query_handles_none_event(mocker):
 class TestOLSStreamEventFormatting:
     """Test the stream_event function for both media types (OLS compatibility)."""
 
-    def test_stream_event_json_token(self):
+    def test_stream_event_json_token(self) -> None:
         """Test token event formatting for JSON media type."""
         data = {"id": 0, "token": "Hello"}
         result = stream_event(data, LLM_TOKEN_EVENT, MEDIA_TYPE_JSON)
@@ -1764,7 +1805,7 @@ class TestOLSStreamEventFormatting:
         expected = 'data: {"event": "token", "data": {"id": 0, "token": "Hello"}}\n\n'
         assert result == expected
 
-    def test_stream_event_text_token(self):
+    def test_stream_event_text_token(self) -> None:
         """Test token event formatting for text media type."""
 
         data = {"id": 0, "token": "Hello"}
@@ -1772,7 +1813,7 @@ class TestOLSStreamEventFormatting:
 
         assert result == "Hello"
 
-    def test_stream_event_json_tool_call(self):
+    def test_stream_event_json_tool_call(self) -> None:
         """Test tool call event formatting for JSON media type."""
 
         data = {
@@ -1787,7 +1828,7 @@ class TestOLSStreamEventFormatting:
         )
         assert result == expected
 
-    def test_stream_event_text_tool_call(self):
+    def test_stream_event_text_tool_call(self) -> None:
         """Test tool call event formatting for text media type."""
 
         data = {
@@ -1802,7 +1843,7 @@ class TestOLSStreamEventFormatting:
         )
         assert result == expected
 
-    def test_stream_event_json_tool_result(self):
+    def test_stream_event_json_tool_result(self) -> None:
         """Test tool result event formatting for JSON media type."""
 
         data = {
@@ -1817,7 +1858,7 @@ class TestOLSStreamEventFormatting:
         )
         assert result == expected
 
-    def test_stream_event_text_tool_result(self):
+    def test_stream_event_text_tool_result(self) -> None:
         """Test tool result event formatting for text media type."""
 
         data = {
@@ -1832,7 +1873,7 @@ class TestOLSStreamEventFormatting:
         )
         assert result == expected
 
-    def test_stream_event_unknown_type(self):
+    def test_stream_event_unknown_type(self) -> None:
         """Test handling of unknown event types."""
 
         data = {"id": 0, "token": "test"}
@@ -1844,7 +1885,7 @@ class TestOLSStreamEventFormatting:
 class TestOLSStreamEndEvent:
     """Test the stream_end_event function for both media types (OLS compatibility)."""
 
-    def test_stream_end_event_json(self):
+    def test_stream_end_event_json(self) -> None:
         """Test end event formatting for JSON media type."""
 
         metadata_map = {
@@ -1872,7 +1913,7 @@ class TestOLSStreamEndEvent:
         )
         assert "available_quotas" in parsed
 
-    def test_stream_end_event_text(self):
+    def test_stream_end_event_text(self) -> None:
         """Test end event formatting for text media type."""
 
         metadata_map = {
@@ -1892,10 +1933,10 @@ class TestOLSStreamEndEvent:
         )
         assert result == expected
 
-    def test_stream_end_event_text_no_docs(self):
+    def test_stream_end_event_text_no_docs(self) -> None:
         """Test end event formatting for text media type with no documents."""
 
-        metadata_map = {}
+        metadata_map: dict = {}
         # Create mock objects for the test
         mock_summary = TurnSummary(llm_response="Test response", tool_calls=[])
         mock_token_usage = TokenCounter(input_tokens=100, output_tokens=50)
@@ -1909,7 +1950,7 @@ class TestOLSStreamEndEvent:
 class TestOLSErrorHandling:
     """Test error handling functions (OLS compatibility)."""
 
-    def test_prompt_too_long_error_json(self):
+    def test_prompt_too_long_error_json(self) -> None:
         """Test prompt too long error for JSON media type."""
 
         error = Exception("Prompt exceeds maximum length")
@@ -1922,7 +1963,7 @@ class TestOLSErrorHandling:
         assert parsed["data"]["response"] == "Prompt is too long"
         assert parsed["data"]["cause"] == "Prompt exceeds maximum length"
 
-    def test_prompt_too_long_error_text(self):
+    def test_prompt_too_long_error_text(self) -> None:
         """Test prompt too long error for text media type."""
 
         error = Exception("Prompt exceeds maximum length")
@@ -1930,7 +1971,7 @@ class TestOLSErrorHandling:
 
         assert result == "Prompt is too long: Prompt exceeds maximum length"
 
-    def test_generic_llm_error_json(self):
+    def test_generic_llm_error_json(self) -> None:
         """Test generic LLM error for JSON media type."""
 
         error = Exception("Connection failed")
@@ -1942,7 +1983,7 @@ class TestOLSErrorHandling:
         assert parsed["data"]["response"] == "Internal server error"
         assert parsed["data"]["cause"] == "Connection failed"
 
-    def test_generic_llm_error_text(self):
+    def test_generic_llm_error_text(self) -> None:
         """Test generic LLM error for text media type."""
 
         error = Exception("Connection failed")
@@ -1954,7 +1995,7 @@ class TestOLSErrorHandling:
 class TestOLSCompatibilityIntegration:
     """Integration tests for OLS compatibility."""
 
-    def test_media_type_validation(self):
+    def test_media_type_validation(self) -> None:
         """Test that media type validation works correctly."""
 
         # Valid media types
@@ -1968,7 +2009,7 @@ class TestOLSCompatibilityIntegration:
         with pytest.raises(ValueError, match="media_type must be either"):
             QueryRequest(query="test", media_type="invalid/type")
 
-    def test_ols_event_structure(self):
+    def test_ols_event_structure(self) -> None:
         """Test that events follow OLS structure."""
 
         # Test token event structure
@@ -2013,7 +2054,7 @@ class TestOLSCompatibilityIntegration:
         assert "role" not in parsed["data"]
         assert "token" in parsed["data"]
 
-    def test_ols_end_event_structure(self):
+    def test_ols_end_event_structure(self) -> None:
         """Test that end event follows OLS structure."""
 
         metadata_map = {
