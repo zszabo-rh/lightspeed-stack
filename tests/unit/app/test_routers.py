@@ -1,6 +1,6 @@
 """Unit tests for routers.py."""
 
-from typing import Any, Optional
+from typing import Any, Optional, Sequence, Callable
 
 from fastapi import FastAPI
 
@@ -37,14 +37,14 @@ class MockFastAPI(FastAPI):
         router: Any,
         *,
         prefix: str = "",
-        tags=None,
-        dependencies=None,
-        responses=None,
-        deprecated=None,
-        include_in_schema=None,
-        default_response_class=None,
-        callbacks=None,
-        generate_unique_id_function=None,
+        tags: Optional[list] = None,
+        dependencies: Optional[Sequence] = None,
+        responses: Optional[dict] = None,
+        deprecated: Optional[bool] = None,
+        include_in_schema: Optional[bool] = None,
+        default_response_class: Optional[Any] = None,
+        callbacks: Optional[list] = None,
+        generate_unique_id_function: Optional[Callable] = None,
     ) -> None:
         """Register new router."""
         self.routers.append((router, prefix))
