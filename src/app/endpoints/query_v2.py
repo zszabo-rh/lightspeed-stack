@@ -14,6 +14,7 @@ from app.endpoints.query import (
     query_endpoint_handler_base,
     validate_attachments_metadata,
 )
+from constants import DEFAULT_RAG_TOOL
 from authentication import get_auth_dependency
 from authentication.interface import AuthTuple
 from authorization.middleware import authorize
@@ -67,7 +68,171 @@ query_v2_response: dict[int | str, dict[str, Any]] = {
 }
 
 
-async def get_topic_summary(
+def _extract_text_from_response_output_item(output_item: Any) -> str:
+    """Extract assistant message text from a Responses API output item."""
+    if getattr(output_item, "type", None) != "message":
+        return ""
+    if getattr(output_item, "role", None) != "assistant":
+        return ""
+
+    content = getattr(output_item, "content", None)
+    if isinstance(content, str):
+        return content
+
+    text_fragments: list[str] = []
+    if isinstance(content, list):
+        for part in content:
+            if isinstance(part, str):
+                text_fragments.append(part)
+                continue
+            text_value = getattr(part, "text", None)
+            if text_value:
+                text_fragments.append(text_value)
+                continue
+            refusal = getattr(part, "refusal", None)
+            if refusal:
+                text_fragments.append(refusal)
+                continue
+            if isinstance(part, dict):
+                dict_text = part.get("text") or part.get("refusal")
+                if dict_text:
+                    text_fragments.append(str(dict_text))
+
+    return "".join(text_fragments)
+
+
+def _build_tool_call_summary(  # pylint: disable=too-many-return-statements,too-many-branches
+    output_item: Any,
+) -> ToolCallSummary | None:
+    """Translate applicable Responses API tool outputs into ``ToolCallSummary`` records.
+
+    The OpenAI ``response.output`` array may contain any ``OpenAIResponseOutput`` variant:
+    ``message``, ``function_call``, ``file_search_call``, ``web_search_call``, ``mcp_call``,
+    ``mcp_list_tools``, or ``mcp_approval_request``. The OpenAI Spec supports more types
+    but as llamastack does not support them yet they are not considered here.
+    """
+    item_type = getattr(output_item, "type", None)
+
+    if item_type == "function_call":
+        parsed_arguments = getattr(output_item, "arguments", "")
+        status = getattr(output_item, "status", None)
+        if status:
+            if isinstance(parsed_arguments, dict):
+                args: Any = {**parsed_arguments, "status": status}
+            else:
+                args = {"arguments": parsed_arguments, "status": status}
+        else:
+            args = parsed_arguments
+
+        call_id = getattr(output_item, "id", None) or getattr(
+            output_item, "call_id", None
+        )
+        return ToolCallSummary(
+            id=str(call_id),
+            name=getattr(output_item, "name", "function_call"),
+            args=args,
+            response=None,
+        )
+
+    if item_type == "file_search_call":
+        args = {
+            "queries": list(getattr(output_item, "queries", [])),
+            "status": getattr(output_item, "status", None),
+        }
+        results = getattr(output_item, "results", None)
+        response_payload: Any | None = None
+        if results is not None:
+            # Store only the essential result metadata to avoid large payloads
+            response_payload = {
+                "results": [
+                    {
+                        "file_id": (
+                            getattr(result, "file_id", None)
+                            if not isinstance(result, dict)
+                            else result.get("file_id")
+                        ),
+                        "filename": (
+                            getattr(result, "filename", None)
+                            if not isinstance(result, dict)
+                            else result.get("filename")
+                        ),
+                        "score": (
+                            getattr(result, "score", None)
+                            if not isinstance(result, dict)
+                            else result.get("score")
+                        ),
+                    }
+                    for result in results
+                ]
+            }
+        return ToolCallSummary(
+            id=str(getattr(output_item, "id")),
+            name=DEFAULT_RAG_TOOL,
+            args=args,
+            response=response_payload,
+        )
+
+    if item_type == "web_search_call":
+        args = {"status": getattr(output_item, "status", None)}
+        return ToolCallSummary(
+            id=str(getattr(output_item, "id")),
+            name="web_search",
+            args=args,
+            response=None,
+        )
+
+    if item_type == "mcp_call":
+        parsed_arguments = getattr(output_item, "arguments", "")
+        args = {"arguments": parsed_arguments}
+        server_label = getattr(output_item, "server_label", None)
+        if server_label:
+            args["server_label"] = server_label
+        error = getattr(output_item, "error", None)
+        if error:
+            args["error"] = error
+
+        return ToolCallSummary(
+            id=str(getattr(output_item, "id")),
+            name=getattr(output_item, "name", "mcp_call"),
+            args=args,
+            response=getattr(output_item, "output", None),
+        )
+
+    if item_type == "mcp_list_tools":
+        tool_names: list[str] = []
+        for tool in getattr(output_item, "tools", []):
+            if hasattr(tool, "name"):
+                tool_names.append(str(getattr(tool, "name")))
+            elif isinstance(tool, dict) and tool.get("name"):
+                tool_names.append(str(tool.get("name")))
+        args = {
+            "server_label": getattr(output_item, "server_label", None),
+            "tools": tool_names,
+        }
+        return ToolCallSummary(
+            id=str(getattr(output_item, "id")),
+            name="mcp_list_tools",
+            args=args,
+            response=None,
+        )
+
+    if item_type == "mcp_approval_request":
+        parsed_arguments = getattr(output_item, "arguments", "")
+        args = {"arguments": parsed_arguments}
+        server_label = getattr(output_item, "server_label", None)
+        if server_label:
+            args["server_label"] = server_label
+        return ToolCallSummary(
+            id=str(getattr(output_item, "id")),
+            name=getattr(output_item, "name", "mcp_approval_request"),
+            args=args,
+            response=None,
+        )
+
+    return None
+
+
+async def get_topic_summary(  # pylint: disable=too-many-nested-blocks
     question: str, client: AsyncLlamaStackClient, model_id: str
 ) -> str:
     """
@@ -98,18 +263,13 @@ async def get_topic_summary(
         response = cast(OpenAIResponseObject, response)
 
         # Extract text from response output
-        summary_text = ""
-        for output_item in response.output:
-            if hasattr(output_item, "content"):
-                if isinstance(output_item.content, str):
-                    summary_text += output_item.content
-                elif isinstance(output_item.content, list):
-                    for content_item in output_item.content:
-                        if hasattr(content_item, "text"):
-                            summary_text += content_item.text
+        summary_text = "".join(
+            _extract_text_from_response_output_item(output_item)
+            for output_item in response.output
+        )
 
         return summary_text.strip() if summary_text else ""
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         logger.warning("Failed to generate topic summary: %s", e)
         return ""  # Return empty string on failure
 
@@ -141,7 +301,7 @@ async def query_endpoint_handler_v2(
     )
 
 
-async def retrieve_response(  # pylint: disable=too-many-locals,too-many-branches
+async def retrieve_response(  # pylint: disable=too-many-locals,too-many-branches,too-many-arguments
     client: AsyncLlamaStackClient,
     model_id: str,
     query_request: QueryRequest,
@@ -165,11 +325,12 @@ async def retrieve_response(  # pylint: disable=too-many-locals,too-many-branche
     processing. Corresponding metrics are updated.
 
     Parameters:
+        client (AsyncLlamaStackClient): The AsyncLlamaStackClient to use for the request.
         model_id (str): The identifier of the LLM model to use.
-        provider_id (str): The identifier of the LLM provider to use.
         query_request (QueryRequest): The user's query and associated metadata.
         token (str): The authentication token for authorization.
         mcp_headers (dict[str, dict[str, str]], optional): Headers for multi-component processing.
+        provider_id (str): The identifier of the LLM provider to use.
 
     Returns:
         tuple[TurnSummary, str]: A tuple containing a summary of the LLM or agent's response content
@@ -203,7 +364,7 @@ async def retrieve_response(  # pylint: disable=too-many-locals,too-many-branche
             toolgroups.extend(rag_tools)
 
         # Add MCP server tools
-        mcp_tools = get_mcp_tools(configuration.mcp_servers, token)
+        mcp_tools = get_mcp_tools(configuration.mcp_servers, token, mcp_headers)
         if mcp_tools:
             toolgroups.extend(mcp_tools)
             logger.debug(
@@ -226,15 +387,18 @@ async def retrieve_response(  # pylint: disable=too-many-locals,too-many-branche
             )
 
     # Create OpenAI response using responses API
-    response = await client.responses.create(
-        input=input_text,
-        model=model_id,
-        instructions=system_prompt,
-        previous_response_id=query_request.conversation_id,
-        tools=cast(Any, toolgroups),
-        stream=False,
-        store=True,
-    )
+    create_kwargs: dict[str, Any] = {
+        "input": input_text,
+        "model": model_id,
+        "instructions": system_prompt,
+        "tools": cast(Any, toolgroups),
+        "stream": False,
+        "store": True,
+    }
+    if query_request.conversation_id:
+        create_kwargs["previous_response_id"] = query_request.conversation_id
+
+    response = await client.responses.create(**create_kwargs)
     response = cast(OpenAIResponseObject, response)
 
     logger.debug(
@@ -251,42 +415,13 @@ async def retrieve_response(  # pylint: disable=too-many-locals,too-many-branche
     tool_calls: list[ToolCallSummary] = []
 
     for output_item in response.output:
-        if hasattr(output_item, "content") and output_item.content:
-            # Extract text content from message output
-            if isinstance(output_item.content, list):
-                for content_item in output_item.content:
-                    if hasattr(content_item, "text"):
-                        llm_response += content_item.text
-            elif hasattr(output_item.content, "text"):
-                llm_response += output_item.content.text
-            elif isinstance(output_item.content, str):
-                llm_response += output_item.content
+        message_text = _extract_text_from_response_output_item(output_item)
+        if message_text:
+            llm_response += message_text
 
-        # Process tool calls if present
-        if hasattr(output_item, "tool_calls") and output_item.tool_calls:
-            for tool_call in output_item.tool_calls:
-                tool_name = (
-                    tool_call.function.name
-                    if hasattr(tool_call, "function")
-                    else "unknown"
-                )
-                tool_args = (
-                    tool_call.function.arguments
-                    if hasattr(tool_call, "function")
-                    else {}
-                )
-                tool_calls.append(
-                    ToolCallSummary(
-                        id=(
-                            tool_call.id
-                            if hasattr(tool_call, "id")
-                            else str(len(tool_calls))
-                        ),
-                        name=tool_name,
-                        args=tool_args,
-                        response=None,  # Tool responses would be in subsequent output items
-                    )
-                )
+        tool_summary = _build_tool_call_summary(output_item)
+        if tool_summary:
+            tool_calls.append(tool_summary)
 
     logger.info(
         "Response processing complete - Tool calls: %d, Response length: %d chars",
@@ -315,7 +450,7 @@ async def retrieve_response(  # pylint: disable=too-many-locals,too-many-branche
 
 
 def parse_referenced_documents_from_responses_api(
-    response: OpenAIResponseObject,
+    response: OpenAIResponseObject,  # pylint: disable=unused-argument
 ) -> list[ReferencedDocument]:
     """
     Parse referenced documents from OpenAI Responses API response.
@@ -336,7 +471,10 @@ def parse_referenced_documents_from_responses_api(
 
 
 def extract_token_usage_from_responses_api(
-    response: OpenAIResponseObject, model: str, provider: str, system_prompt: str = ""
+    response: OpenAIResponseObject,
+    model: str,
+    provider: str,
+    system_prompt: str = "",  # pylint: disable=unused-argument
 ) -> TokenCounter:
     """
     Extract token usage from OpenAI Responses API response and update metrics.
@@ -361,19 +499,21 @@ def extract_token_usage_from_responses_api(
     token_counter.llm_calls = 1
 
     # Extract usage from the response if available
-    if response.usage:
+    # Note: usage attribute exists at runtime but may not be in type definitions
+    usage = getattr(response, "usage", None)
+    if usage:
         try:
             # Handle both dict and object cases due to llama_stack inconsistency:
             # - When llama_stack converts to chat_completions internally, usage is a dict
             # - When using proper Responses API, usage should be an object
-            # TODO: Remove dict handling once llama_stack standardizes on object type
-            if isinstance(response.usage, dict):
-                input_tokens = response.usage.get("input_tokens", 0)
-                output_tokens = response.usage.get("output_tokens", 0)
+            # TODO: Remove dict handling once llama_stack standardizes on object type  # pylint: disable=fixme
+            if isinstance(usage, dict):
+                input_tokens = usage.get("input_tokens", 0)
+                output_tokens = usage.get("output_tokens", 0)
             else:
                 # Object with attributes (expected final behavior)
-                input_tokens = getattr(response.usage, "input_tokens", 0)
-                output_tokens = getattr(response.usage, "output_tokens", 0)
+                input_tokens = getattr(usage, "input_tokens", 0)
+                output_tokens = getattr(usage, "output_tokens", 0)
             # Only set if we got valid values
             if input_tokens or output_tokens:
                 token_counter.input_tokens = input_tokens or 0
@@ -406,7 +546,7 @@ def extract_token_usage_from_responses_api(
             logger.warning(
                 "Failed to extract token usage from response.usage: %s. Usage value: %s",
                 e,
-                response.usage,
+                usage,
             )
             # Still increment the call counter
             _increment_llm_call_metric(provider, model)
@@ -424,7 +564,7 @@ def extract_token_usage_from_responses_api(
 
 
 def _increment_llm_call_metric(provider: str, model: str) -> None:
-    """Helper to safely increment LLM call metric."""
+    """Safely increment LLM call metric."""
     try:
         metrics.llm_calls_total.labels(provider, model).inc()
     except (AttributeError, TypeError, ValueError) as e:
@@ -454,16 +594,22 @@ def get_rag_tools(vector_store_ids: list[str]) -> list[dict[str, Any]] | None:
     ]
 
 
-def get_mcp_tools(mcp_servers: list, token: str | None = None) -> list[dict[str, Any]]:
+def get_mcp_tools(
+    mcp_servers: list,
+    token: str | None = None,
+    mcp_headers: dict[str, dict[str, str]] | None = None,
+) -> list[dict[str, Any]]:
     """
     Convert MCP servers to tools format for Responses API.
 
     Args:
         mcp_servers: List of MCP server configurations
         token: Optional authentication token for MCP server authorization
+        mcp_headers: Optional per-request headers for MCP servers, keyed by server URL
 
     Returns:
-        list[dict[str, Any]]: List of MCP tool definitions with server details and optional auth headers
+        list[dict[str, Any]]: List of MCP tool definitions with server
+            details and optional auth headers
     """
     tools = []
     for mcp_server in mcp_servers:
@@ -474,9 +620,11 @@ def get_mcp_tools(mcp_servers: list, token: str | None = None) -> list[dict[str,
             "require_approval": "never",
         }
 
-        # Add authentication if token provided (Response API format)
-        if token:
+        # Add authentication if headers or token provided (Response API format)
+        headers = (mcp_headers or {}).get(mcp_server.url)
+        if headers:
+            tool_def["headers"] = headers
+        elif token:
             tool_def["headers"] = {"Authorization": f"Bearer {token}"}
-
         tools.append(tool_def)
     return tools

@@ -223,7 +223,7 @@ async def query_endpoint_handler_base(  # pylint: disable=R0914
     get_topic_summary_func: Any,
 ) -> QueryResponse:
     """
-    Base handler for query endpoints (shared by Agent API and Responses API).
+    Handle query endpoints (shared by Agent API and Responses API).
 
     Processes a POST request to a query endpoint, forwarding the
     user's query to a selected Llama Stack LLM and returning the generated response.

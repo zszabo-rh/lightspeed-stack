@@ -142,24 +142,27 @@ async def test_retrieve_response_parses_output_and_tool_calls(mocker):
     mock_client = mocker.Mock()
 
     # Build output with content variants and tool calls
-    tool_call_fn = mocker.Mock(name="fn")
-    tool_call_fn.name = "do_something"
-    tool_call_fn.arguments = {"x": 1}
-    tool_call = mocker.Mock()
-    tool_call.id = "tc-1"
-    tool_call.function = tool_call_fn
-
     output_item_1 = mocker.Mock()
+    output_item_1.type = "message"
+    output_item_1.role = "assistant"
     output_item_1.content = [mocker.Mock(text="Hello "), mocker.Mock(text="world")]
-    output_item_1.tool_calls = []
 
     output_item_2 = mocker.Mock()
+    output_item_2.type = "message"
+    output_item_2.role = "assistant"
     output_item_2.content = "!"
-    output_item_2.tool_calls = [tool_call]
+
+    # Tool call as a separate output item (Responses API format)
+    tool_call_item = mocker.Mock()
+    tool_call_item.type = "function_call"
+    tool_call_item.id = "tc-1"
+    tool_call_item.name = "do_something"
+    tool_call_item.arguments = {"x": 1}
+    tool_call_item.status = None  # Explicitly set to avoid Mock auto-creation
 
     response_obj = mocker.Mock()
     response_obj.id = "resp-3"
-    response_obj.output = [output_item_1, output_item_2]
+    response_obj.output = [output_item_1, output_item_2, tool_call_item]
     response_obj.usage = None
 
     mock_client.responses.create = mocker.AsyncMock(return_value=response_obj)
@@ -192,6 +195,8 @@ async def test_retrieve_response_with_usage_info(mocker):
     mock_client = mocker.Mock()
 
     output_item = mocker.Mock()
+    output_item.type = "message"
+    output_item.role = "assistant"
     output_item.content = "Test response"
     output_item.tool_calls = []
 
@@ -231,6 +236,8 @@ async def test_retrieve_response_with_usage_dict(mocker):
     mock_client = mocker.Mock()
 
     output_item = mocker.Mock()
+    output_item.type = "message"
+    output_item.role = "assistant"
     output_item.content = "Test response dict"
     output_item.tool_calls = []
 
@@ -266,6 +273,8 @@ async def test_retrieve_response_with_empty_usage_dict(mocker):
     mock_client = mocker.Mock()
 
     output_item = mocker.Mock()
+    output_item.type = "message"
+    output_item.role = "assistant"
     output_item.content = "Test response empty usage"
     output_item.tool_calls = []
 
