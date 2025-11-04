@@ -130,7 +130,7 @@ server:
 shields: 
   - shield_id: llama-guard-shield
     provider_id: llama-guard
-    provider_shield_id: "gpt-4-turbo"
+    provider_shield_id: ${env.RHEL_AI_MODEL}
 models:
   - metadata:
       embedding_dimension: 768 # Depends on chosen model
@@ -142,7 +142,3 @@ models:
     provider_id: vllm
     model_type: llm
     provider_model_id: ${env.RHEL_AI_MODEL}
-  - model_id: gpt-4-turbo
-    provider_id: openai
-    model_type: llm
-    provider_model_id: gpt-4-turbo

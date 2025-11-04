@@ -15,6 +15,7 @@ def wait_for_complete_response(context: Context) -> None:
     """Wait for the response to be complete."""
     context.response_data = _parse_streaming_response(context.response.text)
     print(context.response_data)
+    context.response.raise_for_status()
     assert context.response_data["finished"] is True
 
 
