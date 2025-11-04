@@ -7,7 +7,7 @@ from authentication.noop_with_token import NoopWithTokenAuthDependency
 from constants import DEFAULT_USER_NAME, DEFAULT_USER_UID
 
 
-async def test_noop_with_token_auth_dependency():
+async def test_noop_with_token_auth_dependency() -> None:
     """Test the NoopWithTokenAuthDependency class with default user ID."""
     dependency = NoopWithTokenAuthDependency()
 
@@ -31,7 +31,7 @@ async def test_noop_with_token_auth_dependency():
     assert user_token == "spongebob-token"
 
 
-async def test_noop_with_token_auth_dependency_custom_user_id():
+async def test_noop_with_token_auth_dependency_custom_user_id() -> None:
     """Test the NoopWithTokenAuthDependency class with custom user ID."""
     dependency = NoopWithTokenAuthDependency()
 
@@ -56,7 +56,7 @@ async def test_noop_with_token_auth_dependency_custom_user_id():
     assert user_token == "spongebob-token"
 
 
-async def test_noop_with_token_auth_dependency_no_token():
+async def test_noop_with_token_auth_dependency_no_token() -> None:
     """
     Test if checks for Authorization header is in place.
 
@@ -85,7 +85,7 @@ async def test_noop_with_token_auth_dependency_no_token():
     assert exc_info.value.detail == "No Authorization header found"
 
 
-async def test_noop_with_token_auth_dependency_no_bearer():
+async def test_noop_with_token_auth_dependency_no_bearer() -> None:
     """Test the NoopWithTokenAuthDependency class with no token."""
     dependency = NoopWithTokenAuthDependency()
 
