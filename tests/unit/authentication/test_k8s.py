@@ -4,6 +4,7 @@
 
 import os
 
+from typing import Optional
 import pytest
 from pytest_mock import MockerFixture
 
@@ -27,10 +28,18 @@ class MockK8sResponseStatus:
     and user information if authenticated.
     """
 
-    def __init__(self, authenticated, allowed, username=None, uid=None, groups=None):
+    def __init__(
+        self,
+        authenticated: Optional[bool],
+        allowed: Optional[bool],
+        username: Optional[str] = None,
+        uid: Optional[str] = None,
+        groups: Optional[list[str]] = None,
+    ) -> None:
         """Init function."""
         self.authenticated = authenticated
         self.allowed = allowed
+        self.user: Optional[MockK8sUser]
         if authenticated:
             self.user = MockK8sUser(username, uid, groups)
         else:
@@ -43,7 +52,12 @@ class MockK8sUser:
     Represents a user in the mocked Kubernetes environment.
     """
 
-    def __init__(self, username=None, uid=None, groups=None):
+    def __init__(
+        self,
+        username: Optional[str] = None,
+        uid: Optional[str] = None,
+        groups: Optional[list[str]] = None,
+    ) -> None:
         """Init function."""
         self.username = username
         self.uid = uid
@@ -57,7 +71,12 @@ class MockK8sResponse:
     """
 
     def __init__(
-        self, authenticated=None, allowed=None, username=None, uid=None, groups=None
+        self,
+        authenticated: Optional[bool] = None,
+        allowed: Optional[bool] = None,
+        username: Optional[str] = None,
+        uid: Optional[str] = None,
+        groups: Optional[list[str]] = None,
     ):
         """Init function."""
         self.status = MockK8sResponseStatus(
@@ -65,14 +84,14 @@ class MockK8sResponse:
         )
 
 
-def test_singleton_pattern():
+def test_singleton_pattern() -> None:
     """Test if K8sClientSingleton is really a singleton."""
     k1 = K8sClientSingleton()
     k2 = K8sClientSingleton()
     assert k1 is k2
 
 
-async def test_auth_dependency_valid_token(mocker: MockerFixture):
+async def test_auth_dependency_valid_token(mocker: MockerFixture) -> None:
     """Tests the auth dependency with a mocked valid-token."""
     dependency = K8SAuthDependency()
 
@@ -105,7 +124,7 @@ async def test_auth_dependency_valid_token(mocker: MockerFixture):
     assert token == "valid-token"
 
 
-async def test_auth_dependency_invalid_token(mocker: MockerFixture):
+async def test_auth_dependency_invalid_token(mocker: MockerFixture) -> None:
     """Test the auth dependency with a mocked invalid-token."""
     dependency = K8SAuthDependency()
 
@@ -137,7 +156,7 @@ async def test_auth_dependency_invalid_token(mocker: MockerFixture):
     assert exc_info.value.status_code == 403
 
 
-async def test_cluster_id_is_used_for_kube_admin(mocker: MockerFixture):
+async def test_cluster_id_is_used_for_kube_admin(mocker: MockerFixture) -> None:
     """Test the cluster id is used as user_id when user is kube:admin."""
     dependency = K8SAuthDependency()
     mock_authz_api = mocker.patch("authentication.k8s.K8sClientSingleton.get_authz_api")
@@ -177,7 +196,7 @@ async def test_cluster_id_is_used_for_kube_admin(mocker: MockerFixture):
     assert token == "valid-token"
 
 
-def test_auth_dependency_config(mocker: MockerFixture):
+def test_auth_dependency_config(mocker: MockerFixture) -> None:
     """Test the auth dependency can load kubeconfig file."""
     mocker.patch.dict(os.environ, {"MY_ENV_VAR": "mocked"})
 
@@ -191,7 +210,7 @@ def test_auth_dependency_config(mocker: MockerFixture):
     ), "authz_client is not an instance of AuthorizationV1Api"
 
 
-def test_get_cluster_id(mocker: MockerFixture):
+def test_get_cluster_id(mocker: MockerFixture) -> None:
     """Test get_cluster_id function."""
     mock_get_custom_objects_api = mocker.patch(
         "authentication.k8s.K8sClientSingleton.get_custom_objects_api"
@@ -212,7 +231,7 @@ def test_get_cluster_id(mocker: MockerFixture):
         K8sClientSingleton._get_cluster_id()
 
     # typeerror
-    cluster_id = None
+    cluster_id = None  # type: ignore
     mocked_call = mocker.MagicMock()
     mocked_call.get_cluster_custom_object.return_value = cluster_id
     mock_get_custom_objects_api.return_value = mocked_call
@@ -230,7 +249,7 @@ def test_get_cluster_id(mocker: MockerFixture):
         K8sClientSingleton._get_cluster_id()
 
 
-def test_get_cluster_id_in_cluster(mocker: MockerFixture):
+def test_get_cluster_id_in_cluster(mocker: MockerFixture) -> None:
     """Test get_cluster_id function when running inside of cluster."""
     mocker.patch("authentication.k8s.RUNNING_IN_CLUSTER", True)
     mocker.patch("authentication.k8s.K8sClientSingleton.__new__")
@@ -242,7 +261,7 @@ def test_get_cluster_id_in_cluster(mocker: MockerFixture):
     assert K8sClientSingleton.get_cluster_id() == "some-cluster-id"
 
 
-def test_get_cluster_id_outside_of_cluster(mocker: MockerFixture):
+def test_get_cluster_id_outside_of_cluster(mocker: MockerFixture) -> None:
     """Test get_cluster_id function when running outside of cluster."""
     mocker.patch("authentication.k8s.RUNNING_IN_CLUSTER", False)
     mocker.patch("authentication.k8s.K8sClientSingleton.__new__")
