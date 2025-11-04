@@ -6,14 +6,14 @@ from starlette.datastructures import Headers
 from authentication.utils import extract_user_token
 
 
-def test_extract_user_token():
+def test_extract_user_token() -> None:
     """Test extracting user token from headers."""
     headers = Headers({"Authorization": "Bearer abcdef123"})
     token = extract_user_token(headers)
     assert token == "abcdef123"
 
 
-def test_extract_user_token_no_header():
+def test_extract_user_token_no_header() -> None:
     """Test extracting user token when no Authorization header is present."""
     headers = Headers({})
     try:
@@ -23,7 +23,7 @@ def test_extract_user_token_no_header():
         assert exc.detail == "No Authorization header found"
 
 
-def test_extract_user_token_invalid_format():
+def test_extract_user_token_invalid_format() -> None:
     """Test extracting user token with invalid Authorization header format."""
     headers = Headers({"Authorization": "InvalidFormat"})
     try:

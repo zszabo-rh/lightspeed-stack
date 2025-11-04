@@ -1,8 +1,12 @@
 """Unit tests for utility function to check Llama Stack version."""
 
+from typing import Any
+
 import pytest
+
 from semver import Version
 from pytest_mock import MockerFixture
+from pytest_subtests import SubTests
 
 from llama_stack_client.types import VersionInfo
 
@@ -20,7 +24,7 @@ from constants import (
 @pytest.mark.asyncio
 async def test_check_llama_stack_version_minimal_supported_version(
     mocker: MockerFixture,
-):
+) -> None:
     """Test the check_llama_stack_version function."""
 
     # mock the Llama Stack client
@@ -36,7 +40,7 @@ async def test_check_llama_stack_version_minimal_supported_version(
 @pytest.mark.asyncio
 async def test_check_llama_stack_version_maximal_supported_version(
     mocker: MockerFixture,
-):
+) -> None:
     """Test the check_llama_stack_version function."""
 
     # mock the Llama Stack client
@@ -50,7 +54,9 @@ async def test_check_llama_stack_version_maximal_supported_version(
 
 
 @pytest.mark.asyncio
-async def test_check_llama_stack_version_too_small_version(mocker: MockerFixture):
+async def test_check_llama_stack_version_too_small_version(
+    mocker: MockerFixture,
+) -> None:
     """Test the check_llama_stack_version function."""
 
     # mock the Llama Stack client
@@ -68,7 +74,7 @@ async def test_check_llama_stack_version_too_small_version(mocker: MockerFixture
         await check_llama_stack_version(mock_client)
 
 
-async def _check_version_must_fail(mock_client, bigger_version):
+async def _check_version_must_fail(mock_client: Any, bigger_version: Version) -> None:
     mock_client.inspect.version.return_value = VersionInfo(version=str(bigger_version))
 
     expected_exception_msg = (
@@ -81,7 +87,9 @@ async def _check_version_must_fail(mock_client, bigger_version):
 
 
 @pytest.mark.asyncio
-async def test_check_llama_stack_version_too_big_version(mocker, subtests):
+async def test_check_llama_stack_version_too_big_version(
+    mocker: MockerFixture, subtests: SubTests
+) -> None:
     """Test the check_llama_stack_version function."""
 
     # mock the Llama Stack client

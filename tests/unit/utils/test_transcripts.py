@@ -4,7 +4,7 @@ import hashlib
 from pytest_mock import MockerFixture
 
 from configuration import AppConfig
-from models.requests import QueryRequest
+from models.requests import Attachment, QueryRequest
 
 from utils.transcripts import (
     construct_transcripts_path,
@@ -13,7 +13,7 @@ from utils.transcripts import (
 from utils.types import ToolCallSummary, TurnSummary
 
 
-def test_construct_transcripts_path(mocker: MockerFixture):
+def test_construct_transcripts_path(mocker: MockerFixture) -> None:
     """Test the construct_transcripts_path function."""
 
     config_dict = {
@@ -52,7 +52,7 @@ def test_construct_transcripts_path(mocker: MockerFixture):
     ), "Path should be constructed correctly"
 
 
-def test_store_transcript(mocker: MockerFixture):
+def test_store_transcript(mocker: MockerFixture) -> None:
     """Test the store_transcript function."""
 
     mocker.patch("builtins.open", mocker.mock_open())
@@ -83,9 +83,9 @@ def test_store_transcript(mocker: MockerFixture):
         ],
     )
     query_is_valid = True
-    rag_chunks = []
+    rag_chunks: list[dict] = []
     truncated = False
-    attachments = []
+    attachments: list[Attachment] = []
 
     store_transcript(
         user_id,

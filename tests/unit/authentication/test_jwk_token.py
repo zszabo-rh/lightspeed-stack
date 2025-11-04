@@ -4,6 +4,9 @@
 
 import time
 
+from typing import Any, Generator
+from pytest_mock import MockerFixture
+
 import pytest
 from fastapi import HTTPException, Request
 from pydantic import AnyHttpUrl
@@ -18,13 +21,13 @@ TEST_USER_NAME = "testuser"
 
 
 @pytest.fixture
-def token_header(single_key_set):
+def token_header(single_key_set: list[dict[str, Any]]) -> dict[str, Any]:
     """A sample token header."""
     return {"alg": "RS256", "typ": "JWT", "kid": single_key_set[0]["kid"]}
 
 
 @pytest.fixture
-def token_payload():
+def token_payload() -> dict[str, Any]:
     """A sample token payload with the default user_id and username claims."""
     return {
         "user_id": TEST_USER_ID,
@@ -34,7 +37,7 @@ def token_payload():
     }
 
 
-def make_key():
+def make_key() -> dict[str, Any]:
     """Generate a key pair for testing purposes."""
     key = JsonWebKey.generate_key("RSA", 2048, is_private=True)
     return {
@@ -45,19 +48,21 @@ def make_key():
 
 
 @pytest.fixture
-def single_key_set():
+def single_key_set() -> list[dict[str, Any]]:
     """Default single-key set for signing tokens."""
     return [make_key()]
 
 
 @pytest.fixture
-def another_single_key_set():
+def another_single_key_set() -> list[dict[str, Any]]:
     """Same as single_key_set, but generates a different key pair by being its own fixture."""
     return [make_key()]
 
 
 @pytest.fixture
-def valid_token(single_key_set, token_header, token_payload):
+def valid_token(
+    single_key_set: list[dict[str, Any]], token_header: str, token_payload: str
+) -> str:
     """A token that is valid and signed with the signing keys."""
     jwt_instance = JsonWebToken(algorithms=["RS256"])
     return jwt_instance.encode(
@@ -66,14 +71,16 @@ def valid_token(single_key_set, token_header, token_payload):
 
 
 @pytest.fixture(autouse=True)
-def clear_jwk_cache():
+def clear_jwk_cache() -> Generator:
     """Clear the global JWK cache before each test."""
     _jwk_cache.clear()
     yield
     _jwk_cache.clear()
 
 
-def make_signing_server(mocker, key_set, algorithms):
+def make_signing_server(
+    mocker: MockerFixture, key_set: list[dict[str, Any]], algorithms: list[str]
+) -> Any:
     """A fake server to serve our signing keys as JWKs."""
     mock_session_class = mocker.patch("aiohttp.ClientSession")
     mock_response = mocker.AsyncMock()
@@ -111,13 +118,15 @@ def make_signing_server(mocker, key_set, algorithms):
 
 
 @pytest.fixture
-def mocked_signing_keys_server(mocker, single_key_set):
+def mocked_signing_keys_server(
+    mocker: MockerFixture, single_key_set: list[dict[str, Any]]
+) -> None:
     """Single-key signing server."""
     return make_signing_server(mocker, single_key_set, ["RS256"])
 
 
 @pytest.fixture
-def default_jwk_configuration():
+def default_jwk_configuration() -> JwkConfiguration:
     """Default JwkConfiguration for testing."""
     return JwkConfiguration(
         url=AnyHttpUrl("https://this#isgonnabemocked.com/jwks.json"),
@@ -128,7 +137,7 @@ def default_jwk_configuration():
     )
 
 
-def dummy_request(token):
+def dummy_request(token: str) -> Request:
     """Generate a dummy request with a given token."""
     return Request(
         scope={
@@ -140,7 +149,7 @@ def dummy_request(token):
 
 
 @pytest.fixture
-def no_token_request():
+def no_token_request() -> Request:
     """Dummy request with no token."""
     return Request(
         scope={
@@ -152,7 +161,7 @@ def no_token_request():
 
 
 @pytest.fixture
-def not_bearer_token_request():
+def not_bearer_token_request() -> Request:
     """Dummy request with no token."""
     return Request(
         scope={
@@ -163,7 +172,7 @@ def not_bearer_token_request():
     )
 
 
-def set_auth_header(request: Request, token: str):
+def set_auth_header(request: Request, token: str) -> None:
     """Helper function to set the Authorization header in a request."""
     new_headers = [
         (k, v) for k, v in request.scope["headers"] if k.lower() != b"authorization"
@@ -172,7 +181,7 @@ def set_auth_header(request: Request, token: str):
     request.scope["headers"] = new_headers
 
 
-def ensure_test_user_id_and_name(auth_tuple, expected_token):
+def ensure_test_user_id_and_name(auth_tuple: tuple, expected_token: str) -> None:
     """Utility to ensure that the values in the auth tuple match the test values."""
     user_id, username, skip_userid_check, token = auth_tuple
     assert user_id == TEST_USER_ID
@@ -182,10 +191,10 @@ def ensure_test_user_id_and_name(auth_tuple, expected_token):
 
 
 async def test_valid(
-    default_jwk_configuration,
-    mocked_signing_keys_server,
-    valid_token,
-):
+    default_jwk_configuration: JwkConfiguration,
+    mocked_signing_keys_server: Any,
+    valid_token: str,
+) -> None:
     """Test with a valid token."""
     _ = mocked_signing_keys_server
 
@@ -197,7 +206,9 @@ async def test_valid(
 
 
 @pytest.fixture
-def expired_token(single_key_set, token_header, token_payload):
+def expired_token(
+    single_key_set: list[dict[str, Any]], token_header: dict, token_payload: dict
+) -> str:
     """An well-signed yet expired token."""
     jwt_instance = JsonWebToken(algorithms=["RS256"])
     token_payload["exp"] = int(time.time()) - 3600  # Set expiration in the past
@@ -207,10 +218,10 @@ def expired_token(single_key_set, token_header, token_payload):
 
 
 async def test_expired(
-    default_jwk_configuration,
-    mocked_signing_keys_server,
-    expired_token,
-):
+    default_jwk_configuration: JwkConfiguration,
+    mocked_signing_keys_server: Any,
+    expired_token: str,
+) -> None:
     """Test with an expired token."""
     _ = mocked_signing_keys_server
 
@@ -225,7 +236,11 @@ async def test_expired(
 
 
 @pytest.fixture
-def invalid_token(another_single_key_set, token_header, token_payload):
+def invalid_token(
+    another_single_key_set: list[dict[str, Any]],
+    token_header: dict,
+    token_payload: dict,
+) -> str:
     """A token that is signed with different keys than the signing keys."""
     jwt_instance = JsonWebToken(algorithms=["RS256"])
     return jwt_instance.encode(
@@ -234,10 +249,10 @@ def invalid_token(another_single_key_set, token_header, token_payload):
 
 
 async def test_invalid(
-    default_jwk_configuration,
-    mocked_signing_keys_server,
-    invalid_token,
-):
+    default_jwk_configuration: JwkConfiguration,
+    mocked_signing_keys_server: Any,
+    invalid_token: str,
+) -> None:
     """Test with an invalid token."""
     _ = mocked_signing_keys_server
 
@@ -251,10 +266,10 @@ async def test_invalid(
 
 
 async def test_no_auth_header(
-    default_jwk_configuration,
-    mocked_signing_keys_server,
-    no_token_request,
-):
+    default_jwk_configuration: JwkConfiguration,
+    mocked_signing_keys_server: Any,
+    no_token_request: str,
+) -> None:
     """Test with no Authorization header."""
     _ = mocked_signing_keys_server
 
@@ -271,10 +286,10 @@ async def test_no_auth_header(
 
 
 async def test_no_bearer(
-    default_jwk_configuration,
-    mocked_signing_keys_server,
-    not_bearer_token_request,
-):
+    default_jwk_configuration: JwtConfiguration,
+    mocked_signing_keys_server: Any,
+    not_bearer_token_request: str,
+) -> None:
     """Test with Authorization header that does not start with Bearer."""
     _ = mocked_signing_keys_server
 
@@ -288,7 +303,11 @@ async def test_no_bearer(
 
 
 @pytest.fixture
-def no_user_id_token(single_key_set, token_payload, token_header):
+def no_user_id_token(
+    single_key_set: list[dict[str, Any]],
+    token_payload: dict[str, Any],
+    token_header: dict[str, Any],
+) -> str:
     """Token without a user_id claim."""
     jwt_instance = JsonWebToken(algorithms=["RS256"])
     # Modify the token payload to include different claims
@@ -300,10 +319,10 @@ def no_user_id_token(single_key_set, token_payload, token_header):
 
 
 async def test_no_user_id(
-    default_jwk_configuration,
-    mocked_signing_keys_server,
-    no_user_id_token,
-):
+    default_jwk_configuration: JwkConfiguration,
+    mocked_signing_keys_server: Any,
+    no_user_id_token: str,
+) -> None:
     """Test with a token that has no user_id claim."""
     _ = mocked_signing_keys_server
 
@@ -319,7 +338,11 @@ async def test_no_user_id(
 
 
 @pytest.fixture
-def no_username_token(single_key_set, token_payload, token_header):
+def no_username_token(
+    single_key_set: list[dict[str, Any]],
+    token_payload: dict[str, Any],
+    token_header: dict[str, Any],
+) -> str:
     """Token without a username claim."""
     jwt_instance = JsonWebToken(algorithms=["RS256"])
     # Modify the token payload to include different claims
@@ -331,10 +354,10 @@ def no_username_token(single_key_set, token_payload, token_header):
 
 
 async def test_no_username(
-    default_jwk_configuration,
-    mocked_signing_keys_server,
-    no_username_token,
-):
+    default_jwk_configuration: JwkConfiguration,
+    mocked_signing_keys_server: Any,
+    no_username_token: str,
+) -> None:
     """Test with a token that has no username claim."""
     _ = mocked_signing_keys_server
 
@@ -350,7 +373,9 @@ async def test_no_username(
 
 
 @pytest.fixture
-def custom_claims_token(single_key_set, token_payload, token_header):
+def custom_claims_token(
+    single_key_set: list[dict[str, Any]], token_payload: dict, token_header: dict
+) -> str:
     """Token with custom claims."""
     jwt_instance = JsonWebToken(algorithms=["RS256"])
 
@@ -367,7 +392,9 @@ def custom_claims_token(single_key_set, token_payload, token_header):
 
 
 @pytest.fixture
-def custom_claims_configuration(default_jwk_configuration):
+def custom_claims_configuration(
+    default_jwk_configuration: JwkConfiguration,
+) -> JwkConfiguration:
     """Configuration for custom claims."""
     # Create a copy of the default configuration
     custom_config = default_jwk_configuration.model_copy()
@@ -380,10 +407,10 @@ def custom_claims_configuration(default_jwk_configuration):
 
 
 async def test_custom_claims(
-    custom_claims_configuration,
-    mocked_signing_keys_server,
-    custom_claims_token,
-):
+    custom_claims_configuration: JwkConfiguration,
+    mocked_signing_keys_server: Any,
+    custom_claims_token: str,
+) -> None:
     """Test with a token that has custom claims."""
     _ = mocked_signing_keys_server
 
@@ -396,49 +423,49 @@ async def test_custom_claims(
 
 
 @pytest.fixture
-def token_header_256_1(multi_key_set):
+def token_header_256_1(multi_key_set: list[dict[str, Any]]) -> dict[str, Any]:
     """A sample token header for RS256 using multi_key_set."""
     return {"alg": "RS256", "typ": "JWT", "kid": multi_key_set[0]["kid"]}
 
 
 @pytest.fixture
-def token_header_256_2(multi_key_set):
+def token_header_256_2(multi_key_set: list[dict[str, Any]]) -> dict[str, Any]:
     """A sample token header for RS256 using multi_key_set."""
     return {"alg": "RS256", "typ": "JWT", "kid": multi_key_set[1]["kid"]}
 
 
 @pytest.fixture
-def token_header_384(multi_key_set):
+def token_header_384(multi_key_set: list[dict[str, Any]]) -> dict[str, Any]:
     """A sample token header."""
     return {"alg": "RS384", "typ": "JWT", "kid": multi_key_set[2]["kid"]}
 
 
 @pytest.fixture
-def token_header_256_no_kid():
+def token_header_256_no_kid() -> dict[str, Any]:
     """RS256 no kid."""
     return {"alg": "RS256", "typ": "JWT"}
 
 
 @pytest.fixture
-def token_header_384_no_kid():
+def token_header_384_no_kid() -> dict[str, Any]:
     """RS384 no kid."""
     return {"alg": "RS384", "typ": "JWT"}
 
 
 @pytest.fixture
-def multi_key_set():
+def multi_key_set() -> list[dict[str, Any]]:
     """Default multi-key set for signing tokens."""
     return [make_key(), make_key(), make_key()]
 
 
 @pytest.fixture
 def valid_tokens(
-    multi_key_set,
-    token_header_256_1,
-    token_header_256_2,
-    token_payload,
-    token_header_384,
-):
+    multi_key_set: list[dict[str, Any]],
+    token_header_256_1: dict[str, Any],
+    token_header_256_2: dict[str, Any],
+    token_payload: dict[str, Any],
+    token_header_384: dict[str, Any],
+) -> tuple[str, str, str]:
     """Generate valid tokens for each key in the multi-key set."""
     key_for_256_1 = multi_key_set[0]
     key_for_256_2 = multi_key_set[1]
@@ -464,8 +491,11 @@ def valid_tokens(
 
 @pytest.fixture
 def valid_tokens_no_kid(
-    multi_key_set, token_header_256_no_kid, token_payload, token_header_384_no_kid
-):
+    multi_key_set: list[dict[str, Any]],
+    token_header_256_no_kid: dict[str, Any],
+    token_payload: dict[str, Any],
+    token_header_384_no_kid: dict[str, Any],
+) -> tuple[str, str, str]:
     """Generate valid tokens for each key in the multi-key set without a kid."""
     key_for_256_1 = multi_key_set[0]
     key_for_256_2 = multi_key_set[1]
@@ -490,16 +520,18 @@ def valid_tokens_no_kid(
 
 
 @pytest.fixture
-def multi_key_signing_server(mocker, multi_key_set):
+def multi_key_signing_server(
+    mocker: MockerFixture, multi_key_set: list[dict[str, Any]]
+) -> Any:
     """Multi-key signing server."""
     return make_signing_server(mocker, multi_key_set, ["RS256", "RS256", "RS384"])
 
 
 async def test_multi_key_valid(
-    default_jwk_configuration,
-    multi_key_signing_server,
-    valid_tokens,
-):
+    default_jwk_configuration: JwkConfiguration,
+    multi_key_signing_server: Any,
+    valid_tokens: tuple[str, str, str],
+) -> None:
     """Test with valid tokens from a multi-key set."""
     _ = multi_key_signing_server
 
@@ -517,10 +549,10 @@ async def test_multi_key_valid(
 
 
 async def test_multi_key_no_kid(
-    default_jwk_configuration,
-    multi_key_signing_server,
-    valid_tokens_no_kid,
-):
+    default_jwk_configuration: JwkConfiguration,
+    multi_key_signing_server: Any,
+    valid_tokens_no_kid: tuple[str, str, str],
+) -> None:
     """Test with valid tokens from a multi-key set without a kid."""
     _ = multi_key_signing_server
 

@@ -5,7 +5,7 @@ from authentication.noop import NoopAuthDependency
 from constants import DEFAULT_USER_NAME, DEFAULT_USER_UID, NO_USER_TOKEN
 
 
-async def test_noop_auth_dependency():
+async def test_noop_auth_dependency() -> None:
     """Test the NoopAuthDependency class with default user ID."""
     dependency = NoopAuthDependency()
 
@@ -22,7 +22,7 @@ async def test_noop_auth_dependency():
     assert user_token == NO_USER_TOKEN
 
 
-async def test_noop_auth_dependency_custom_user_id():
+async def test_noop_auth_dependency_custom_user_id() -> None:
     """Test the NoopAuthDependency class."""
     dependency = NoopAuthDependency()
 
