@@ -30,7 +30,7 @@ def check_llama_version(context: Context, llama_version: str) -> None:
 
 @then("The body of the response has proper model structure")
 def check_model_structure(context: Context) -> None:
-    """Check that the first LLM model has the correct structure and required fields."""
+    """Check that the expected LLM model has the correct structure and required fields."""
     response_json = context.response.json()
     assert response_json is not None, "Response is not valid JSON"
 
@@ -38,32 +38,45 @@ def check_model_structure(context: Context) -> None:
     models = response_json["models"]
     assert len(models) > 0, "Response has empty list of models"
 
-    # Find first LLM model (same logic as environment.py)
-    llm_model = None
-    for model in models:
-        if model.get("api_model_type") == "llm":
-            llm_model = model
-            break
-
-    assert llm_model is not None, "No LLM model found in response"
-
-    # Get expected values from context
+    # Get expected values from context (detected in before_all)
     expected_model = context.default_model
     expected_provider = context.default_provider
 
+    # Search for the specific model that was detected in before_all
+    llm_model = None
+    for model in models:
+        if (
+            model.get("api_model_type") == "llm"
+            and model.get("provider_id") == expected_provider
+            and model.get("provider_resource_id") == expected_model
+        ):
+            llm_model = model
+            break
+
+    assert llm_model is not None, (
+        f"Expected LLM model not found in response. "
+        f"Looking for provider_id='{expected_provider}' and provider_resource_id='{expected_model}'"
+    )
+
     # Validate structure and values
-    assert llm_model["type"] == "model", "type should be 'model'"
-    assert llm_model["api_model_type"] == "llm", "api_model_type should be 'llm'"
-    assert llm_model["model_type"] == "llm", "model_type should be 'llm'"
+    assert (
+        llm_model["type"] == "model"
+    ), f"type should be 'model', but is {llm_model["type"]}"
+    assert (
+        llm_model["api_model_type"] == "llm"
+    ), f"api_model_type should be 'llm', but is {llm_model["api_model_type"]}"
+    assert (
+        llm_model["model_type"] == "llm"
+    ), f"model_type should be 'llm', but is {llm_model["model_type"]}"
     assert (
         llm_model["provider_id"] == expected_provider
-    ), f"provider_id should be '{expected_provider}'"
+    ), f"provider_id should be '{expected_provider}', but is '{llm_model["provider_id"]}'"
     assert (
         llm_model["provider_resource_id"] == expected_model
-    ), f"provider_resource_id should be '{expected_model}'"
+    ), f"provider_resource_id should be '{expected_model}', but is '{llm_model["provider_resource_id"]}'"
     assert (
         llm_model["identifier"] == f"{expected_provider}/{expected_model}"
-    ), f"identifier should be '{expected_provider}/{expected_model}'"
+    ), f"identifier should be '{expected_provider}/{expected_model}', but is '{llm_model["identifier"]}'"
 
 
 @then("The body of the response has proper shield structure")
@@ -94,10 +107,10 @@ def check_shield_structure(context: Context) -> None:
     ), "provider_id should be 'llama-guard'"
     assert (
         found_shield["provider_resource_id"] == expected_model
-    ), f"provider_resource_id should be '{expected_model}'"
+    ), f"provider_resource_id should be '{expected_model}', but is '{found_shield["provider_resource_id"]}'"
     assert (
         found_shield["identifier"] == "llama-guard-shield"
-    ), "identifier should be 'llama-guard-shield'"
+    ), f"identifier should be 'llama-guard-shield', but is '{found_shield["identifier"]}'"
 
 
 @then("The response contains {count:d} tools listed for provider {provider_name}")

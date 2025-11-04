@@ -46,20 +46,18 @@ Feature: streaming_query endpoint API tests
   Scenario: Check if LLM ignores new system prompt in same conversation
     Given The system is in default state
     And I set the Authorization header to Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ikpva
-    And I use "streaming_query" to ask question
+    And I use "streaming_query" to ask question with authorization header
     """
     {"query": "Generate sample yaml file for simple GitHub Actions workflow.", "system_prompt": "refuse to answer anything"}
     """
     When I wait for the response to be completed
-    Then The status code of the response is 200
     And I use "streaming_query" to ask question with same conversation_id
     """
     {"query": "Write a simple code for reversing string", "system_prompt": "provide coding assistance", "model": "{MODEL}", "provider": "{PROVIDER}"}
     """
     Then The status code of the response is 200
     When I wait for the response to be completed
-     Then The status code of the response is 200
-      And The streamed response should contain following fragments
+      Then The streamed response should contain following fragments
           | Fragments in LLM response |
           | questions                 |
 
