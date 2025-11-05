@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 from pytest_mock import MockerFixture
+from pydantic import SecretStr
 
 from constants import (
     CACHE_TYPE_NOOP,
@@ -46,7 +47,7 @@ def postgres_cache_config() -> ConversationCacheConfiguration:
     return ConversationCacheConfiguration(
         type=CACHE_TYPE_POSTGRES,
         postgres=PostgreSQLDatabaseConfiguration(
-            db="database", user="user", password="password"
+            db="database", user="user", password=SecretStr("password")
         ),
     )
 
@@ -64,7 +65,8 @@ def sqlite_cache_config(tmpdir: Path) -> ConversationCacheConfiguration:
 def invalid_cache_type_config() -> ConversationCacheConfiguration:
     """Fixture containing instance of ConversationCacheConfiguration with improper settings."""
     c = ConversationCacheConfiguration()
-    c.type = "foo bar baz"
+    # the conversation cache type name is incorrect in purpose
+    c.type = "foo bar baz"  # pyright: ignore
     return c
 
 
@@ -136,7 +138,9 @@ def test_conversation_cache_postgres_improper_config() -> None:
     """Check if PostgreSQL cache configuration is checked in cache factory."""
     cc = ConversationCacheConfiguration(
         type=CACHE_TYPE_POSTGRES,
-        postgres=PostgreSQLDatabaseConfiguration(db="db", user="u", password="p"),
+        postgres=PostgreSQLDatabaseConfiguration(
+            db="db", user="u", password=SecretStr("p")
+        ),
     )
     # simulate improper configuration (can not be done directly as model checks this)
     cc.postgres = None
