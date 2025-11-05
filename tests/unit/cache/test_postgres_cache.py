@@ -6,6 +6,7 @@ from typing import Any
 
 import pytest
 from pytest_mock import MockerFixture
+from pydantic import SecretStr, AnyUrl
 
 import psycopg2
 
@@ -71,7 +72,11 @@ def postgres_cache_config() -> PostgreSQLDatabaseConfiguration:
     # can be any configuration, becuase tests won't really try to
     # connect to database
     return PostgreSQLDatabaseConfiguration(
-        host="localhost", port=1234, db="database", user="user", password="password"
+        host="localhost",
+        port=1234,
+        db="database",
+        user="user",
+        password=SecretStr("password"),
     )
 
 
@@ -158,7 +163,8 @@ def test_connected_when_connection_error(
     mocker.patch("psycopg2.connect")
     # simulate connection error
     cache = PostgresCache(postgres_cache_config_fixture)
-    cache.connection = ConnectionMock()
+    # connection does not have to have proper type
+    cache.connection = ConnectionMock()  # pyright: ignore
     assert cache.connection is not None
     assert cache.connected() is False
 
@@ -282,7 +288,8 @@ def test_insert_or_append_operation_operation_error(
 
     # no operation for @connection decorator
     cache.connect = lambda: None
-    cache.connection = ConnectionMock()
+    # connection does not have to have proper type
+    cache.connection = ConnectionMock()  # pyright: ignore
 
     with pytest.raises(CacheError, match="insert_or_append"):
         cache.insert_or_append(USER_ID_1, CONVERSATION_ID_1, cache_entry_1, False)
@@ -335,7 +342,8 @@ def test_delete_operation_operation_error(
 
     # no operation for @connection decorator
     cache.connect = lambda: None
-    cache.connection = ConnectionMock()
+    # connection does not have to have proper type
+    cache.connection = ConnectionMock()  # pyright: ignore
 
     with pytest.raises(CacheError, match="delete"):
         cache.delete(USER_ID_1, CONVERSATION_ID_1, False)
@@ -458,7 +466,9 @@ def test_insert_and_get_with_referenced_documents(
     mock_cursor = mock_connection.cursor.return_value.__enter__.return_value
 
     # Create a CacheEntry with referenced documents
-    docs = [ReferencedDocument(doc_title="Test Doc", doc_url="http://example.com/")]
+    docs = [
+        ReferencedDocument(doc_title="Test Doc", doc_url=AnyUrl("http://example.com/"))
+    ]
     entry_with_docs = CacheEntry(
         query="user message",
         response="AI message",

@@ -6,6 +6,7 @@ from typing import Any
 
 import sqlite3
 
+from pydantic import AnyUrl
 import pytest
 
 from models.config import SQLiteDatabaseConfiguration
@@ -101,7 +102,8 @@ def test_connected_when_connection_error(tmpdir: Path) -> None:
     """Test the connected() method."""
     # simulate connection error
     cache = create_cache(tmpdir)
-    cache.connection = ConnectionMock()
+    # connection can have any type
+    cache.connection = ConnectionMock()  # pyright: ignore
     assert cache.connection is not None
     assert cache.connected() is False
 
@@ -370,7 +372,9 @@ def test_insert_and_get_with_referenced_documents(tmpdir: Path) -> None:
     cache = create_cache(tmpdir)
 
     # Create a CacheEntry with referenced documents
-    docs = [ReferencedDocument(doc_title="Test Doc", doc_url="http://example.com")]
+    docs = [
+        ReferencedDocument(doc_title="Test Doc", doc_url=AnyUrl("http://example.com"))
+    ]
     entry_with_docs = CacheEntry(
         query="user message",
         response="AI message",
