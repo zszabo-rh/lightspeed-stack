@@ -8,6 +8,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import Annotated, Any, AsyncGenerator, AsyncIterator, Iterator, cast
 
+from litellm.exceptions import RateLimitError
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
 from llama_stack_client import (
@@ -48,7 +49,11 @@ from models.cache_entry import CacheEntry
 from models.config import Action
 from models.database.conversations import UserConversation
 from models.requests import QueryRequest
-from models.responses import ForbiddenResponse, UnauthorizedResponse
+from models.responses import (
+    ForbiddenResponse,
+    UnauthorizedResponse,
+    QuotaExceededResponse,
+)
 from utils.endpoints import (
     check_configuration_loaded,
     create_referenced_documents_with_metadata,
@@ -103,6 +108,10 @@ streaming_query_responses: dict[int | str, dict[str, Any]] = {
     403: {
         "description": "Client does not have permission to access conversation",
         "model": ForbiddenResponse,
+    },
+    429: {
+        "description": "The quota has been exceeded",
+        "model": QuotaExceededResponse,
     },
     500: {
         "detail": {
@@ -920,6 +929,15 @@ async def streaming_query_endpoint_handler(  # pylint: disable=too-many-locals,t
             detail={
                 "response": "Unable to connect to Llama Stack",
                 "cause": str(e),
+            },
+        ) from e
+    except RateLimitError as e:
+        used_model = getattr(e, "model", "unknown")
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail={
+                "response": "Model quota exceeded",
+                "cause": f"The token quota for model {used_model} has been exceeded.",
             },
         ) from e
     except Exception as e:  # pylint: disable=broad-except

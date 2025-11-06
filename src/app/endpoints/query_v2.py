@@ -27,6 +27,7 @@ from models.responses import (
     QueryResponse,
     ReferencedDocument,
     UnauthorizedResponse,
+    QuotaExceededResponse,
 )
 from utils.endpoints import (
     get_system_prompt,
@@ -58,6 +59,10 @@ query_v2_response: dict[int | str, dict[str, Any]] = {
     403: {
         "description": "Client does not have permission to access conversation",
         "model": ForbiddenResponse,
+    },
+    429: {
+        "description": "The quota has been exceeded",
+        "model": QuotaExceededResponse,
     },
     500: {
         "detail": {
