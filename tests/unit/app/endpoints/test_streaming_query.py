@@ -233,79 +233,85 @@ async def _test_streaming_query_endpoint_handler(
     # We cannot use 'mock' as 'hasattr(mock, "xxx")' adds the missing
     # attribute and therefore makes checks to see whether it is missing fail.
     mock_streaming_response = mocker.AsyncMock()
-    mock_streaming_response.__aiter__.return_value = [
-        AgentTurnResponseStreamChunk(
-            event=TurnResponseEvent(
-                payload=AgentTurnResponseStepProgressPayload(
-                    event_type="step_progress",
-                    step_type="inference",
-                    delta=TextDelta(text="LLM ", type="text"),
-                    step_id="s1",
+    mock_streaming_response.__aiter__.return_value = iter(
+        [
+            AgentTurnResponseStreamChunk(
+                event=TurnResponseEvent(
+                    payload=AgentTurnResponseStepProgressPayload(
+                        event_type="step_progress",
+                        step_type="inference",
+                        delta=TextDelta(text="LLM ", type="text"),
+                        step_id="s1",
+                    )
                 )
-            )
-        ),
-        AgentTurnResponseStreamChunk(
-            event=TurnResponseEvent(
-                payload=AgentTurnResponseStepProgressPayload(
-                    event_type="step_progress",
-                    step_type="inference",
-                    delta=TextDelta(text="answer", type="text"),
-                    step_id="s2",
+            ),
+            AgentTurnResponseStreamChunk(
+                event=TurnResponseEvent(
+                    payload=AgentTurnResponseStepProgressPayload(
+                        event_type="step_progress",
+                        step_type="inference",
+                        delta=TextDelta(text="answer", type="text"),
+                        step_id="s2",
+                    )
                 )
-            )
-        ),
-        AgentTurnResponseStreamChunk(
-            event=TurnResponseEvent(
-                payload=AgentTurnResponseStepCompletePayload(
-                    event_type="step_complete",
-                    step_id="s1",
-                    step_type="tool_execution",
-                    step_details=ToolExecutionStep(
-                        turn_id="t1",
-                        step_id="s3",
+            ),
+            AgentTurnResponseStreamChunk(
+                event=TurnResponseEvent(
+                    payload=AgentTurnResponseStepCompletePayload(
+                        event_type="step_complete",
+                        step_id="s1",
                         step_type="tool_execution",
-                        tool_responses=[
-                            ToolResponse(
-                                call_id="t1",
-                                tool_name="knowledge_search",
-                                content=[
-                                    TextContentItem(text=s, type="text")
-                                    for s in SAMPLE_KNOWLEDGE_SEARCH_RESULTS
-                                ],
-                            )
-                        ],
-                        tool_calls=[
-                            ToolCall(
-                                call_id="t1", tool_name="knowledge_search", arguments={}
-                            )
-                        ],
-                    ),
-                )
-            )
-        ),
-        AgentTurnResponseStreamChunk(
-            event=TurnResponseEvent(
-                payload=AgentTurnResponseTurnCompletePayload(
-                    event_type="turn_complete",
-                    turn=Turn(
-                        turn_id="t1",
-                        input_messages=[],
-                        output_message=CompletionMessage(
-                            role="assistant",
-                            content=[TextContentItem(text="LLM answer", type="text")],
-                            stop_reason="end_of_turn",
-                            tool_calls=[],
+                        step_details=ToolExecutionStep(
+                            turn_id="t1",
+                            step_id="s3",
+                            step_type="tool_execution",
+                            tool_responses=[
+                                ToolResponse(
+                                    call_id="t1",
+                                    tool_name="knowledge_search",
+                                    content=[
+                                        TextContentItem(text=s, type="text")
+                                        for s in SAMPLE_KNOWLEDGE_SEARCH_RESULTS
+                                    ],
+                                )
+                            ],
+                            tool_calls=[
+                                ToolCall(
+                                    call_id="t1",
+                                    tool_name="knowledge_search",
+                                    arguments={},
+                                )
+                            ],
                         ),
-                        session_id="test_session_id",
-                        started_at=datetime.now(),
-                        steps=[],
-                        completed_at=datetime.now(),
-                        output_attachments=[],
-                    ),
+                    )
                 )
-            )
-        ),
-    ]
+            ),
+            AgentTurnResponseStreamChunk(
+                event=TurnResponseEvent(
+                    payload=AgentTurnResponseTurnCompletePayload(
+                        event_type="turn_complete",
+                        turn=Turn(
+                            turn_id="t1",
+                            input_messages=[],
+                            output_message=CompletionMessage(
+                                role="assistant",
+                                content=[
+                                    TextContentItem(text="LLM answer", type="text")
+                                ],
+                                stop_reason="end_of_turn",
+                                tool_calls=[],
+                            ),
+                            session_id="test_session_id",
+                            started_at=datetime.now(),
+                            steps=[],
+                            completed_at=datetime.now(),
+                            output_attachments=[],
+                        ),
+                    )
+                )
+            ),
+        ]
+    )
 
     mock_store_in_cache = mocker.patch(
         "app.endpoints.streaming_query.store_conversation_into_cache"
@@ -349,13 +355,13 @@ async def _test_streaming_query_endpoint_handler(
     assert isinstance(response, StreamingResponse)
 
     # Collect the streaming response content
-    streaming_content = []
+    streaming_content: list[str] = []
     # response.body_iterator is an async generator, iterate over it directly
     async for chunk in response.body_iterator:
-        streaming_content.append(chunk)
+        streaming_content.append(str(chunk))
 
     # Convert to string for assertions
-    full_content = "".join(streaming_content)  # type: ignore
+    full_content = "".join(streaming_content)
 
     # Assert the streaming content contains expected SSE format
     assert "data: " in full_content
