@@ -36,6 +36,9 @@ Handler for REST API calls to list and retrieve available providers.
 ## [query.py](query.py)
 Handler for REST API call to provide answer to query.
 
+## [query_v2.py](query_v2.py)
+Handler for REST API call to provide answer to query using Response API.
+
 ## [root.py](root.py)
 Handler for the / endpoint.
 
