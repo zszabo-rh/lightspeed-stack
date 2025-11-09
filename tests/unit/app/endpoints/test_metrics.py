@@ -15,14 +15,18 @@ async def test_metrics_endpoint(mocker: MockerFixture) -> None:
     mock_authorization_resolvers(mocker)
 
     mock_setup_metrics = mocker.patch(
-        "app.endpoints.metrics.setup_model_metrics", return_value=None
+        "app.endpoints.metrics.setup_model_metrics",
+        new=mocker.AsyncMock(return_value=None),
     )
     request = Request(
         scope={
             "type": "http",
         }
     )
-    auth: AuthTuple = ("test_user", "token", {})
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
+
     response = await metrics_endpoint_handler(auth=auth, request=request)
     assert response is not None
     assert response.status_code == 200
