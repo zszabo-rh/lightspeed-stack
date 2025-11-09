@@ -21,6 +21,9 @@ Check if the Llama Stack version is supported by the LCS.
 ## [mcp_headers.py](mcp_headers.py)
 MCP headers handling.
 
+## [quota.py](quota.py)
+Quota handling helper functions.
+
 ## [suid.py](suid.py)
 Session ID utility functions.
 
