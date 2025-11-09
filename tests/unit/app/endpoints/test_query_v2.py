@@ -1,7 +1,9 @@
 # pylint: disable=redefined-outer-name, import-error
 """Unit tests for the /query (v2) REST API endpoint using Responses API."""
 
+from typing import Any
 import pytest
+from pytest_mock import MockerFixture
 from fastapi import HTTPException, status, Request
 
 from llama_stack_client import APIConnectionError
@@ -24,7 +26,7 @@ def dummy_request() -> Request:
     return req
 
 
-def test_get_rag_tools():
+def test_get_rag_tools() -> None:
     """Test get_rag_tools returns None for empty list and correct tool format for vector stores."""
     assert get_rag_tools([]) is None
 
@@ -35,7 +37,7 @@ def test_get_rag_tools():
     assert tools[0]["max_num_results"] == 10
 
 
-def test_get_mcp_tools_with_and_without_token():
+def test_get_mcp_tools_with_and_without_token() -> None:
     """Test get_mcp_tools generates correct tool definitions with and without auth tokens."""
     servers = [
         ModelContextProtocolServer(name="fs", url="http://localhost:3000"),
@@ -58,7 +60,7 @@ def test_get_mcp_tools_with_and_without_token():
 
 
 @pytest.mark.asyncio
-async def test_retrieve_response_no_tools_bypasses_tools(mocker):
+async def test_retrieve_response_no_tools_bypasses_tools(mocker: MockerFixture) -> None:
     """Test that no_tools=True bypasses tool configuration and passes None to responses API."""
     mock_client = mocker.Mock()
     # responses.create returns a synthetic OpenAI-like response
@@ -94,7 +96,9 @@ async def test_retrieve_response_no_tools_bypasses_tools(mocker):
 
 
 @pytest.mark.asyncio
-async def test_retrieve_response_builds_rag_and_mcp_tools(mocker):
+async def test_retrieve_response_builds_rag_and_mcp_tools(
+    mocker: MockerFixture,
+) -> None:
     """Test that retrieve_response correctly builds RAG and MCP tools from configuration."""
     mock_client = mocker.Mock()
     response_obj = mocker.Mock()
@@ -137,7 +141,9 @@ async def test_retrieve_response_builds_rag_and_mcp_tools(mocker):
 
 
 @pytest.mark.asyncio
-async def test_retrieve_response_parses_output_and_tool_calls(mocker):
+async def test_retrieve_response_parses_output_and_tool_calls(
+    mocker: MockerFixture,
+) -> None:
     """Test that retrieve_response correctly parses output content and tool calls from response."""
     mock_client = mocker.Mock()
 
@@ -190,7 +196,7 @@ async def test_retrieve_response_parses_output_and_tool_calls(mocker):
 
 
 @pytest.mark.asyncio
-async def test_retrieve_response_with_usage_info(mocker):
+async def test_retrieve_response_with_usage_info(mocker: MockerFixture) -> None:
     """Test that token usage is extracted when provided by the API as an object."""
     mock_client = mocker.Mock()
 
@@ -231,7 +237,7 @@ async def test_retrieve_response_with_usage_info(mocker):
 
 
 @pytest.mark.asyncio
-async def test_retrieve_response_with_usage_dict(mocker):
+async def test_retrieve_response_with_usage_dict(mocker: MockerFixture) -> None:
     """Test that token usage is extracted when provided by the API as a dict."""
     mock_client = mocker.Mock()
 
@@ -268,7 +274,7 @@ async def test_retrieve_response_with_usage_dict(mocker):
 
 
 @pytest.mark.asyncio
-async def test_retrieve_response_with_empty_usage_dict(mocker):
+async def test_retrieve_response_with_empty_usage_dict(mocker: MockerFixture) -> None:
     """Test that empty usage dict is handled gracefully."""
     mock_client = mocker.Mock()
 
@@ -305,7 +311,7 @@ async def test_retrieve_response_with_empty_usage_dict(mocker):
 
 
 @pytest.mark.asyncio
-async def test_retrieve_response_validates_attachments(mocker):
+async def test_retrieve_response_validates_attachments(mocker: MockerFixture) -> None:
     """Test that retrieve_response validates attachments and includes them in the input string."""
     mock_client = mocker.Mock()
     response_obj = mocker.Mock()
@@ -345,7 +351,9 @@ async def test_retrieve_response_validates_attachments(mocker):
 
 
 @pytest.mark.asyncio
-async def test_query_endpoint_handler_v2_success(mocker, dummy_request):
+async def test_query_endpoint_handler_v2_success(
+    mocker: MockerFixture, dummy_request: Request
+) -> None:
     """Test successful query endpoint handler execution with proper response structure."""
     # Mock configuration to avoid configuration not loaded errors
     mock_config = mocker.Mock()
@@ -396,15 +404,18 @@ async def test_query_endpoint_handler_v2_success(mocker, dummy_request):
 
 
 @pytest.mark.asyncio
-async def test_query_endpoint_handler_v2_api_connection_error(mocker, dummy_request):
+async def test_query_endpoint_handler_v2_api_connection_error(
+    mocker: MockerFixture, dummy_request: Request
+) -> None:
     """Test that query endpoint handler properly handles and reports API connection errors."""
     # Mock configuration to avoid configuration not loaded errors
     mock_config = mocker.Mock()
     mock_config.llama_stack_configuration = mocker.Mock()
     mocker.patch("app.endpoints.query_v2.configuration", mock_config)
 
-    def _raise(*_args, **_kwargs):
-        raise APIConnectionError(request=None)
+    def _raise(*_args: Any, **_kwargs: Any) -> Exception:
+        request = Request(scope={"type": "http"})
+        raise APIConnectionError(request=request)  # type: ignore
 
     mocker.patch("client.AsyncLlamaStackClientHolder.get_client", side_effect=_raise)
 
