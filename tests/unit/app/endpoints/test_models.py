@@ -34,7 +34,9 @@ async def test_models_endpoint_handler_configuration_not_loaded(
             "headers": [(b"authorization", b"Bearer invalid-token")],
         }
     )
-    auth: AuthTuple = ("user_id", "user_name", "token")
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
 
     with pytest.raises(HTTPException) as e:
         await models_endpoint_handler(request=request, auth=auth)
@@ -87,7 +89,10 @@ async def test_models_endpoint_handler_improper_llama_stack_configuration(
             "headers": [(b"authorization", b"Bearer invalid-token")],
         }
     )
-    auth: AuthTuple = ("test_user", "token", {})
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
+
     with pytest.raises(HTTPException) as e:
         await models_endpoint_handler(request=request, auth=auth)
         assert e.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -133,7 +138,9 @@ async def test_models_endpoint_handler_configuration_loaded(
             "headers": [(b"authorization", b"Bearer invalid-token")],
         }
     )
-    auth: AuthTuple = ("test_user", "token", {})
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
 
     with pytest.raises(HTTPException) as e:
         await models_endpoint_handler(request=request, auth=auth)
@@ -177,7 +184,9 @@ async def test_models_endpoint_handler_unable_to_retrieve_models_list(
     # Mock the LlamaStack client
     mock_client = mocker.AsyncMock()
     mock_client.models.list.return_value = []
-    mock_lsc = mocker.patch("client.AsyncLlamaStackClientHolder.get_client")
+    mock_lsc = mocker.patch(
+        "app.endpoints.models.AsyncLlamaStackClientHolder.get_client"
+    )
     mock_lsc.return_value = mock_client
     mock_config = mocker.Mock()
     mocker.patch("app.endpoints.models.configuration", mock_config)
@@ -188,7 +197,10 @@ async def test_models_endpoint_handler_unable_to_retrieve_models_list(
             "headers": [(b"authorization", b"Bearer invalid-token")],
         }
     )
-    auth: AuthTuple = ("test_user", "token", {})
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
+
     response = await models_endpoint_handler(request=request, auth=auth)
     assert response is not None
 
@@ -242,7 +254,9 @@ async def test_models_endpoint_llama_stack_connection_error(
             "headers": [(b"authorization", b"Bearer invalid-token")],
         }
     )
-    auth: AuthTuple = ("test_user", "token", {})
+
+    # Authorization tuple required by URL endpoint handler
+    auth: AuthTuple = ("test_user_id", "test_user", True, "test_token")
 
     with pytest.raises(HTTPException) as e:
         await models_endpoint_handler(request=request, auth=auth)
