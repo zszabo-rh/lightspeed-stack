@@ -61,7 +61,9 @@ def another_single_key_set() -> list[dict[str, Any]]:
 
 @pytest.fixture
 def valid_token(
-    single_key_set: list[dict[str, Any]], token_header: str, token_payload: str
+    single_key_set: list[dict[str, Any]],
+    token_header: dict[str, Any],
+    token_payload: dict[str, Any],
 ) -> str:
     """A token that is valid and signed with the signing keys."""
     jwt_instance = JsonWebToken(algorithms=["RS256"])
@@ -207,7 +209,9 @@ async def test_valid(
 
 @pytest.fixture
 def expired_token(
-    single_key_set: list[dict[str, Any]], token_header: dict, token_payload: dict
+    single_key_set: list[dict[str, Any]],
+    token_header: dict[str, Any],
+    token_payload: dict[str, Any],
 ) -> str:
     """An well-signed yet expired token."""
     jwt_instance = JsonWebToken(algorithms=["RS256"])
@@ -238,8 +242,8 @@ async def test_expired(
 @pytest.fixture
 def invalid_token(
     another_single_key_set: list[dict[str, Any]],
-    token_header: dict,
-    token_payload: dict,
+    token_header: dict[str, Any],
+    token_payload: dict[str, Any],
 ) -> str:
     """A token that is signed with different keys than the signing keys."""
     jwt_instance = JsonWebToken(algorithms=["RS256"])
@@ -268,7 +272,7 @@ async def test_invalid(
 async def test_no_auth_header(
     default_jwk_configuration: JwkConfiguration,
     mocked_signing_keys_server: Any,
-    no_token_request: str,
+    no_token_request: Request,
 ) -> None:
     """Test with no Authorization header."""
     _ = mocked_signing_keys_server
@@ -286,9 +290,9 @@ async def test_no_auth_header(
 
 
 async def test_no_bearer(
-    default_jwk_configuration: JwtConfiguration,
+    default_jwk_configuration: JwkConfiguration,
     mocked_signing_keys_server: Any,
-    not_bearer_token_request: str,
+    not_bearer_token_request: Request,
 ) -> None:
     """Test with Authorization header that does not start with Bearer."""
     _ = mocked_signing_keys_server
@@ -374,7 +378,9 @@ async def test_no_username(
 
 @pytest.fixture
 def custom_claims_token(
-    single_key_set: list[dict[str, Any]], token_payload: dict, token_header: dict
+    single_key_set: list[dict[str, Any]],
+    token_payload: dict[str, Any],
+    token_header: dict[str, Any],
 ) -> str:
     """Token with custom claims."""
     jwt_instance = JsonWebToken(algorithms=["RS256"])

@@ -77,7 +77,7 @@ class MockK8sResponse:
         username: Optional[str] = None,
         uid: Optional[str] = None,
         groups: Optional[list[str]] = None,
-    ):
+    ) -> None:
         """Init function."""
         self.status = MockK8sResponseStatus(
             authenticated, allowed, username, uid, groups
