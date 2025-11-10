@@ -1,5 +1,7 @@
 # Lightspeed Core
 
+![LCORE](images/lcore.jpg)
+
 ---
 
 Vladimír Kadlec, 
@@ -18,15 +20,15 @@ ptisnovs@redhat.com
 
 ---
 
-## Co je to Llama Stack?
+## What is Llama Stack?
 
-* Framework pro tvorbu aplikací s AI
-    - chat boti
-    - obecně generativní AI (GenAI)
-    - trénink, evaluace
-* Skutečný framework nezávislý na programovacím jazyku
-    - systém providerů
-    - RAG, správa kvóty, guardrails, metriky atd.
+* Framework to create applications with AI
+    - chat bots
+    - generative AI
+    - training and evaluation tools
+* Real framework independent on programming language
+    - providers
+    - RAG, quota control, guardrails, metrics
 
 ---
 
@@ -34,54 +36,58 @@ ptisnovs@redhat.com
 
 ---
 
-### Nejjednodušší využití Llama Stacku
+### Easiest usage of Llama Stack
 
-* Volání LLM
-* Zpracování odpovědi od LLM
+* LLM call
+* Processing answer from LLM
 * "chatbot v.0.0.1"
 
 ---
 
-### Skutečné požadavky jsou však širší
+### In reality, the requirements are larger
 
-* Podpora RAG
-* Historie konverzace
-* Rozvětvení konverzace
-* Zapamatování fakt o uživateli
-* Volání MCP
-* Kvóty
-* Kontrola dotazů a odpovědí
-* Volání více LLM, evaluace odpovědí atd.
-
----
-
-### API a poskytovatelé
-
-* Plně konfigurovatelné
-* Lze získat seznam dostupných API
-* Taktéž lze získat seznam dostupných poskytovatelů
-* Pozor: závislosti vyžadované jednotlivými poskytovateli
+* RAG
+* Conversation history
+* Conversation forking
+* Conversation summary
+* Facts about user
+* MCP calls
+* Quota handling
+* Answers validation
+* Responses validation
+* Multiple LLM calls
+* Responses evaluation
 
 ---
 
-### Poskytovatelé (providers)
+### API and providers
+
+* Fully configurable
+* It is possible to retrieve list of APIs
+* It is possible to retrieve list of providers
+* Warning: more dependencies for providers
+
+---
+
+### Providers (1/2)
 
 <table>
-<tr><th>Označení</th><th>Stručný popis</th></tr>
-<tr><td>Agents</td><td>interakce se systémem agentů (samotní agenti mohou provádět různé operace)</td></tr>
-<tr><td>Inference</td><td>rozhraní k&nbsp;LLM modelům i k&nbsp;embedding modelům</td></tr>
-<tr><td>VectorIO</td><td>původně rozhraní k&nbsp;vektorovým databázím (hledání podobných vektorů), nyní i fulltext hledání</td></tr>
+<tr><th>Name</th><th>Meaning</th></tr>
+<tr><td>Agents</td><td>interacting with agents</td></tr>
+<tr><td>Inference</td><td>interface to LLMs and embedding models</td></tr>
+<tr><td>VectorIO</td><td>originally vector DB I/O but now support fulltext search</td></tr>
 </table>
 
 ---
 
-### Poskytovatelé (providers)
+### Providers (2/2)
 
 <table>
-<tr><td>Safety</td><td>detekce dotazů s&nbsp;nevhodným či nepovoleným obsahem apod.</td></tr>
-<tr><td>Telemetry</td><td>telemetrie (OpenTelemetry ale i další)</td></tr>
-<tr><td>Eval</td><td>vyhodnocování odpovědí modelů atd.</td></tr>
-<tr><td>DatasetIO</td><td>čtení a zápisy datových sad z/do zvoleného systému (může být i lokální souborový systém)</td></tr>
+<tr><th>Name</th><th>Meaning</th></tr>
+<tr><td>Safety</td><td>questions with improper content detection</td></tr>
+<tr><td>Telemetry</td><td>telemetry (OpenTelemetry etc.)</td></tr>
+<tr><td>Eval</td><td>evaluation of model answers etc.</td></tr>
+<tr><td>DatasetIO</td><td>file I/O (datasets etc.)</td></tr>
 </table>
 
 ---
@@ -90,18 +96,18 @@ ptisnovs@redhat.com
 
 ---
 
-### Komunikace s Llama Stackem
+### Communication with Llama Stack
 
 * CLI
 * REST API
-* Jako běžná knihovna (Python atd.)
-* Llama Stack klient
-    - podporuje REST API
-    - podporuje i běh formou knihovny (async)
+* As a common library (Python etc.)
+* Llama Stack client
+    - supports REST API
+    - support running as a library (async)
 
 ---
 
-### Llama Stack klient
+### Llama Stack client
 
 * Python
 * Swift
@@ -110,39 +116,29 @@ ptisnovs@redhat.com
 
 ---
 
-### Llama Stack jako knihovna
+### Llama Stack as a library
 
 ![LS1](images/llama_stack_as_library.svg)
 
 ---
 
-### Llama Stack jako samostatná služba
+### Llama Stack as a service
 
 ![LS1](images/llama_stack_as_service.svg)
 
 ---
 
-### Běh v kontejneru
+### Run inside container
 
 ![LS1](images/llama_stack_in_container.svg)
 
 ---
 
-### Příklad služby postavené na Llama Stacku
-
-* REST API postavené nad API Llama Stacku
-* Obě možnosti spuštění Llama Stacku
-* Implementace formou asynchronního kódu (Python)
+### Llama Stack installation
 
 ---
 
-![LS1](images/llama_stack_arch.svg)
-
----
-
-### Instalace Llama Stacku
-
-Ukázka pro ekosystém Pythonu
+Python ecosystem
 
 ```
 pdm init
@@ -153,7 +149,7 @@ aiosqlite litellm uvicorn blobfile
 
 ---
 
-### Výsledný projektový soubor
+### Generated project file
 
 ```toml
 [project]
@@ -182,7 +178,7 @@ distribution = false
 
 ---
 
-### Spuštění Llama Stacku
+### Starting Llama Stack
 
 ```bash
 uv run llama stack
@@ -190,9 +186,7 @@ uv run llama stack
 
 ---
 
-### Seznam API Llama Stacku
-
-Lze získat z příkazové řádky:
+### List of Llama Stack API
 
 ```bash
 uv run llama stack list-apis
@@ -250,9 +244,7 @@ uv run llama stack list-apis
 
 ---
 
-### Seznam poskytovatelů
-
-Lze opět získat z příkazové řádky:
+### List of providers
 
 ```bash
 uv run llama stack list-providers
@@ -282,247 +274,24 @@ uv run llama stack list-providers
 
 Lightspeed Core
 
----
+![LCORE](images/lcore.jpg)
 
 ---
 
-### Využití klienta pro Llama Stack
+### Based on Llama Stack
 
-```bash
-uv init
-uv add llama-stack-client
-```
-
-```text
-Resolved 37 packages in 689ms
-Prepared 1 package in 280ms
-░░░░░░░░░░░░░░░░░░░░ [0/35] Installing wheels...                                                                                        warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
-         If the cache and target directories are on different filesystems, hardlinking may not be supported.
-         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
-Installed 35 packages in 383ms
- + annotated-types==0.7.0
- + anyio==4.11.0
- + certifi==2025.8.3
- + charset-normalizer==3.4.3
- + click==8.3.0
- + distro==1.9.0
- + fire==0.7.1
- ...
- ...
- ...
-```
+* REST API
+* Supports Llama Stack in service mode
+* Supports Llama Stack in library mode
+* Implemented as async Python code
 
 ---
 
-### Projektový soubor
-
-```toml
-[project]
-name = "client"
-version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
-    "llama-stack-client>=0.2.22",
-]
-```
+![Python](images/python.png)
 
 ---
 
-```python
-from llama_stack_client import LlamaStackClient
-
-client = LlamaStackClient(base_url="http://localhost:8321")
-
-print(f"Using Llama Stack version {client._version}")
-
-models = client.models.list()
-
-for model in models:
-    print(model)
-```
-
-```python
-from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
-
-client = LlamaStackAsLibraryClient("run.yaml")
-client.initialize()
-
-print(f"Using Llama Stack version {client._version}")
-
-models = client.models.list()
-
-for model in models:
-    print(model)
-```
-
----
-
-### Ukázka výstupu
-
-```
-Using Llama Stack version 0.2.22
-Model(identifier='openai/gpt-4-turbo', metadata={}, api_model_type='llm', provider_id='openai', type='model', provider_resource_id='gpt-4-turbo', model_type='llm')
-Model(identifier='openai/gpt-3.5-turbo-0125', metadata={}, api_model_type='llm', provider_id='openai', type='model', provider_resource_id='gpt-3.5-turbo-0125', model_type='llm')
-Model(identifier='openai/gpt-3.5-turbo', metadata={}, api_model_type='llm', provider_id='openai', type='model', provider_resource_id='gpt-3.5-turbo', model_type='llm')
-Model(identifier='openai/gpt-3.5-turbo-instruct', metadata={}, api_model_type='llm', provider_id='openai', type='model', provider_resource_id='gpt-3.5-turbo-instruct', model_type='llm')
-Model(identifier='openai/gpt-4', metadata={}, api_model_type='llm', provider_id='openai', type='model', provider_resource_id='gpt-4', model_type='llm')
-```
-
----
-
-### Komunikace s LLM
-
-```python
-from llama_stack_client import LlamaStackClient
-
-PROMPT = "Say Hello"
-
-client = LlamaStackClient(base_url="http://localhost:8321")
-
-print(f"Using Llama Stack version {client._version}")
-
-response = client.inference.chat_completion(
-    messages=[{"role": "user", "content": PROMPT}],
-    model_id=client.models.list()[0].identifier,
-)
-
-text = response.completion_message.content
-print(f"LLM response: {text}")
-```
-
----
-
-### Vývoj Llama Stacku
-
-* Změny v API
-* Plány na ukončení podpory starších API
-    - deprecation
-* Náhrada agent API za OpenAI API
-* Stabilizace ve verzi 0.3.0 ???
-
----
-
-### Využití novějšího API
-
-```python
-from llama_stack_client import LlamaStackClient
-
-client = LlamaStackClient(base_url="http://localhost:8321")
-
-print(f"Using Llama Stack version {client._version}")
-
-models = client.models.list()
-model_id = models[0].identifier
-
-print(f"Using model {model_id}")
-
-response = client.chat.completions.create(
-    model=model_id,
-    messages=[{"role": "user", "content": "What is the capital of France?"}]
-)
-
-print(response.to_json())
-```
-
----
-
-### Získávání informací z poskytnutých dokumentů
-
-* RAG
-* Ovšem i další vstupy
-    - sémantické vyhledávání
-    - fulltext vyhledávání
-    - hybridní vyhledávání
-
----
-
-### Prvotní zpracování dokumentů
-
-```python
-import uuid
-from pathlib import Path
-from llama_stack_client import LlamaStackClient
-
-client = LlamaStackClient(base_url="http://localhost:8321")
-print(f"Using Llama Stack version {client._version}")
-
-vector_store_name= f"vec_{str(uuid.uuid4())[0:8]}"
-print(f"Vector store name: {vector_store_name}")
-
-vector_store = client.vector_stores.create(name=vector_store_name)
-vector_store_id = vector_store.id
-
-print(f"Vector store ID: {vector_store_id}")
-```
-
----
-
-### Prvotní zpracování dokumentů
-
-```python
-path=Path("cesta_k_souboru.md")
-print(f"File path: {path}")
-
-file_create_response = client.files.create(file=path, purpose="assistants")
-print(f"File create response: {file_create_response}")
-
-file_ingest_response = client.vector_stores.files.create(
-    vector_store_id=vector_store_id,
-    file_id=file_create_response.id,
-)
-print(f"File ingest response: {file_ingest_response}")
-```
-
----
-
-### Získání odpovědi z dokumentu
-
-```python
-models = client.models.list()
-model_id = models[0].identifier
-
-print(f"Using model {model_id}")
-
-MODEL_ID="openai/gpt-4-turbo"
-
-def print_rag_response(response):
-    print(f"ID: {response.id}")
-    print(f"Status: {response.status}")
-    print(f"Model: {response.model}")
-    print(f"Created at: {response.created_at}")
-    print(f"Output items: {len(response.output)}")
-
-    for i, output_item in enumerate(response.output):
-        if len(response.output) > 1:
-            print(f"\n--- Output Item {i+1} ---")
-        print(f"Output type: {output_item.type}")
-
-        if output_item.type in ("text", "message"):
-            print(f"Response content: {output_item.content[0].text}")
-        elif output_item.type == "file_search_call":
-            print(f"  Tool Call ID: {output_item.id}")
-            print(f"  Tool Status: {output_item.status}")
-            print(f"  Queries: {', '.join(output_item.queries)}")
-            print(f"  Results: {output_item.results if output_item.results else 'None'}")
-        else:
-            print(f"Response content: {output_item.content}")
-
-
-response = client.responses.create(
-    model=MODEL_ID,
-    input="zadaný dotaz",
-    tools=[
-        {
-            "type": "file_search",
-            "vector_store_ids": [vector_store_id],
-        }
-    ]
-)
-
-print_rag_response(response)
-```
+![LS1](images/llama_stack_arch.svg)
 
 ---
 
@@ -537,30 +306,9 @@ print_rag_response(response)
 
 ---
 
-
-## Závěr
-
----
-
-## ✅ Pro
-
-* Relativně dobře promyšlená technologie
-    - vše řízeno konfiguračním souborem
-* Do značné míry nezávislá na klientských aplikacích
-* Potenciál pro vznik dalších poskytovatelů (providers)
-    - event-driven přístup(?)
+## Summary
 
 ---
 
-## ❌ Proti
-
-* Nestabilita celé platformy (konfigurace, API, poskytovatelé)
-* Poměrně strohá dokumentace, příklady použití atd.
-* Poměrně značné množství chyb a regresí
-
----
-
-## Děkuji za pozornost
-
-![tisni](images/useravatar.png)
+## Thank you
 
