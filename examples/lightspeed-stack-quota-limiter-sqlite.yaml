@@ -1,0 +1,36 @@
+name: Lightspeed Core Service (LCS)
+service:
+  host: localhost
+  port: 8080
+  auth_enabled: false
+  workers: 1
+  color_log: true
+  access_log: true
+llama_stack:
+  use_as_library_client: false
+  url: http://localhost:8321
+  api_key: xyzzy
+user_data_collection:
+  feedback_enabled: true
+  feedback_storage: "/tmp/data/feedback"
+  transcripts_enabled: true
+  transcripts_storage: "/tmp/data/transcripts"
+authentication:
+  module: "noop"
+quota_handlers:
+  sqlite:
+      db_path: quota.sqlite
+  limiters:
+    - name: user_monthly_limits
+      type: user_limiter
+      initial_quota: 50
+      quota_increase: 50
+      period: "30 seconds"
+    - name: cluster_monthly_limits
+      type: cluster_limiter
+      initial_quota: 100
+      quota_increase: 100
+      period: "30 seconds"
+  scheduler:
+    # scheduler ticks in seconds
+    period: 10
