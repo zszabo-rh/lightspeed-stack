@@ -15,11 +15,11 @@ Lightspeed Core Stack (LCS) is an AI-powered assistant built on FastAPI that pro
 ### Project Structure
 ```
 src/
-├── app/                    # FastAPI application
-│   ├── endpoints/         # REST API endpoints
+├── app/                  # FastAPI application
+│   ├── endpoints/        # REST API endpoints
 │   └── main.py           # Application entry point
-├── auth/                  # Authentication modules (k8s, jwk, noop)
-├── authorization/         # Authorization middleware & resolvers
+├── auth/                 # Authentication modules (k8s, jwk, noop)
+├── authorization/        # Authorization middleware & resolvers
 ├── models/               # Pydantic models
 │   ├── config.py         # Configuration classes
 │   ├── requests.py       # Request models
@@ -110,8 +110,8 @@ src/
 ### Test Structure
 ```
 tests/
-├── unit/                 # Unit tests (pytest)
-├── integration/          # Integration tests
+├── unit/                # Unit tests (pytest)
+├── integration/         # Integration tests (pytest)
 └── e2e/                 # End-to-end tests (behave)
     └── features/        # Gherkin feature files
 ```
@@ -146,7 +146,7 @@ tests/
 ```bash
 uv run make test-unit        # Unit tests with coverage
 uv run make test-integration # Integration tests  
-uv run make test-e2e        # End-to-end tests
+uv run make test-e2e         # End-to-end tests
 ```
 
 ## Quality Assurance
