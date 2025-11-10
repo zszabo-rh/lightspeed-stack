@@ -94,6 +94,31 @@ Lightspeed Core Stack is based on the FastAPI framework (Uvicorn). The service i
     - please note that currently Python 3.14 is not officially supported
     - all sources are made (backward) compatible with Python 3.12; it is checked on CI
 
+* OpenAI API Key (Recommended for Getting Started)
+
+  Lightspeed Stack supports multiple LLM providers.
+
+  | Provider       | Setup Documentation                                                   |
+  |----------------|-----------------------------------------------------------------------|
+  | OpenAI         | https://platform.openai.com                                           |
+  | Azure OpenAI   | https://azure.microsoft.com/en-us/products/ai-services/openai-service |
+  | RHOAI (vLLM)   | See tests/e2e-prow/rhoai/configs/run.yaml                             |
+  | RHEL AI (vLLM) | See tests/e2e/configs/run-rhelai.yaml                                 |
+
+  See `docs/providers.md` for configuration details.
+
+  You will need an API key from one of these providers to run LightSpeed Stack.
+
+  For example, if you choose to use OpenAI: 
+
+  1. **Create an account** at [platform.openai.com](https://platform.openai.com)
+  2. **Add payment information** (new accounts receive free trial credits)
+  3. **Generate an API key** from your dashboard at [API Keys](https://platform.openai.com/api-keys)
+  4. **Export the key** in your environment:
+     ```bash
+     export OPENAI_API_KEY="sk-your-api-key-here"
+    ```
+
 # Installation
 
 Installation steps depends on operation system. Please look at instructions for your system:
