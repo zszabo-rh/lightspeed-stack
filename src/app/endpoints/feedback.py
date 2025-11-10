@@ -54,10 +54,6 @@ feedback_put_response: dict[int | str, dict[str, Any]] = {
         "description": "Feedback status successfully updated",
         "model": FeedbackStatusUpdateResponse,
     },
-    400: {
-        "description": "Missing or invalid credentials provided by client",
-        "model": UnauthorizedResponse,
-    },
     401: {
         "description": "Missing or invalid credentials provided by client",
         "model": UnauthorizedResponse,

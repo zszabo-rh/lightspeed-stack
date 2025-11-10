@@ -56,7 +56,7 @@ query_v2_response: dict[int | str, dict[str, Any]] = {
         "model": UnauthorizedResponse,
     },
     403: {
-        "description": "User is not authorized",
+        "description": "Client does not have permission to access conversation",
         "model": ForbiddenResponse,
     },
     500: {
