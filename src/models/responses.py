@@ -1142,6 +1142,74 @@ class ForbiddenResponse(UnauthorizedResponse):
     }
 
 
+class QuotaExceededResponse(AbstractErrorResponse):
+    """429 Too Many Requests - LLM quota exceeded."""
+
+    def __init__(
+        self,
+        user_id: str,
+        model_name: str,  # pylint: disable=unused-argument
+        limit: int,  # pylint: disable=unused-argument
+    ):
+        """Initialize a QuotaExceededResponse."""
+        super().__init__(
+            detail=DetailModel(
+                response="The quota has been exceeded",
+                cause=(f"User {user_id} has no available tokens."),
+            )
+        )
+        # TODO(LCORE-837): add factories for custom cause creation
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "detail": {
+                        "response": "The quota has been exceeded",
+                        "cause": "User 123 has no available tokens.",
+                    }
+                },
+                {
+                    "detail": {
+                        "response": "The quota has been exceeded",
+                        "cause": "Cluster has no available tokens.",
+                    }
+                },
+                {
+                    "detail": {
+                        "response": "The quota has been exceeded",
+                        "cause": "Unknown subject 999 has no available tokens.",
+                    }
+                },
+                {
+                    "detail": {
+                        "response": "The quota has been exceeded",
+                        "cause": "User 123 has 5 tokens, but 10 tokens are needed.",
+                    }
+                },
+                {
+                    "detail": {
+                        "response": "The quota has been exceeded",
+                        "cause": "Cluster has 500 tokens, but 900 tokens are needed.",
+                    }
+                },
+                {
+                    "detail": {
+                        "response": "The quota has been exceeded",
+                        "cause": "Unknown subject 999 has 3 tokens, but 6 tokens are needed.",
+                    }
+                },
+                {
+                    "detail": {
+                        "response": "The model quota has been exceeded",
+                        "cause": "The token quota for model gpt-4-turbo has been exceeded.",
+                    }
+                },
+            ]
+        }
+    }
+
+
 class InvalidFeedbackStoragePathResponse(AbstractErrorResponse):
     """500 Internal Error - Invalid feedback storage path."""
 

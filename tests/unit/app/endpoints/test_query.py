@@ -10,6 +10,7 @@ from typing import Any
 import pytest
 from pytest_mock import MockerFixture
 from fastapi import HTTPException, Request, status
+from litellm.exceptions import RateLimitError
 
 from llama_stack_client import APIConnectionError
 from llama_stack_client.types import UserMessage  # type: ignore
@@ -2261,3 +2262,46 @@ async def test_get_topic_summary_create_turn_parameters(mocker: MockerFixture) -
         stream=False,
         toolgroups=None,
     )
+
+
+@pytest.mark.asyncio
+async def test_query_endpoint_quota_exceeded(
+    mocker: MockerFixture, dummy_request: Request
+) -> None:
+    """Test that query endpoint raises HTTP 429 when model quota is exceeded."""
+    query_request = QueryRequest(
+        query="What is OpenStack?",
+        provider="openai",
+        model="gpt-4-turbo",
+    )  # type: ignore
+    mock_client = mocker.AsyncMock()
+    mock_agent = mocker.AsyncMock()
+    mock_agent.create_turn.side_effect = RateLimitError(
+        model="gpt-4-turbo", llm_provider="openai", message=""
+    )
+    mocker.patch(
+        "app.endpoints.query.get_agent",
+        return_value=(mock_agent, "conv-123", "sess-123"),
+    )
+    mocker.patch(
+        "app.endpoints.query.select_model_and_provider_id",
+        return_value=("openai/gpt-4-turbo", "gpt-4-turbo", "openai"),
+    )
+    mocker.patch("app.endpoints.query.validate_model_provider_override")
+    mocker.patch(
+        "client.AsyncLlamaStackClientHolder.get_client",
+        return_value=mock_client,
+    )
+    mocker.patch(
+        "app.endpoints.query.handle_mcp_headers_with_toolgroups", return_value={}
+    )
+
+    with pytest.raises(HTTPException) as exc_info:
+        await query_endpoint_handler(
+            dummy_request, query_request=query_request, auth=MOCK_AUTH
+        )
+    assert exc_info.value.status_code == status.HTTP_429_TOO_MANY_REQUESTS
+    detail = exc_info.value.detail
+    assert isinstance(detail, dict)
+    assert detail["response"] == "Model quota exceeded"  # type: ignore
+    assert "gpt-4-turbo" in detail["cause"]  # type: ignore

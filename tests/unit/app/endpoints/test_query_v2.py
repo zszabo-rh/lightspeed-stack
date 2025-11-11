@@ -2,6 +2,7 @@
 """Unit tests for the /query (v2) REST API endpoint using Responses API."""
 
 from typing import Any
+from litellm.exceptions import RateLimitError
 import pytest
 from pytest_mock import MockerFixture
 from fastapi import HTTPException, status, Request
@@ -16,6 +17,14 @@ from app.endpoints.query_v2 import (
     get_mcp_tools,
     retrieve_response,
     query_endpoint_handler_v2,
+)
+
+# User ID must be proper UUID
+MOCK_AUTH = (
+    "00000001-0001-0001-0001-000000000001",
+    "mock_username",
+    False,
+    "mock_token",
 )
 
 
@@ -432,3 +441,39 @@ async def test_query_endpoint_handler_v2_api_connection_error(
     assert exc.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
     assert "Unable to connect to Llama Stack" in str(exc.value.detail)
     fail_metric.inc.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_query_endpoint_quota_exceeded(
+    mocker: MockerFixture, dummy_request: Request
+) -> None:
+    """Test that query endpoint raises HTTP 429 when model quota is exceeded."""
+    query_request = QueryRequest(
+        query="What is OpenStack?",
+        provider="openai",
+        model="gpt-4-turbo",
+        attachments=[],
+    )  # type: ignore
+    mock_client = mocker.AsyncMock()
+    mock_client.responses.create.side_effect = RateLimitError(
+        model="gpt-4-turbo", llm_provider="openai", message=""
+    )
+    mocker.patch(
+        "app.endpoints.query.select_model_and_provider_id",
+        return_value=("openai/gpt-4-turbo", "gpt-4-turbo", "openai"),
+    )
+    mocker.patch("app.endpoints.query.validate_model_provider_override")
+    mocker.patch(
+        "client.AsyncLlamaStackClientHolder.get_client",
+        return_value=mock_client,
+    )
+
+    with pytest.raises(HTTPException) as exc_info:
+        await query_endpoint_handler_v2(
+            dummy_request, query_request=query_request, auth=MOCK_AUTH
+        )
+    assert exc_info.value.status_code == status.HTTP_429_TOO_MANY_REQUESTS
+    detail = exc_info.value.detail
+    assert isinstance(detail, dict)
+    assert detail["response"] == "Model quota exceeded"  # type: ignore
+    assert "gpt-4-turbo" in detail["cause"]  # type: ignore

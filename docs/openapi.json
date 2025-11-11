@@ -375,6 +375,16 @@
                             }
                         }
                     },
+                    "429": {
+                        "description": "The quota has been exceeded",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/QuotaExceededResponse"
+                                }
+                            }
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "detail": {
@@ -457,6 +467,16 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ForbiddenResponse"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "The quota has been exceeded",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/QuotaExceededResponse"
                                 }
                             }
                         }
@@ -1252,6 +1272,16 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ForbiddenResponse"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "The quota has been exceeded",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/QuotaExceededResponse"
                                 }
                             }
                         }
@@ -3574,6 +3604,63 @@
                             }
                         ],
                         "truncated": false
+                    }
+                ]
+            },
+            "QuotaExceededResponse": {
+                "properties": {
+                    "detail": {
+                        "$ref": "#/components/schemas/DetailModel"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "detail"
+                ],
+                "title": "QuotaExceededResponse",
+                "description": "429 Too Many Requests - LLM quota exceeded.",
+                "examples": [
+                    {
+                        "detail": {
+                            "cause": "User 123 has no available tokens.",
+                            "response": "The quota has been exceeded"
+                        }
+                    },
+                    {
+                        "detail": {
+                            "cause": "Cluster has no available tokens.",
+                            "response": "The quota has been exceeded"
+                        }
+                    },
+                    {
+                        "detail": {
+                            "cause": "Unknown subject 999 has no available tokens.",
+                            "response": "The quota has been exceeded"
+                        }
+                    },
+                    {
+                        "detail": {
+                            "cause": "User 123 has 5 tokens, but 10 tokens are needed.",
+                            "response": "The quota has been exceeded"
+                        }
+                    },
+                    {
+                        "detail": {
+                            "cause": "Cluster has 500 tokens, but 900 tokens are needed.",
+                            "response": "The quota has been exceeded"
+                        }
+                    },
+                    {
+                        "detail": {
+                            "cause": "Unknown subject 999 has 3 tokens, but 6 tokens are needed.",
+                            "response": "The quota has been exceeded"
+                        }
+                    },
+                    {
+                        "detail": {
+                            "cause": "The token quota for model gpt-4-turbo has been exceeded.",
+                            "response": "The model quota has been exceeded"
+                        }
                     }
                 ]
             },

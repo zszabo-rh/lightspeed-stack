@@ -6,6 +6,7 @@ from datetime import datetime
 
 import json
 
+from litellm.exceptions import RateLimitError
 import pytest
 from pytest_mock import MockerFixture
 
@@ -1793,6 +1794,49 @@ async def test_streaming_query_handles_none_event(mocker: MockerFixture) -> None
         request, query_request, auth=MOCK_AUTH
     )
     assert isinstance(response, StreamingResponse)
+
+
+@pytest.mark.asyncio
+async def test_query_endpoint_quota_exceeded(mocker: MockerFixture) -> None:
+    """Test that streaming query endpoint raises HTTP 429 when model quota is exceeded."""
+    query_request = QueryRequest(
+        query="What is OpenStack?",
+        provider="openai",
+        model="gpt-4-turbo",
+    )  # type: ignore
+    request = Request(scope={"type": "http"})
+    mock_client = mocker.AsyncMock()
+    mock_agent = mocker.AsyncMock()
+    mock_agent.create_turn.side_effect = RateLimitError(
+        model="gpt-4-turbo", llm_provider="openai", message=""
+    )
+    mocker.patch(
+        "app.endpoints.streaming_query.get_agent",
+        return_value=(mock_agent, "conv-123", "sess-123"),
+    )
+    mocker.patch(
+        "app.endpoints.streaming_query.select_model_and_provider_id",
+        return_value=("openai/gpt-4-turbo", "gpt-4-turbo", "openai"),
+    )
+    mocker.patch("app.endpoints.streaming_query.validate_model_provider_override")
+    mocker.patch(
+        "client.AsyncLlamaStackClientHolder.get_client",
+        return_value=mock_client,
+    )
+    mocker.patch(
+        "app.endpoints.streaming_query.handle_mcp_headers_with_toolgroups",
+        return_value={},
+    )
+
+    with pytest.raises(HTTPException) as exc_info:
+        await streaming_query_endpoint_handler(
+            request, query_request=query_request, auth=MOCK_AUTH
+        )
+    assert exc_info.value.status_code == status.HTTP_429_TOO_MANY_REQUESTS
+    detail = exc_info.value.detail
+    assert isinstance(detail, dict)
+    assert detail["response"] == "Model quota exceeded"  # type: ignore
+    assert "gpt-4-turbo" in detail["cause"]  # type: ignore
 
 
 # ============================================================================
