@@ -374,11 +374,81 @@ uv run llama stack list-providers
 
 ## Evaluation
 
-* Motivation
-* Evaluation tool
-    - Ragas
-    - Deep Eval
-* Statistical significance
+---
+
+## Why Evaluate an LLM System?
+
+* Measure performance
+* Ensure good user experience
+* Detect bias & harm
+* Comply with ethical & legal standards
+
+---
+
+## Benefits of Evaluation
+
+* Improvement:
+  - Pinpoints weaknesses (e.g., hallucinations)
+  - Enables data-driven model tuning
+
+* Benchmarking:
+  - Compare models (GPT, Gemini, Granite, etc.)
+  - Ensures reliability over time
+
+---
+### Lightspeed Evaluation Framework
+
+<font size="10">[https://github.com/lightspeed-core/lightspeed-evaluation/](https://github.com/lightspeed-core/lightspeed-evaluation)</font>
+---
+
+### Lightspeed Evaluation Framework
+
+* Multi-Framework LLM as a Judge
+  - Ragas, DeepEval and custom implementations
+* Turn & Conversation-Level
+  - Individual queries and multi-turn conversations
+* Tools/Agents Support
+* LLM Providers
+  - OpenAI, Watsonx, Gemini, vLLM and others
+* Setup/Cleanup Scripts
+* Statistical Analysis
+
+---
+```yaml
+- conversation_group_id: "test_conversation"
+  description: "Sample evaluation"
+  
+  # Optional: Environment setup/cleanup scripts, when API is enabled
+  setup_script: "scripts/setup_env.sh"      # Run before conversation
+  cleanup_script: "scripts/cleanup_env.sh"  # Run after conversation
+  
+  # Conversation-level metrics   
+  conversation_metrics:
+    - "deepeval:conversation_completeness"
+  
+  conversation_metrics_metadata:
+    "deepeval:conversation_completeness":
+      threshold: 0.8
+  
+  turns:
+    - turn_id: id1
+      query: What is OpenShift Virtualization?
+      response: null                    # Populated by API if enabled, otherwise provide
+      contexts:
+        - OpenShift Virtualization is an extension of the OpenShift ...
+      attachments: []                   # Attachments (Optional)
+      expected_response: OpenShift Virtualization is an extension of the OpenShift Container Platform that allows running virtual machines alongside containers
+      expected_intent: "explain a concept"  # Expected intent for intent evaluation
+      
+      # Per-turn metrics (overrides system defaults)
+      turn_metrics:
+        - "ragas:faithfulness"
+        - "custom:answer_correctness"
+        - "custom:intent_eval"
+```
+---
+
+## Demo
 
 ---
 
