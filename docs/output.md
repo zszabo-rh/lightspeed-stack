@@ -197,16 +197,10 @@ Returns:
 
 > **Query Endpoint Handler**
 
-Handle request to the /query endpoint.
+Handle request to the /query endpoint using Agent API.
 
-Processes a POST request to the /query endpoint, forwarding the
-user's query to a selected Llama Stack LLM or agent and
-returning the generated response.
-
-Validates configuration and authentication, selects the appropriate model
-and provider, retrieves the LLM response, updates metrics, and optionally
-stores a transcript of the interaction. Handles connection errors to the
-Llama Stack service by returning an HTTP 500 error.
+This is a wrapper around query_endpoint_handler_base that provides
+the Agent API specific retrieve_response and get_topic_summary functions.
 
 Returns:
     QueryResponse: Contains the conversation ID and the LLM-generated response.
@@ -225,7 +219,8 @@ Returns:
 |-------------|-------------|-----------|
 | 200 | Successful Response | [QueryResponse](#queryresponse) |
 | 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse) |
-| 403 | User is not authorized | [ForbiddenResponse](#forbiddenresponse) |
+| 403 | Client does not have permission to access conversation | [ForbiddenResponse](#forbiddenresponse) |
+| 429 | The quota has been exceeded | [QuotaExceededResponse](#quotaexceededresponse) |
 | 500 | Internal Server Error |  |
 | 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## POST `/v1/streaming_query`
@@ -265,7 +260,8 @@ Raises:
 string |
 | 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse) |
 | 401 | Unauthorized: Invalid or missing Bearer token for k8s auth | [UnauthorizedResponse](#unauthorizedresponse) |
-| 403 | User is not authorized | [ForbiddenResponse](#forbiddenresponse) |
+| 403 | Client does not have permission to access conversation | [ForbiddenResponse](#forbiddenresponse) |
+| 429 | The quota has been exceeded | [QuotaExceededResponse](#quotaexceededresponse) |
 | 500 | Internal Server Error |  |
 | 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## GET `/v1/config`
@@ -349,7 +345,7 @@ Returns:
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [StatusResponse](#statusresponse) |
+| 200 | Feedback status successfully retrieved | [StatusResponse](#statusresponse) |
 ## PUT `/v1/feedback/status`
 
 > **Update Feedback Status**
@@ -375,7 +371,9 @@ Returns:
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [FeedbackStatusUpdateResponse](#feedbackstatusupdateresponse) |
+| 200 | Feedback status successfully updated | [FeedbackStatusUpdateResponse](#feedbackstatusupdateresponse) |
+| 401 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse) |
+| 403 | Client does not have permission to access resource | [ForbiddenResponse](#forbiddenresponse) |
 | 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## GET `/v1/conversations`
 
@@ -391,10 +389,9 @@ Handle request to retrieve all conversations for the authenticated user.
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [ConversationsListResponse](#conversationslistresponse) |
-| 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse) |
+| 200 | List of conversations retrieved successfully | [ConversationsListResponse](#conversationslistresponse) |
 | 401 | Unauthorized: Invalid or missing Bearer token | [UnauthorizedResponse](#unauthorizedresponse) |
-| 503 | Service Unavailable |  |
+| 503 | Service unavailable | [ServiceUnavailableResponse](#serviceunavailableresponse) |
 ## GET `/v1/conversations/{conversation_id}`
 
 > **Get Conversation Endpoint Handler**
@@ -428,11 +425,12 @@ Returns:
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [ConversationResponse](#conversationresponse) |
-| 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse) |
+| 200 | Conversation retrieved successfully | [ConversationResponse](#conversationresponse) |
+| 400 | Invalid request | [BadRequestResponse](#badrequestresponse) |
 | 401 | Unauthorized: Invalid or missing Bearer token | [UnauthorizedResponse](#unauthorizedresponse) |
-| 404 | Not Found |  |
-| 503 | Service Unavailable |  |
+| 403 | Client does not have permission to access conversation | [AccessDeniedResponse](#accessdeniedresponse) |
+| 404 | Conversation not found | [NotFoundResponse](#notfoundresponse) |
+| 503 | Service unavailable | [ServiceUnavailableResponse](#serviceunavailableresponse) |
 | 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## DELETE `/v1/conversations/{conversation_id}`
 
@@ -461,11 +459,12 @@ Returns:
 
 | Status Code | Description | Component |
 |-------------|-------------|-----------|
-| 200 | Successful Response | [ConversationDeleteResponse](#conversationdeleteresponse) |
-| 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse) |
+| 200 | Conversation deleted successfully | [ConversationDeleteResponse](#conversationdeleteresponse) |
+| 400 | Invalid request | [BadRequestResponse](#badrequestresponse) |
 | 401 | Unauthorized: Invalid or missing Bearer token | [UnauthorizedResponse](#unauthorizedresponse) |
-| 404 | Not Found |  |
-| 503 | Service Unavailable |  |
+| 403 | Client does not have permission to access conversation | [AccessDeniedResponse](#accessdeniedresponse) |
+| 404 | Conversation not found | [NotFoundResponse](#notfoundresponse) |
+| 503 | Service unavailable | [ServiceUnavailableResponse](#serviceunavailableresponse) |
 | 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## GET `/v2/conversations`
 
@@ -558,6 +557,36 @@ Handle request to update a conversation topic summary by ID.
 | 401 | Unauthorized: Invalid or missing Bearer token | [UnauthorizedResponse](#unauthorizedresponse) |
 | 404 | Not Found |  |
 | 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
+## POST `/v2/query`
+
+> **Query Endpoint Handler V2**
+
+Handle request to the /query endpoint using Responses API.
+
+This is a wrapper around query_endpoint_handler_base that provides
+the Responses API specific retrieve_response and get_topic_summary functions.
+
+Returns:
+    QueryResponse: Contains the conversation ID and the LLM-generated response.
+
+
+
+
+
+### 📦 Request Body 
+
+[QueryRequest](#queryrequest)
+
+### ✅ Responses
+
+| Status Code | Description | Component |
+|-------------|-------------|-----------|
+| 200 | Successful Response | [QueryResponse](#queryresponse) |
+| 400 | Missing or invalid credentials provided by client | [UnauthorizedResponse](#unauthorizedresponse) |
+| 403 | Client does not have permission to access conversation | [ForbiddenResponse](#forbiddenresponse) |
+| 429 | The quota has been exceeded | [QuotaExceededResponse](#quotaexceededresponse) |
+| 500 | Internal Server Error |  |
+| 422 | Validation Error | [HTTPValidationError](#httpvalidationerror) |
 ## GET `/readiness`
 
 > **Readiness Probe Get Method**
@@ -648,6 +677,17 @@ Prometheus format.
 
 
 
+## AccessDeniedResponse
+
+
+403 Access Denied - User does not have permission to perform the action.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| detail |  |  |
+
+
 ## AccessRule
 
 
@@ -696,7 +736,7 @@ metadata:
 | content | string | The actual attachment content |
 
 
-## AuthenticationConfiguration-Input
+## AuthenticationConfiguration
 
 
 Authentication configuration.
@@ -711,33 +751,7 @@ Authentication configuration.
 | jwk_config |  |  |
 
 
-## AuthenticationConfiguration-Output
-
-
-Authentication configuration.
-
-
-| Field | Type | Description |
-|-------|------|-------------|
-| module | string |  |
-| skip_tls_verification | boolean |  |
-| k8s_cluster_api |  |  |
-| k8s_ca_cert_path |  |  |
-| jwk_config |  |  |
-
-
-## AuthorizationConfiguration-Input
-
-
-Authorization configuration.
-
-
-| Field | Type | Description |
-|-------|------|-------------|
-| access_rules | array |  |
-
-
-## AuthorizationConfiguration-Output
+## AuthorizationConfiguration
 
 
 Authorization configuration.
@@ -764,6 +778,17 @@ Attributes:
 | user_id | string | User ID, for example UUID |
 | username | string | User name |
 | skip_userid_check | boolean | Whether to skip the user ID check |
+
+
+## BadRequestResponse
+
+
+400 Bad Request - Invalid resource identifier.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| detail |  |  |
 
 
 ## ByokRag
@@ -816,6 +841,7 @@ Global service configuration.
 | inference |  |  |
 | conversation_cache |  |  |
 | byok_rag | array |  |
+| quota_handlers |  |  |
 
 
 ## ConversationCacheConfiguration
@@ -1089,6 +1115,18 @@ Database configuration.
 | postgres |  |  |
 
 
+## DetailModel
+
+
+Nested detail model for error responses.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| response | string | Short summary of the error |
+| cause | string | Detailed explanation of what caused the error |
+
+
 ## ErrorResponse
 
 
@@ -1217,12 +1255,12 @@ Example:
 ## ForbiddenResponse
 
 
-Model representing response for forbidden access.
+403 Forbidden - User does not have access to this resource.
 
 
 | Field | Type | Description |
 |-------|------|-------------|
-| detail | string | Details about the authorization issue |
+| detail |  |  |
 
 
 ## HTTPValidationError
@@ -1292,7 +1330,7 @@ Supported operators for JSONPath evaluation.
 
 
 
-## JwkConfiguration-Input
+## JwkConfiguration
 
 
 JWK configuration.
@@ -1304,32 +1342,7 @@ JWK configuration.
 | jwt_configuration |  |  |
 
 
-## JwkConfiguration-Output
-
-
-JWK configuration.
-
-
-| Field | Type | Description |
-|-------|------|-------------|
-| url | string |  |
-| jwt_configuration |  |  |
-
-
-## JwtConfiguration-Input
-
-
-JWT configuration.
-
-
-| Field | Type | Description |
-|-------|------|-------------|
-| user_id_claim | string |  |
-| username_claim | string |  |
-| role_rules | array |  |
-
-
-## JwtConfiguration-Output
+## JwtConfiguration
 
 
 JWT configuration.
@@ -1412,6 +1425,17 @@ Model representing a response to models request.
 | Field | Type | Description |
 |-------|------|-------------|
 | models | array | List of models available |
+
+
+## NotFoundResponse
+
+
+404 Not Found - Resource does not exist.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| detail |  |  |
 
 
 ## PostgreSQLDatabaseConfiguration
@@ -1540,6 +1564,58 @@ Attributes:
 | available_quotas | object | Quota available as measured by all configured quota limiters |
 
 
+## QuotaExceededResponse
+
+
+429 Too Many Requests - LLM quota exceeded.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| detail |  |  |
+
+
+## QuotaHandlersConfiguration
+
+
+Quota limiter configuration.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| sqlite |  |  |
+| postgres |  |  |
+| limiters | array |  |
+| scheduler |  |  |
+| enable_token_history | boolean |  |
+
+
+## QuotaLimiterConfiguration
+
+
+Configuration for one quota limiter.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| type | string |  |
+| name | string |  |
+| initial_quota | integer |  |
+| quota_increase | integer |  |
+| period | string |  |
+
+
+## QuotaSchedulerConfiguration
+
+
+Quota scheduler configuration.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| period | integer |  |
+
+
 ## RAGChunk
 
 
@@ -1599,7 +1675,7 @@ Attributes:
 | Field | Type | Description |
 |-------|------|-------------|
 | doc_url |  | URL of the referenced document |
-| doc_title | string | Title of the referenced document |
+| doc_title |  | Title of the referenced document |
 
 
 ## SQLiteDatabaseConfiguration
@@ -1629,6 +1705,17 @@ Service configuration.
 | access_log | boolean |  |
 | tls_config |  |  |
 | cors |  |  |
+
+
+## ServiceUnavailableResponse
+
+
+503 Backend Unavailable - Unable to reach backend service.
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| detail |  |  |
 
 
 ## ShieldsResponse
@@ -1706,12 +1793,12 @@ Model representing a response to tools request.
 ## UnauthorizedResponse
 
 
-Model representing response for missing or invalid credentials.
+401 Unauthorized - Missing or invalid credentials.
 
 
 | Field | Type | Description |
 |-------|------|-------------|
-| detail | string | Details about the authorization issue |
+| detail |  |  |
 
 
 ## UserDataCollection
