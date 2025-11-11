@@ -20,13 +20,19 @@ ptisnovs@redhat.com
 
 ---
 
+## Llama Stack
+
+![LCORE](images/llama_stack_logo.png)
+
+---
+
 ## What is Llama Stack?
 
 * Framework to create applications with AI
     - chat bots
     - generative AI
     - training and evaluation tools
-* Real framework independent on programming language
+* It's a real framework independent on programming language
     - providers
     - RAG, quota control, guardrails, metrics
 
@@ -46,6 +52,12 @@ ptisnovs@redhat.com
 
 ### In reality, the requirements are larger
 
+![confusion](images/notation_traffic.jpg)
+
+---
+
+### In reality, the requirements are larger
+
 * RAG
 * Conversation history
 * Conversation forking
@@ -57,6 +69,37 @@ ptisnovs@redhat.com
 * Responses validation
 * Multiple LLM calls
 * Responses evaluation
+
+---
+
+### 🤖 LLM Inference
+* Generates AI responses (streaming and non-streaming)
+* Handles complex streaming with tool calls and content interleaving
+
+---
+
+### 🛡️  Safety & Content Filtering
+* Retrieves input/output shields for content filtering
+* Provides safety mechanisms for AI responses
+
+---
+
+## 🔧 Tools & Agents
+
+* Manages agent sessions (create, retrieve, delete)
+* Supports tool-augmented AI interactions
+* Enables agents to call external tools/functions
+
+---
+
+### 📚 RAG Support
+* Integration with vector databases
+* Enables Retrieval-Augmented Generation for better context
+
+---
+### 🎯 Model & Provider Management
+* Lists available models and providers
+* Allows runtime switching between different LLM providers (OpenAI, Azure, etc.)
 
 ---
 
@@ -272,17 +315,26 @@ uv run llama stack list-providers
 
 ---
 
-Lightspeed Core
+## Lightspeed Core
 
 ![LCORE](images/lcore.jpg)
 
 ---
 
-### Based on Llama Stack
+## Why Lightspeed core?
 
-* REST API
-* Supports Llama Stack in service mode
-* Supports Llama Stack in library mode
+---
+![LCORE](images/journey.png)
+
+---
+
+### Lightspeed Core
+
+* It's own REST API (stable, standard)
+* Llama Stack as backed
+    - more modules as LC plugins
+    - supports Llama Stack in service mode
+    - supports Llama Stack in library mode
 * Implemented as async Python code
 
 ---
@@ -295,6 +347,31 @@ Lightspeed Core
 
 ---
 
+* Authentication + authorization
+* RBAC
+* Quota management
+* MCP/Agents
+* Question validators
+* Answers redactors
+* System prompt
+* Summarization
+* Storage
+* Metrics
+* Plugins
+* UI specification
+* User data collection (feedback + history)
+
+---
+
+## Summary
+
+* AI world is similar to JS world 10 years ago
+    - every week new framework is created
+    - Llama Stack is a nice fit to this world
+    - Lightspeed Core as stable layer to keep developers sane
+
+---
+
 ## Evaluation
 
 * Motivation
@@ -302,11 +379,6 @@ Lightspeed Core
     - Ragas
     - Deep Eval
 * Statistical significance
-
-
----
-
-## Summary
 
 ---
 
