@@ -7,7 +7,7 @@ import os
 import ast
 from pathlib import Path
 
-DIRECTORIES = ["src", "tests/unit", "tests/integration", "tests/e2e/"]
+DIRECTORIES = ["src", "tests/unit", "tests/integration", "tests/e2e"]
 
 
 def generate_docfile(directory):
@@ -55,9 +55,9 @@ def main():
         for path in Path(directory).rglob("*"):
             if path.is_dir():
                 if (
-                    str(path) == "lightspeed_stack.egg-info"
-                    or str(path).endswith("__pycache__")
-                    or "/.ruff_cache" in str(path)
+                    path.name == "lightspeed_stack.egg-info"
+                    or path.name == "__pycache__"
+                    or ".ruff_cache" in str(path)
                 ):
                     continue
                 generate_documentation_on_path(path)

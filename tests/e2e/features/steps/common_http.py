@@ -1,4 +1,4 @@
-"""Common steps for HTTP related operations."""
+"""Common steps for HTTP-related operations."""
 
 import json
 

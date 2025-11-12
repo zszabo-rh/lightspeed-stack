@@ -4,5 +4,5 @@
 Unit tests for runners.
 
 ## [test_uvicorn_runner.py](test_uvicorn_runner.py)
-Unit tests for runners.
+Unit tests for the Uvicorn runner implementation.
 
