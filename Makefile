@@ -22,7 +22,7 @@ test-e2e: ## Run end to end tests for the service
 	script -q -e -c "uv run behave --color --format pretty --tags=-skip -D dump_errors=true @tests/e2e/test_list.txt"
 
 check-types: ## Checks type hints in sources
-	uv run mypy --explicit-package-bases --disallow-untyped-calls --disallow-untyped-defs --disallow-incomplete-defs --ignore-missing-imports --disable-error-code attr-defined src/ tests/unit tests/integration
+	uv run mypy --explicit-package-bases --disallow-untyped-calls --disallow-untyped-defs --disallow-incomplete-defs --ignore-missing-imports --disable-error-code attr-defined src/ tests/unit tests/integration tests/e2e/
 
 security-check: ## Check the project for security issues
 	bandit -c pyproject.toml -r src tests
