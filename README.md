@@ -80,6 +80,7 @@ The service includes comprehensive user data collection capabilities for various
     * [REST API](#rest-api)
     * [Sequence diagrams](#sequence-diagrams)
         * [Query endpoint REST API handler](#query-endpoint-rest-api-handler)
+    * [Streaming query endpoint REST API handler](#streaming-query-endpoint-rest-api-handler)
 
 <!-- vim-markdown-toc -->
 
@@ -900,3 +901,7 @@ For complete integration setup, deployment options, and configuration details, s
 ### Query endpoint REST API handler
 
 ![Query endpoint](docs/query_endpoint.svg)
+
+## Streaming query endpoint REST API handler
+
+![Streaming query endpoint](docs/streaming_query_endpoint.svg)
