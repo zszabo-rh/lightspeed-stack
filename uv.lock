@@ -2751,7 +2751,7 @@ wheels = [
 
 [[package]]
 name = "pytest"
-version = "9.0.0"
+version = "9.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "sys_platform == 'win32'" },
@@ -2760,9 +2760,9 @@ dependencies = [
     { name = "pluggy" },
     { name = "pygments" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/da/1d/eb34f286b164c5e431a810a38697409cca1112cee04b287bb56ac486730b/pytest-9.0.0.tar.gz", hash = "sha256:8f44522eafe4137b0f35c9ce3072931a788a21ee40a2ed279e817d3cc16ed21e", size = 1562764, upload-time = "2025-11-08T17:25:33.34Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/07/56/f013048ac4bc4c1d9be45afd4ab209ea62822fb1598f40687e6bf45dcea4/pytest-9.0.1.tar.gz", hash = "sha256:3e9c069ea73583e255c3b21cf46b8d3c56f6e3a1a8f6da94ccb0fcf57b9d73c8", size = 1564125, upload-time = "2025-11-12T13:05:09.333Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/72/99/cafef234114a3b6d9f3aaed0723b437c40c57bdb7b3e4c3a575bc4890052/pytest-9.0.0-py3-none-any.whl", hash = "sha256:e5ccdf10b0bac554970ee88fc1a4ad0ee5d221f8ef22321f9b7e4584e19d7f96", size = 373364, upload-time = "2025-11-08T17:25:31.811Z" },
+    { url = "https://files.pythonhosted.org/packages/0b/8b/6300fb80f858cda1c51ffa17075df5d846757081d11ab4aa35cef9e6258b/pytest-9.0.1-py3-none-any.whl", hash = "sha256:67be0030d194df2dfa7b556f2e56fb3c3315bd5c8822c6951162b92b32ce7dad", size = 373668, upload-time = "2025-11-12T13:05:07.379Z" },
 ]
 
 [[package]]
@@ -3617,16 +3617,16 @@ wheels = [
 
 [[package]]
 name = "trl"
-version = "0.25.0"
+version = "0.25.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "accelerate" },
     { name = "datasets" },
     { name = "transformers" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e6/6b/d73a3f8cea9750aa67c8bc5a523c5dfac8d8e9554d9857d6878e0a1bf2d8/trl-0.25.0.tar.gz", hash = "sha256:9637dc52d89c2374783dc6d8949ba724b30fc0ef22dec5c82d72b84bf94d2e08", size = 403944, upload-time = "2025-11-05T23:59:59.406Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/69/77/351cb85122c0eb9d14f0bf613b42e6868d8bb9347bd0f9c73ac27453a864/trl-0.25.1.tar.gz", hash = "sha256:451f0cc9146aadb46f3a755a5375668869dd93c57e936f7070a92145eb2333c7", size = 406597, upload-time = "2025-11-12T16:49:46.556Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ec/42/61e77e3d3a88fe43606ceffbf3bf2020bfeece66c75583c96bf5bbf3359b/trl-0.25.0-py3-none-any.whl", hash = "sha256:89ca23469736d8d94fdbc09bc3df691694aa841f82d96a955af858233d02ea31", size = 462827, upload-time = "2025-11-05T23:59:57.825Z" },
+    { url = "https://files.pythonhosted.org/packages/f5/6b/bece2a5bf3216493c6fc1c5003b2654719ccb635bcabd4049da5a5caaa3e/trl-0.25.1-py3-none-any.whl", hash = "sha256:4983310e7cf7b126f46b9cf2a4006ea160f52d9627230efe74e498211039c0c7", size = 465497, upload-time = "2025-11-12T16:49:44.945Z" },
 ]
 
 [[package]]
