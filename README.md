@@ -34,6 +34,9 @@ The service includes comprehensive user data collection capabilities for various
     * [Llama Stack version check](#llama-stack-version-check)
     * [User data collection](#user-data-collection)
     * [System prompt](#system-prompt)
+        * [System Prompt Path](#system-prompt-path)
+        * [System Prompt Literal](#system-prompt-literal)
+        * [Custom Profile](#custom-profile)
         * [Control model/provider overrides via authorization](#control-modelprovider-overrides-via-authorization)
     * [Safety Shields](#safety-shields)
     * [Authentication](#authentication)
@@ -75,6 +78,8 @@ The service includes comprehensive user data collection capabilities for various
 * [Project structure](#project-structure)
     * [Configuration classes](#configuration-classes)
     * [REST API](#rest-api)
+    * [Sequence diagrams](#sequence-diagrams)
+        * [Query endpoint REST API handler](#query-endpoint-rest-api-handler)
 
 <!-- vim-markdown-toc -->
 
@@ -889,3 +894,9 @@ For complete integration setup, deployment options, and configuration details, s
 ## REST API
 
 ![REST API](docs/rest_api.png)
+
+## Sequence diagrams
+
+### Query endpoint REST API handler
+
+![Query endpoint](docs/query_endpoint.svg)
